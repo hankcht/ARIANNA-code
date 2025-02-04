@@ -1,0 +1,17 @@
+a.out
+test
+*.png
+*.sh
+# *.txt
+*.npy
+*.err
+*.out
+*.pkl
+*.h5
+*.keras
+*.npy
+DeepLearning/BlackoutCuts.json
+DeepLearning/station_configs
+code
+**/__pycache__/
+*Log.txt

@@ -2,6 +2,7 @@ import os
 import time
 import glob
 import numpy as np
+from PIL import Image
 import keras
 from keras.models import Sequential
 from keras.layers import Conv2D, Dropout, Flatten, Dense
@@ -39,8 +40,6 @@ def getMaxSNR(traces, noiseRMS=22.53 * units.mV):
             print(f'trace {trace}')
             p2p = (np.max(trace) + np.abs(np.min(trace))) * units.V
             SNRs.append(p2p / (2*noiseRMS))
-
-    # quit()
 
     return max(SNRs)
 
@@ -114,12 +113,12 @@ def load_sim(path, RCR_path, backlobe_path, amp):
     for filename in os.listdir(path + RCR_path):
         if filename.startswith(f'FilteredSimRCR_{amp}_'):
             RCR_files.append(path + RCR_path +  filename)
-    RCR = np.empty((0, 4, 256))
+    rcr = np.empty((0, 4, 256))
     for file in RCR_files:
         print(f'RCR file {file}')
         RCR_data = np.load(file)[0:, 0:4]
-        print(f'RCR data shape {RCR_data.shape} and RCR shape {RCR.shape}')
-        RCR = np.concatenate((RCR, RCR_data))
+        print(f'RCR data shape {RCR_data.shape} and RCR shape {rcr.shape}')
+        rcr = np.concatenate((rcr, RCR_data))
     
     Backlobes_files = []
     for filename in os.listdir(path + backlobe_path):
@@ -137,13 +136,15 @@ def load_sim(path, RCR_path, backlobe_path, amp):
     #     for c in data:
     #         print(c, end = " ")
 
-    return RCR, Backlobe
+    print(f'loaded sim RCR {len(rcr)} Backlobe {len(Backlobe)}')
+
+    return rcr, Backlobe
 
 def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_channel=[]):
-    #Sampling rate should be in GHz
+    # Sampling rate should be in GHz
     print(f'printing')
-    #Important Clarification: In our actual experiment, we receive one data point per 0.5ns, so our duration of 128ns gives 256 data points
-    #it is different from here where I organize one data point to one ns and make the total time 256ns (these two are mathematically identical)
+    # Important Clarification: In our actual experiment, we receive one data point per 0.5ns, so our duration of 128ns gives 256 data points
+    # it is different from here where I organize one data point to one ns and make the total time 256ns (these two are mathematically identical)
     x = np.linspace(1, int(256 / sampling_rate), num=256)
     x_freq = np.fft.rfftfreq(len(x), d=(1 / sampling_rate * units.GHz)) / units.MHz
 
@@ -152,7 +153,7 @@ def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_chan
     vmax = 0
 
     for chID, trace in enumerate(traces):
-        trace = trace.reshape(len(trace))
+        trace = trace.reshape(len(trace)) 
         freqtrace = np.abs(fft.time2freq(trace, sampling_rate * units.GHz))
 
         # Plot time-domain trace
@@ -213,6 +214,48 @@ def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_chan
 
     return
 
+def combine_plots(plot_path, station_id, type):
+    
+    plot_part_1 = Image.open(f'{plot_path}/All_part_1_{type}NO.png')
+    plot_part_2 = Image.open(f'{plot_path}/All_part_2_{type}NO.png')
+
+    # We might take different partitions, so the general form applies
+    combined_width = plot_part_1.width + plot_part_2.width
+    combined_height = max(plot_part_1.height, plot_part_2.height)
+
+
+    if station_id == 17:
+        plot_part_3 = Image.open(f'{plot_path}/All_part_3_{type}NO.png')
+        combined_width += plot_part_3.width
+        combined_height = max(plot_part_1.height, plot_part_2.height, plot_part_3.height)       
+
+
+    combined = Image.new('RGB', (combined_width, combined_height))
+
+    combined.paste(plot_part_1, (0, 0))
+    combined.paste(plot_part_2, (plot_part_1.width, 0))
+
+    if station_id == 17:
+        combined.paste(plot_part_3, (plot_part_1.width + plot_part_2.width, 0))
+
+    combined.save(f'{plot_path}/All_{type}NO_plot.png')
+
+def RunTrainedModel(events, model_path):
+
+    # window size 10 on first layer
+    # FIRST TRY data_data_2025-01-10_22-31_RCR_Backlobe_model_2Layer.h5
+    # BEST      data_data_2025-01-28_22-52_RCR_Backlobe_model_2Layer.h5
+    # CURRENT /pub/tangch3/ARIANNA/DeepLearning/models/200s_time/data_data_2025-01-30_16-38_RCR_Backlobe_model_2Layer.h5
+    
+    # window size 30 on first layer
+    # 
+    # CURRENT DeepLearning/models/200s_time/data_data_2025-01-30_21-38_RCR_Backlobe_model_2Layer.h5
+
+    model = keras.models.load_model(f'{model_path}200s_time/data_data_2025-01-30_16-38_RCR_Backlobe_model_2Layer.h5')
+    prob_events = model.predict(events)
+
+    return prob_events
+
 if __name__ == "__main__":
 
     # profiling method:
@@ -229,4 +272,7 @@ if __name__ == "__main__":
 
         for file in files_to_delete:
             os.remove(file)
-            print(f'Deleted {file}')
+            print(f'Deleted :{file}')
+
+
+    

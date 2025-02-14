@@ -10,7 +10,7 @@ import pandas as pd
 from glob import glob
 import matplotlib
 
-path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'    #Edit path to properly point to folder
+path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'    # Edit path to properly point to folder
 amp = '100s'                                                                  #Set which amplifier to run on
 RCR_path = f'simulatedRCRs/{amp}_2.9.24/'
 backlobe_path = f'simulatedBacklobes/{amp}_2.9.24/'

@@ -58,7 +58,7 @@ def load_data():
 RCR, Backlobe = load_data()
 RCR, Backlobe = RCR[5000:], Backlobe[5000:]
 
-#turn RCR time-series to frequency domain
+# turn RCR time-series to frequency domain
 sampling_rate = 2
 RCR_freq = np.fft.rfft(RCR, axis=-1)
 print(RCR_freq.shape)

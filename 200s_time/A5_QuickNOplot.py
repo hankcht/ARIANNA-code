@@ -7,4 +7,4 @@ for id in [14,15,17,18,19,30]:
     print('SNR plots combined')
     chi_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Chi_NetworkOutput/Station_{id}'
     combine_plots(chi_plot_path, id, type='Chi')
-    print('Chi plots combined')
+    print('Chi plots combined') 

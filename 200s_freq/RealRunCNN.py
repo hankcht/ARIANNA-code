@@ -11,7 +11,7 @@ import pandas as pd
 from glob import glob
 import matplotlib
 
-#Set parameters
+# Set parameters
 path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/eventsPassingNoiseCuts/'    #Edit path to properly point to folder
 model_path = f'/data/homezvol3/tangch3/ARIANNA/DeepLearning/models/'  #Path to save models
 amp = '200s' 

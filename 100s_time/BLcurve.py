@@ -32,7 +32,7 @@ correlationDirectionFitter.begin(debug=False)
 
 
 def getMaxChi(traces, sampling_rate, template_trace, template_sampling_rate, parallelChannels=[[0, 2], [1, 3]]):
-    #Parallel channels should be index corresponding to the channel in traces
+    # Parallel channels should be index corresponding to the channel in traces
 
     maxCorr = []
     for parChans in parallelChannels:

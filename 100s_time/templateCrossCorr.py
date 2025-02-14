@@ -21,7 +21,7 @@ def match_sampling(ref_template, resampling_factor):
 
 
 
-#method derived from NuRadioReco/modules/channelTemplateCorrelation
+# method derived from NuRadioReco/modules/channelTemplateCorrelation
 
 def get_xcorr_for_channel(orig_trace, template_trace, orig_sampling_rate, template_sampling_rate, times=[], debug=False, SNR='n/a'):
     if len(orig_trace) == 0:

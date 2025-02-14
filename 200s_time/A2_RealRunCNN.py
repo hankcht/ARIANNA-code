@@ -28,7 +28,7 @@ def plot_data_histogram(plot_folder, prob_station, number_passed_events, prob_co
         add_confirmed_histogram(ax, prob_confirmed)
     ax.set_xlabel('Network Output', fontsize=18)
     ax.set_ylabel('Number of Events', fontsize=18)
-    ax.set_yscale('log') # Set logarithmic scale for y-axis, if needed
+    ax.set_yscale('log')  # Set logarithmic scale for y-axis, if needed
     # ax.set_ylim(1, max(10 ** (np.ceil(np.log10(hist_values))))) # uncomment if needed for semi-log plot
     ax.set_title(f'Station {station_id} network output (200s_time)')
     ax.set_xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])

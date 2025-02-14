@@ -19,7 +19,7 @@ from matplotlib.markers import MarkerStyle
 #   [2] finds the SNR and Chi of selected, passed events
 #   [3] creates Chi-SNR 2D histograms
  
-
+ 
 def getMaxChi(traces, sampling_rate, template_trace, template_sampling_rate, parallelChannels=[[0, 2], [1, 3]]):
     #Parallel channels should be index corresponding to the channel in traces
 

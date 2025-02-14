@@ -10,7 +10,7 @@ stn 15:     663245                      Nan                          1282       
 stn 18:     872176                      Nan                           957               2
             1898757   total                                          4354   total
 
-CONFIRMED BL
+CONFIRMED BL 
 200S                                                         100S
 Event2016_Stn14_1454540191.0_Chi0.66_SNR5.57.npy             Event2016_Stn15_1450734371.0_Chi0.57_SNR7.10.npy**
 Event2016_Stn14_1455263868.0_Chi0.58_SNR7.68.npy            

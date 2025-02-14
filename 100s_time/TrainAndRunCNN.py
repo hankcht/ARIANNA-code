@@ -363,7 +363,7 @@ RCR_efficiency = (sim_RCR_output > output_cut_value).sum() / len(sim_RCR_output)
 RCR_efficiency = (100*RCR_efficiency).round(decimals=2)
 print(f'{if_sim} RCR efficiency: {RCR_efficiency}')
 
-#Finding Backlobe efficiency (percentage of backlobe that would remain after our cut)
+# Finding Backlobe efficiency (percentage of backlobe that would remain after our cut)
 sim_Backlobe_output = prob_Backlobe
 Backlobe_efficiency = (sim_Backlobe_output > output_cut_value).sum() / len(sim_Backlobe_output)
 Backlobe_efficiency = (100*Backlobe_efficiency).round(decimals=4)

@@ -265,7 +265,7 @@ if __name__ == "__main__":
     print(f"task: {end - start}s")
     start = end
 
-    # delete files:
+    # to delete files:
     directory = '/pub/tangch3/ARIANNA/DeepLearning/logs'
     for i in range(154):
         files_to_delete = glob.glob(os.path.join(directory, f'Stn17_{i}.out'))

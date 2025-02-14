@@ -117,7 +117,7 @@ def converter(nurFile, savename, save_chans, station_id = 1, det=None, BW=[80*un
 
         if inBlackoutTime(stationtime, blackoutTimes):
             continue
-
+ 
         Unix_time.append(stationtime)
         forcedMask.append(station.has_triggered())
 

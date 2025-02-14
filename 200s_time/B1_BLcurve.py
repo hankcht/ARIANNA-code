@@ -30,7 +30,7 @@ def get_curve_y(curve_x, curve_y, snr):
     return predicted_y
 
 def loadTemplate(type='RCR', amp='200s'):
-    if type == 'RCR':
+    if type == 'RCR': 
         if amp == '200s':
                 templates_RCR = '../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/reflectedCR_template_200series.pkl'
                 templates_RCR = read_pickle(templates_RCR)

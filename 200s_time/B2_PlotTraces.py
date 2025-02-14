@@ -53,7 +53,7 @@ plot_chi = [round(chi, 2) for chi in plot_chi]
 plot_folder = '/pub/tangch3/ARIANNA/DeepLearning/Traces/'
 for trace, snr, chi in zip(plot_traces, plot_SNR, plot_chi):
     pT(trace, f'trace', f'{plot_folder}/{type}_SNR_{snr}_Chi{chi}.png')
-
+ 
 # template = []
 # for i in range(4):
 #     template.append(templates_RCR)

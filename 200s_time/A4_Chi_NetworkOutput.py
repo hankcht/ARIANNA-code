@@ -155,7 +155,7 @@ if __name__ == "__main__":
         elif station_id in [13, 15, 18]:
             amp_type = '100s'
             noiseRMS = 20 * units.mV
-        
+         
         All_data_SNR, All_data_Chi, All_data_Traces, All_data_UNIX = load_data('All_data', amp_type, station_id)
 
         partition = 3

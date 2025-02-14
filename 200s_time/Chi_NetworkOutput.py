@@ -39,7 +39,7 @@ amp = '200s'                                                                  #S
 RCR_path = f'simulatedRCRs/{amp}_2.9.24/'
 backlobe_path = f'simulatedBacklobes/{amp}_2.9.24/'
 output_cut_value = 0.95 #Change this depending on chosen cut
-
+ 
 
 #Section 1: simulation
 

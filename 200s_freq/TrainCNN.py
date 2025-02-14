@@ -83,7 +83,7 @@ Backlobe_freq = np.fft.rfft(Backlobe, axis=-1)
 
 x = np.vstack((RCR_freq, Backlobe_freq))
 
-#print(x[50,0])a
+#print(x[50,0])
 
 n_samples = x.shape[2]
 n_channels = x.shape[1]

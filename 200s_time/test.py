@@ -28,75 +28,78 @@ all_snr = []
 all_chi = []
 all_trace = []
 all_unix = []
+
+
+
 # for id in station_id:
 #         snr, chi, trace, unix = load_data('All_data', amp_type=amp_type, station_id=id)
 #         all_snr.extend(snr)
 #         all_chi.extend(chi)
 #         all_trace.extend(trace)
 #         all_unix.extend(unix)
-all_snr ,all_chi, all_trace, all_unix = load_data('All_data', amp_type, station_id)
+# all_snr ,all_chi, all_trace, all_unix = load_data('All_data', amp_type, station_id)
 
-# all_snr = [round(snr, 2) for snr in all_snr]
-# all_chi = [round(chi, 2) for chi in all_chi]
-# index = []
-# for i, unix in enumerate(all_unix):
-#     if unix == 1449861609:
-#         index.append(i)
+# # all_snr = [round(snr, 2) for snr in all_snr]
+# # all_chi = [round(chi, 2) for chi in all_chi]
+# # index = []
+# # for i, unix in enumerate(all_unix):
+# #     if unix == 1449861609:
+# #         index.append(i)
 
-# snr_index = []
-# for i, (snr,chi) in enumerate(zip(all_snr, all_chi)):
-#     if 20.32 <= snr <= 20.33 and 0.67 <= chi <= 0.68:
-#         snr_index.append(i)
-#         print(snr, chi)
+# # snr_index = []
+# # for i, (snr,chi) in enumerate(zip(all_snr, all_chi)):
+# #     if 20.32 <= snr <= 20.33 and 0.67 <= chi <= 0.68:
+# #         snr_index.append(i)
+# #         print(snr, chi)
 
-# print(index, snr_index)
+# # print(index, snr_index)
 
-# data = np.load(f'../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station{station_id}_SNR_Chi.npy', allow_pickle=True)
+# # data = np.load(f'../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station{station_id}_SNR_Chi.npy', allow_pickle=True)
 
-# All_SNRs = data[0]
-# All_RCR_Chi = data[1]
-# All_Azi = data[2]
-# All_Zen = data[3]
+# # All_SNRs = data[0]
+# # All_RCR_Chi = data[1]
+# # All_Azi = data[2]
+# # All_Zen = data[3]
 
-a = 0
-confirmed_BL_unix_200s = {1454540191,1455263868,1449861609,1450734371,1457453131,1455205950,1455513662,1458294171}
-# 1450734371,1457453131 not in all?
-confirmed_BL_unix_100s = {1450734371,1449861609,1450268467,1455205950,1455513662,1458294171}
+# a = 0
+# confirmed_BL_unix_200s = {1454540191,1455263868,1449861609,1450734371,1457453131,1455205950,1455513662,1458294171}
+# # 1450734371,1457453131 not in all?
+# confirmed_BL_unix_100s = {1450734371,1449861609,1450268467,1455205950,1455513662,1458294171}
 
-ii = 0
-type = 'data'
-plot_folder = '/pub/tangch3/ARIANNA/DeepLearning/'
-for unix, chi, snr, trace in zip(all_unix, all_chi, all_snr, all_trace):
-        if unix in confirmed_BL_unix_200s:
-                print('found in saved', unix, chi, snr)
-                # pT(trace, f'data', f'{plot_folder}{type}_SNR_{snr}_Chi{chi}.png')
-                ii += 1
-print(ii)
+# ii = 0
+# type = 'data'
+# plot_folder = '/pub/tangch3/ARIANNA/DeepLearning/'
+# for unix, chi, snr, trace in zip(all_unix, all_chi, all_snr, all_trace):
+#         if unix in confirmed_BL_unix_200s:
+#                 print('found in saved', unix, chi, snr)
+#                 # pT(trace, f'data', f'{plot_folder}{type}_SNR_{snr}_Chi{chi}.png')
+#                 ii += 1
+# print(ii)
 
-confirmed_trace = []
-for filename in os.listdir('../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/'):
-    if filename.startswith(f'Event2016_Stn{station_id}'):
-            trace = np.load(f'../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/{filename}')
-            print(trace.shape)
-            confirmed_trace.append(trace)
-            # pT(confirmed_trace, f'confirmed trace', f'/pub/tangch3/ARIANNA/DeepLearning/{filename}.png')
+# confirmed_trace = []
+# for filename in os.listdir('../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/'):
+#     if filename.startswith(f'Event2016_Stn{station_id}'):
+#             trace = np.load(f'../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/{filename}')
+#             print(trace.shape)
+#             confirmed_trace.append(trace)
+#             # pT(confirmed_trace, f'confirmed trace', f'/pub/tangch3/ARIANNA/DeepLearning/{filename}.png')
 
-confirmed_snr = []
-confirmed_chi = []
-templates_RCR = B1_BLcurve.loadTemplate(type='RCR', amp=amp_type)
-for event in confirmed_trace:
+# confirmed_snr = []
+# confirmed_chi = []
+# templates_RCR = B1_BLcurve.loadTemplate(type='RCR', amp=amp_type)
+# for event in confirmed_trace:
         
-    traces = []
-    for trace in event:
-        traces.append(trace * units.V)
-    confirmed_snr.append(getMaxSNR(traces, noiseRMS=noiseRMS))
-    confirmed_chi.append(getMaxChi(traces, 2*units.GHz, templates_RCR, 2*units.GHz))
+#     traces = []
+#     for trace in event:
+#         traces.append(trace * units.V)
+#     confirmed_snr.append(getMaxSNR(traces, noiseRMS=noiseRMS))
+#     confirmed_chi.append(getMaxChi(traces, 2*units.GHz, templates_RCR, 2*units.GHz))
 
-print('confirmed')
-for snr, chi in zip(confirmed_snr, confirmed_chi):
-      chi = round(chi, 2) 
-      snr = round(snr,2)
-      print(chi, snr)
+# print('confirmed')
+# for snr, chi in zip(confirmed_snr, confirmed_chi):
+#       chi = round(chi, 2) 
+#       snr = round(snr,2)
+#       print(chi, snr)
       
 
 

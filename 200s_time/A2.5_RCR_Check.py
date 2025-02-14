@@ -155,6 +155,7 @@ if __name__ == '__main__':
 
     for index, trace in zip(potential_RCR_index, potential_RCR):
         pT(trace, f'potential RCR', f'/pub/tangch3/ARIANNA/DeepLearning/{index}.png')
+        break
 
 
 

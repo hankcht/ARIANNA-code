@@ -6,6 +6,7 @@ from tensorflow import keras
 from keras import optimizers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten, Reshape, GlobalAveragePooling1D, Activation, GlobalAveragePooling2D
+from keras.metrics import Recall, AUC
 from keras.layers import Conv2D, MaxPooling2D, Conv1D, MaxPooling1D
 import random
 import math
@@ -23,42 +24,11 @@ from A0_Utilities import getMaxChi, getMaxSNR, load_sim, load_data
 
 def Train_CNN():
 
+    #turn time-series to frequency domain
     sampling_rate = 2
-
-    # first find frequency bins
-    x = np.linspace(1, int(256 / sampling_rate), num=256)
-    x_freq = np.fft.rfftfreq(len(x), d=(1 / sampling_rate*units.GHz)) / units.MHz
-
-    #turn RCR time-series to frequency domain
-    RCR_freq = []
-    for trace in training_RCR:
-        RCR_freq.append(np.abs(fft.time2freq(trace, 2*units.GHz)))
-    RCR_freq = np.array(RCR_freq)
-
-    print(RCR_freq.shape)
-    testtrace = RCR_freq[2,:,:]
-    print(testtrace.shape)
-    # print(testtrace[0,:])
-    for chn in range(testtrace.shape[0]):
-        plt.plot(x_freq, np.abs(testtrace[chn,:]))
-
-    plt.title('FFT Magnitude Spectrum')
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Magnitude')
-    plt.legend()
-    plt.grid(True)
-    print('saving')
-    plt.savefig('/pub/tangch3/ARIANNA/DeepLearning/supbro.png')
-    exit()
-
     RCR_freq = np.fft.rfft(training_RCR, axis=-1)
-
     Backlobe_freq = np.fft.rfft(training_Backlobe, axis=-1)
     print(RCR_freq.shape, Backlobe_freq.shape)
-
-
-
-
 
     x = np.vstack((RCR_freq, Backlobe_freq))
     n_samples = x.shape[2]
@@ -72,7 +42,7 @@ def Train_CNN():
     x = x[s]
     y = y[s]
     print(x.shape)
-    
+
     BATCH_SIZE = 32
     EPOCHS = 100 
 
@@ -81,8 +51,8 @@ def Train_CNN():
     model = Sequential()
     # change window size to capture the 100 Mhz difference in Backlobe (shadowing effect, we have integer frequencies amplified)
     # window size default is 10, on 256 floats 
-    model.add(Conv2D(20, (4, 30), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
-    model.add(Conv2D(10, (1, 10), activation='relu'))
+    model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
+    # model.add(Conv2D(10, (1, 10), activation='relu'))
     model.add(Dropout(0.5))
     model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
@@ -250,9 +220,13 @@ if __name__ == "__main__":
 
     print(f'output cut value: {output_cut_value}')
 
-    rcr = np.array(rcr)
-    prob_RCR = model.predict(rcr)
-    prob_Backlobe = model.predict(Backlobe)
+    sampling_rate = 2
+    Backlobe_validation = np.fft.rfft(Backlobe, axis=-1)
+    rcr_valid = np.fft.rfft(rcr, axis=-1)
+
+    rcr_valid = np.array(rcr_valid)
+    prob_RCR = model.predict(rcr_valid)
+    prob_Backlobe = model.predict(Backlobe_validation)
 
     # Finding not weighted RCR efficiency (percentage of RCR events that would pass the cut) 
     sim_RCR_output = prob_RCR

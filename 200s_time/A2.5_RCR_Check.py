@@ -2,6 +2,7 @@ from NuRadioReco.utilities.io_utilities import read_pickle
 import os
 import numpy as np
 from NuRadioReco.utilities import units
+import datetime
 import matplotlib.pyplot as plt
 from A0_Utilities import RunTrainedModel, load_data, pT, load_sim
 from A2_RealRunCNN import plot_data_histogram
@@ -105,6 +106,8 @@ if __name__ == '__main__':
         data_Backlobe.extend(trace)
         data_Backlobe_UNIX.extend(unix)
 
+
+    data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
     data_Backlobe = np.array(data_Backlobe)
     prob_Backlobe = RunTrainedModel(data_Backlobe, model_path)
     prob_RCR = RunTrainedModel(rcr, model_path)
@@ -149,13 +152,36 @@ if __name__ == '__main__':
     for i, network_output in enumerate(prob_Backlobe):
         if network_output > 0.95:
             potential_RCR_index.append(i)
+    potential_RCR_index.extend([2668, 2767, 4967])
 
     print(potential_RCR_index)
     potential_RCR = data_Backlobe[potential_RCR_index]
+    potential_RCR_UNIX = data_Backlobe_UNIX[potential_RCR_index]
 
-    for index, trace in zip(potential_RCR_index, potential_RCR):
-        pT(trace, f'potential RCR', f'/pub/tangch3/ARIANNA/DeepLearning/{index}.png')
-        break
+    potential_RCR_calendar = []
+    for ts in potential_RCR_UNIX:
+        formatted_time = datetime.datetime.fromtimestamp(ts).strftime("%m-%d-%Y %H:%M:%S")
+        potential_RCR_calendar.append(formatted_time)
+
+    print(potential_RCR_calendar)
+    get_station_number = []
+    for index in potential_RCR_index: # maybe I will collapse the ugly sums later when numbers become more familiar 
+        if index <= 318 - 1:
+            get_station_number.append(14)
+        elif 318 <= index <= 318 + 2326 - 1:
+            get_station_number.append(17)
+        elif 318 + 2326 <= index <= 318 + 2326 + 317 - 1:
+            get_station_number.append(19)
+        elif 318 + 2326 + 317 <= index <= 318 + 2326 + 317 + 5618 - 1:
+            get_station_number.append(30)
+    print(get_station_number)
+
+    for station_number, date, trace in zip(get_station_number, potential_RCR_calendar, potential_RCR):
+        pT(trace, f'potential RCR', f'/pub/tangch3/ARIANNA/DeepLearning/stn{station_number} {date}.png')
+
+    # 87 94 3031 5872 6106 2668 4967
+
+        
 
 
 

@@ -9,27 +9,48 @@ import datetime
 import B1_BLcurve 
 from NuRadioReco.utilities import units
 
-arg = 'time'
+# arg = 'time'
 
-station_path = f'/pub/tangch3/ARIANNA/DeepLearning/all_data/indv_{arg}'
-output_file = '/pub/tangch3/ARIANNA/DeepLearning/all_data/stn17_traces.npy'  # Final output file
-batch_size = 50  # Number of files to process at once
+# station_path = f'/pub/tangch3/ARIANNA/DeepLearning/all_data/indv_{arg}'
+# output_file = '/pub/tangch3/ARIANNA/DeepLearning/all_data/stn17_traces.npy'  # Final output file
+# batch_size = 50  # Number of files to process at once
 
-amp_type = '200s'
-if amp_type == '200s':
-    noiseRMS = 22.53 * units.mV
+# amp_type = '200s'
+# if amp_type == '200s':
+#     noiseRMS = 22.53 * units.mV
 
-elif amp_type == '100s':
-    noiseRMS = 20 * units.mV
+# elif amp_type == '100s':
+#     noiseRMS = 20 * units.mV
 
-station_id = 17 # [14,17,19,30]
+# station_id = 17 # [14,17,19,30]
 
-all_snr = []
-all_chi = []
-all_trace = []
-all_unix = []
+# all_snr = []
+# all_chi = []
+# all_trace = []
+# all_unix = []
+
+# sampling_rate = 2
+# RCR_freq = np.abs(np.fft.rfft(training_RCR, axis=-1)/ sampling_rate * 2 ** 0.5) # this is the same way freq is calculated from NuRadioMC
+# Backlobe_freq = np.abs(np.fft.rfft(training_Backlobe, axis=-1)/ sampling_rate * 2 ** 0.5)
+# print(RCR_freq.shape, Backlobe_freq.shape)
 
 
+algorithm = 'RS'
+best_result = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}best_windowsize.npy')
+print(best_result)
+from collections import Counter
+count = Counter(best_result)
+most_common_element, most_common_count = count.most_common(1)[0]
+print(most_common_element)
+print(len(best_result))
+bins = np.linspace(1,60,60)
+plt.hist(best_result, bins)
+plt.xlabel('Window size')
+plt.ylabel('count')
+plt.text(10, 10, f'total # of studies:{len(best_result)}')
+plt.text(most_common_element, most_common_count, f'Best: {most_common_element}', ha='center', va='bottom', fontsize=10, color='red')
+print(f'saving fig for {algorithm}')
+plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}best_windowsize.png')
 
 # for id in station_id:
 #         snr, chi, trace, unix = load_data('All_data', amp_type=amp_type, station_id=id)

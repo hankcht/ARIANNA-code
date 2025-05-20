@@ -16,20 +16,40 @@ import pandas as pd
 from matplotlib.lines import Line2D
 import matplotlib.dates as mdates
 import templateCrossCorr as txc
+from sklearn.model_selection import train_test_split
 import matplotlib
 from matplotlib import pyplot as plt
 from NuRadioReco.utilities import units, fft
 matplotlib.use('Agg')
-from A0_Utilities import getMaxChi, getMaxSNR, load_sim, load_data
+from A0_Utilities import getMaxChi, getMaxSNR, load_sim, load_data, pT
 
 def Train_CNN():
 
     #turn time-series to frequency domain
     sampling_rate = 2
-    RCR_freq = np.fft.rfft(training_RCR, axis=-1)
-    Backlobe_freq = np.fft.rfft(training_Backlobe, axis=-1)
+    RCR_freq = np.abs(np.fft.rfft(training_RCR, axis=-1)/ sampling_rate * 2 ** 0.5) # this is the same way freq is calculated from NuRadioMC
+    Backlobe_freq = np.abs(np.fft.rfft(training_Backlobe, axis=-1)/ sampling_rate * 2 ** 0.5)
     print(RCR_freq.shape, Backlobe_freq.shape)
 
+
+    # x = np.linspace(1, int(256 / sampling_rate), num=256)
+    # x_freq = np.fft.rfftfreq(len(x), d=(1 / sampling_rate * units.GHz)) / units.MHz
+
+    # RCR_freq_slice = RCR_freq[0, 0, :]
+    # Backlobe_freq_slice = Backlobe_freq[0, 0, :]
+
+    # plt.figure(figsize=(10, 6))
+    # plt.plot(x_freq, RCR_freq_slice, label='RCR Frequency', color='blue')
+    # plt.plot(x_freq, Backlobe_freq_slice, label='Backlobe Frequency', color='red', linestyle='--')
+    # plt.xlabel('Frequency (Hz)')
+    # plt.ylabel('Magnitude')
+    # plt.title('Frequency Spectra of RCR and Backlobe')
+    # plt.legend()
+    # plt.grid(True)
+    # print('saving')
+    # plt.savefig('/pub/tangch3/ARIANNA/DeepLearning/t.png')
+
+    # exit()
     x = np.vstack((RCR_freq, Backlobe_freq))
     n_samples = x.shape[2]
     n_channels = x.shape[1]
@@ -41,7 +61,7 @@ def Train_CNN():
     np.random.shuffle(s)
     x = x[s]
     y = y[s]
-    print(x.shape)
+    print(x.shape, y.shape)
 
     BATCH_SIZE = 32
     EPOCHS = 100 
@@ -51,14 +71,15 @@ def Train_CNN():
     model = Sequential()
     # change window size to capture the 100 Mhz difference in Backlobe (shadowing effect, we have integer frequencies amplified)
     # window size default is 10, on 256 floats 
-    model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
-    # model.add(Conv2D(10, (1, 10), activation='relu'))
+    model.add(Conv2D(20, (4, window_size), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
+    model.add(Conv2D(10, (1, 10), activation='relu'))
     model.add(Dropout(0.5))
     model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
     model.compile(optimizer='Adam',
                     loss='binary_crossentropy',
                     metrics=['accuracy'])
+
 
     # validation_split is the fraction of training data used as validation data
     history = model.fit(x, y, validation_split=0.2, epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=1, callbacks=callbacks_list)
@@ -80,8 +101,8 @@ def Train_CNN():
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.title(f'Model 1: Simulation File Used {simulation_multiplier} Times')
-    plt.savefig(f'{loss_plot_path}{if_sim}_loss_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
+    plt.title(f'Window size {window_size} File Used {simulation_multiplier} Times')
+    plt.savefig(f'{loss_plot_path}{if_sim}_{window_size}_loss_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
     plt.clf()
 
     # Plot the training and validation accuracy
@@ -91,8 +112,8 @@ def Train_CNN():
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.title(f'Model 1: Simulation File Used {simulation_multiplier} Times')
-    plt.savefig(f'{accuracy_plot_path}{if_sim}_accuracy_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
+    plt.title(f'Window size {window_size}  File Used {simulation_multiplier} Times')
+    plt.savefig(f'{accuracy_plot_path}{if_sim}_{window_size}_accuracy_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
     plt.clf()
 
     model.summary()
@@ -108,6 +129,7 @@ def Train_CNN():
 amp = '200s' 
 output_cut_value = 0.6 # Change this depending on chosen cut, we get our passed events from this  # Originally 0.95
 TrainCut = 5000 # Number of events to use for training, change accordingly if we do not have enough events
+window_size = 10
 
 if amp == '200s':
     noiseRMS = 22.53 * units.mV
@@ -172,12 +194,12 @@ if __name__ == "__main__":
 
     # input the path and file you'd like to save the model as (in h5 format)
     if if_sim == 'sim_sim' or if_sim == 'sim_data':
-        model.save(f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
-        sim_model_path = f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5'
+        model.save(f'{model_path}{if_sim}_{window_size}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
+        sim_model_path = f'{model_path}{if_sim}_{window_size}_{timestamp}_RCR_Backlobe_model_2Layer.h5'
         print(f'model saved at {sim_model_path}')
     elif if_sim == 'data_sim' or if_sim == 'data_data':
-        model.save(f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
-        data_model_path = f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5'
+        model.save(f'{model_path}{if_sim}_{window_size}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
+        data_model_path = f'{model_path}{if_sim}_{window_size}_{timestamp}_RCR_Backlobe_model_2Layer.h5'
         print(f'model saved at {data_model_path}')
 
     print('------> Training is Done!')
@@ -265,8 +287,8 @@ if __name__ == "__main__":
     ax.axvline(x=output_cut_value, color='y', label='cut')
     ax.text(0.05, -0.12, 'BL', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=ax.transAxes, color='blue')
     ax.text(0.96, -0.12, 'RCR', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=ax.transAxes, color='red')
-    print(f'saving /pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_freq/{if_sim}_{timestamp}_histogram.png')
-    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_freq/{if_sim}_{timestamp}_histogram.png')
+    print(f'saving /pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_freq/{if_sim}_{window_size}_{timestamp}_histogram.png')
+    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_freq/{if_sim}_{window_size}_{timestamp}_histogram.png')
     print(f'------> {amp} {if_sim} Done!')
 
 

@@ -8,7 +8,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     header = "#!/bin/bash\n"
     header += f"#SBATCH --job-name={jobName}            ##Name of the job.\n"
     header += "#SBATCH -A sbarwick_lab                  ##Account to charge to\n"
-    header += "#SBATCH -p free                          ##Partition/queue name\n"
+    header += "#SBATCH -p standard                          ##Partition/queue name\n"
     header += "#SBATCH --time=3-00:00:00                ##Max runtime D-HH:MM:SS, 3 days free maximum\n"
     header += "#SBATCH --nodes=1                        ##Nodes to be used\n"
     header += "#SBATCH --ntasks=1                       ##Numer of processes to be launched\n"
@@ -56,7 +56,8 @@ stations_to_run_on_pt2 = [14,17,19,30,15,18]
 '''always remember to first input a new model in A0'''
 
 # Can Train if needed
-cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A1_TrainAndRunCNN.py data_data'
+cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A1.5_StudyCNN.py data_data'
+    # 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A1_TrainAndRunCNN.py data_data'
 RunMultipleJobs(cmd , jobName=f'genericBatchJob')
 
 # Part One: sim and data network output analysis

@@ -159,18 +159,9 @@ if __name__ == '__main__':
     potential_RCR_UNIX = data_Backlobe_UNIX[potential_RCR_index]
 
     potential_RCR_calendar = []
-    for time in potential_RCR_UNIX:
-        formatted_time = datetime.datetime.fromtimestamp(time).strftime("%m-%d-%Y_%H-%M-%S")
+    for ts in potential_RCR_UNIX:
+        formatted_time = datetime.datetime.fromtimestamp(ts).strftime("%m-%d-%Y_%H-%M-%S")
         potential_RCR_calendar.append(formatted_time)
-
-    RCR_calendar = []
-    for i, time in enumerate(data_Backlobe_UNIX):
-        if i > 100:
-            break
-        formatted_time = datetime.datetime.fromtimestamp(time).strftime("%m-%d-%Y_%H-%M-%S")
-        RCR_calendar.append(formatted_time)
-    print(RCR_calendar)
-    exit()
 
     print(potential_RCR_calendar)
     get_station_number = []

@@ -253,6 +253,7 @@ def RunTrainedModel(events, model_path):
 
     model = keras.models.load_model(f'{model_path}200s_time/data_data_2025-01-30_16-38_RCR_Backlobe_model_2Layer.h5')
     prob_events = model.predict(events)
+    
 
     return prob_events
 

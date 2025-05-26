@@ -64,6 +64,7 @@ def saves_best_result(best_result, algorithm=''):
     print(best_hparam)
     print(len(best_hparam))
 
+
 def save_best_result(best_result, algorithm=''):
     """
     Tracks and visualizes the best 2D hyperparameter settings:

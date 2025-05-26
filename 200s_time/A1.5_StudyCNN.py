@@ -31,13 +31,13 @@ def saves_best_result(best_result, algorithm=''):
     Input type of algorithm for saving
     1) Saves result into numpy array
     2) Creates histogram and shows best setting
-    # options: best_windowsize (first window), two_ws_stdy
+    # options: best_windowsize (first window), secnd_wdw
     """
-    hparam = best_result['window_size']
+    hparam = best_result['window_size2']
     hparam_arr = np.array([hparam])
     
     try:
-        best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}two_ws_stdy.npy')
+        best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.npy')
     except FileNotFoundError as e:
         print(e)
         best_hparam = np.array([])  
@@ -45,7 +45,7 @@ def saves_best_result(best_result, algorithm=''):
     best_hparam = np.concatenate((best_hparam, hparam_arr))
 
     print('Saving best hyperparameter setting')
-    np.save(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}two_ws_stdy.npy', best_hparam)
+    np.save(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.npy', best_hparam)
 
     from collections import Counter
 
@@ -54,11 +54,11 @@ def saves_best_result(best_result, algorithm=''):
     print(f'best setting: {most_common_element}')
     bins = np.linspace(1,60,60)
     plt.hist(best_result, bins)
-    plt.xlabel('Window size')
+    plt.xlabel('Window size2')
     plt.ylabel('count')
     plt.text(most_common_element, most_common_count, f'Best: {most_common_element}', ha='center', va='bottom', fontsize=10, color='red')
     print(f'saving fig for {algorithm}')
-    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}two_ws_stdy.png')
+    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.png')
     plt.clf()
 
     print(best_hparam)
@@ -191,7 +191,7 @@ class HyperModel(keras_tuner.HyperModel): # using a hypermodel to flexibly train
             **kwargs
         )
 
-def Shepa_Train_CNN():
+def Sherpa_Train_CNN():
     x, y = prep_training_data()
     n_samples = x.shape[2]
     n_channels = x.shape[1]
@@ -202,8 +202,8 @@ def Shepa_Train_CNN():
     # callback automatically saves when loss increases over a number of patience cycles
     callbacks_list = [keras.callbacks.EarlyStopping(monitor='val_loss', patience=2)]
 
-    parameters = [sherpa.Discrete('window_size1', [1,30]),
-                  sherpa.Discrete('window_size2', [1,30])] # range of window sizes to test
+    parameters = [
+                  sherpa.Discrete('window_size2', [1,30])] # range of window sizes to test # sherpa.Discrete('window_size1', [1,30]),
     alg = sherpa.algorithms.RandomSearch(max_num_trials=60) # 100 trials
 
     study = sherpa.Study(parameters=parameters,
@@ -217,8 +217,8 @@ def Shepa_Train_CNN():
         model = Sequential()
         # change window size to capture the 100 Mhz difference in Backlobe (shadowing effect, we have integer frequencies amplified)
         # window size default is 10, on 256 floats 
-        # model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
-        model.add(Conv2D(20, (4, trial.parameters['window_size1']), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
+        # model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1)) # trial.parameters['window_size1']
+        model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
         model.add(Conv2D(10, (1, trial.parameters['window_size2']), activation='relu')) # (1,20)
         model.add(Dropout(0.5))
         model.add(Flatten())
@@ -237,7 +237,7 @@ def Shepa_Train_CNN():
     print(best_result)
 
     algorithm = 'RS'
-    save_best_result(best_result, algorithm)
+    saves_best_result(best_result, algorithm)
 
     exit()
     ##############################################
@@ -246,7 +246,7 @@ def Shepa_Train_CNN():
     print(f'Model path: {model_path}')
 
     # Save the history as a pickle file
-    with open(f'{model_path}{timestamp}_RCR_Backlobe_model_2Layer_history.pkl', 'wb') as f:
+    with open(f'{model_path}{timestamp}_RCR_BL_model_2Layer_two_ws_stdy_history.pkl', 'wb') as f:
         pickle.dump(history.history, f)
 
 
@@ -261,7 +261,7 @@ def Shepa_Train_CNN():
     plt.ylabel('Loss')
     plt.legend()
     plt.title(f'Model 1: Simulation File Used {simulation_multiplier} Times')
-    plt.savefig(f'{loss_plot_path}{if_sim}_loss_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
+    plt.savefig(f'{loss_plot_path}{if_sim}_loss_plot_{timestamp}_RCR_BL_model_2Layer_two_ws_stdy.png')
     plt.clf()
 
     # Plot the training and validation accuracy
@@ -272,7 +272,7 @@ def Shepa_Train_CNN():
     plt.ylabel('Accuracy')
     plt.legend()
     plt.title(f'Model 1: Simulation File Used {simulation_multiplier} Times')
-    plt.savefig(f'{accuracy_plot_path}{if_sim}_accuracy_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
+    plt.savefig(f'{accuracy_plot_path}{if_sim}_accuracy_plot_{timestamp}_RCR_BL_model_2Layer_two_ws_stdy.png')
     plt.clf()
 
     model.summary()
@@ -309,11 +309,11 @@ def Keras_Study_CNN():
     return
 
 def Train_CNN():
-    # first define fixed hyperparameters
+    # first define training hyperparameters
     fixed_config = {
         "conv1_filters": 20,
-        "conv2_filters": 10,
-        "kernel_width_1": 10,
+        "conv2_filters": 1,
+        "kernel_width_1": 5, #(1,10) (1,5) (10,10)
         "kernel_width_2": 10,
         "dropout_rate": 0.5,
         "learning_rate": 1e-3,
@@ -323,7 +323,7 @@ def Train_CNN():
     x, y = prep_training_data()
     hypermodel = HyperModel(x, y, fixed_config=fixed_config)
     model = hypermodel.build(hp=None)
-    history = model.fit(x, y, validation_split=0.2, epochs=100, batch_size=32)
+    history = model.fit(x, y, validation_split=0.2, epochs=100, batch_size=32, callbacks=[keras.callbacks.EarlyStopping(monitor='val_loss', patience=2)])
     print(f'Model path: {model_path}')
     with open(f'{model_path}{timestamp}_RCR_Backlobe_model_2Layer_history.pkl', 'wb') as f:
         pickle.dump(history.history, f)
@@ -355,7 +355,8 @@ def Train_CNN():
     val_loss, val_acc = model.evaluate(x[-int(0.2 * len(x)):], y[-int(0.2 * len(y)):], verbose=0)
     print(f'Validation Loss: {val_loss}')
     print(f'Validation Accuracy: {val_acc}')
-    return
+    
+    return model
 
 
 # Set parameters 
@@ -411,8 +412,10 @@ if __name__ == "__main__":
     # take a random selection because events are ordered based off CR simulated, so avoids overrepresenting particular Cosmic Rays
     RCR_training_indices = np.random.choice(rcr.shape[0], size=TrainCut, replace=False)
     BL_training_indices = np.random.choice(Backlobe.shape[0], size=TrainCut, replace=False)
-    training_RCR = rcr[RCR_training_indices, :]
-    training_Backlobe = Backlobe[BL_training_indices, :]
+
+    training_RCR = rcr[:5000, :] # training_RCR = rcr[RCR_training_indices, :]
+    training_Backlobe = Backlobe[:5000, :] # training_Backlobe = Backlobe[BL_training_indices, :]
+
     # I also want to save the indices of non_trained_events, to use them for our test later
     RCR_non_training_indices = np.setdiff1d(np.arange(rcr.shape[0]), RCR_training_indices)
     BL_non_training_indices = np.setdiff1d(np.arange(Backlobe.shape[0]), BL_training_indices)
@@ -428,26 +431,14 @@ if __name__ == "__main__":
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     # input the path and file you'd like to save the model as (in h5 format)
     if if_sim == 'sim_sim' or if_sim == 'sim_data':
-        model.save(f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
-        sim_model_path = f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5'
+        model.save(f'{model_path}{if_sim}_{timestamp}_RCR_BL_model_2Layer_two_ws_stdy.h5')
+        sim_model_path = f'{model_path}{if_sim}_{timestamp}_RCR_BL_model_2Layer_two_ws_stdy.h5'
         print(f'model saved at {sim_model_path}')
     elif if_sim == 'data_sim' or if_sim == 'data_data':
-        model.save(f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
-        data_model_path = f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5'
+        model.save(f'{model_path}{if_sim}_{timestamp}_RCR_BL_model_2Layer_two_ws_stdy.h5')
+        data_model_path = f'{model_path}{if_sim}_{timestamp}_RCR_BL_model_2Layer_two_ws_stdy.h5'
         print(f'model saved at {data_model_path}')
 
     print('------> Training is Done!')

@@ -36,7 +36,7 @@ from NuRadioReco.utilities import units
 
 
 algorithm = 'RS'
-best_result = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}best_windowsize.npy')
+best_result = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.npy')
 print(best_result)
 from collections import Counter
 count = Counter(best_result)
@@ -50,7 +50,7 @@ plt.ylabel('count')
 plt.text(10, 10, f'total # of studies:{len(best_result)}')
 plt.text(most_common_element, most_common_count, f'Best: {most_common_element}', ha='center', va='bottom', fontsize=10, color='red')
 print(f'saving fig for {algorithm}')
-plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}best_windowsize.png')
+plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.png')
 
 # for id in station_id:
 #         snr, chi, trace, unix = load_data('All_data', amp_type=amp_type, station_id=id)

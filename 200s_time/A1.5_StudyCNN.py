@@ -216,6 +216,7 @@ def Sherpa_Train_CNN():
 
     for trial in study:
         model = Sequential()
+        #
         # change window size to capture the 100 Mhz difference in Backlobe (shadowing effect, we have integer frequencies amplified)
         # window size default is 10, on 256 floats 
         # model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1)) # trial.parameters['window_size1']

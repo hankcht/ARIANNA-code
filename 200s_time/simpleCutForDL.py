@@ -85,7 +85,7 @@ def main():
     os.makedirs(base_output_folder, exist_ok=True)
 
     # --- Parameters to Load and Save ---
-    params_to_process = ['Traces'] # , 'SNR', 'Chi2016', 'ChiRCR', 'Times'
+    params_to_process = ['Traces', 'SNR', 'Chi2016', 'ChiRCR', 'Times'] # 
     loaded_data_raw = {}
     partition_number = 0
 

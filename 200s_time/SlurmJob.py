@@ -3,6 +3,7 @@ import subprocess
 
 def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3/ARIANNA/DeepLearning/'):
     cmd = f'{commandtorun}'
+    print(f'running {cmd}')
 
     #now adding settings for slurm scheduler
     header = "#!/bin/bash\n"
@@ -56,8 +57,8 @@ stations_to_run_on_pt2 = [14,17,19,30,15,18]
 '''always remember to first input a new model in A0'''
 
 # Can Train if needed
-cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A1.5_StudyCNN.py data_data'
-    # 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A1_TrainAndRunCNN.py data_data'
+cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL.py'
+    # 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A1.5_StudyCNN.py data_data'
 RunMultipleJobs(cmd , jobName=f'genericBatchJob')
 
 # Part One: sim and data network output analysis

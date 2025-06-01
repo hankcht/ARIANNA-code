@@ -5,7 +5,7 @@ import argparse
 import datetime
 from icecream import ic
 
-def load_parameter_data(base_folder, date_str, station_id, param_name):
+def load_parameter_data(base_folder, date_str, station_id, param_name, partition_number):
     """
     Loads and concatenates parameter data for a given station, date, and parameter name.
     Handles potential .squeeze() issues if data is scalar or nearly scalar after loading parts.
@@ -18,8 +18,13 @@ def load_parameter_data(base_folder, date_str, station_id, param_name):
         return None
 
     try:
-        print(len(files))
-        data_list = [np.load(f) for f in files]
+        if partition_number == 0:
+            data_list = [np.load(f) for i, f in enumerate(files) if i <= 30]
+        elif partition_number == 1:
+            data_list = [np.load(f) for i, f in enumerate(files) if 30 <= i <= 60]
+        elif partition_number == 2:
+            data_list = [np.load(f) for i, f in enumerate(files) if 60 <= i]
+        
         # Handle cases where loaded arrays might be 0-dimensional after squeeze in saving
         # or if only one file with one event is loaded.
         
@@ -82,152 +87,16 @@ def main():
     # --- Parameters to Load and Save ---
     params_to_process = ['Traces'] # , 'SNR', 'Chi2016', 'ChiRCR', 'Times'
     loaded_data_raw = {}
+    partition_number = 0
 
-    ic("Processing data in chunks...")
-    chunk_size = 1000 # Adjust this based on your memory and file sizes
-    
-    # Initialize lists to store filtered data across all chunks
-    all_filtered_traces = []
-    all_filtered_snr = []
-    all_filtered_chi2016 = []
-    all_filtered_chiRCR = []
-    all_filtered_times = []
-
-    # Get all files for a specific parameter (e.g., Chi2016) to determine iteration
-    # This assumes all parameter files are consistently ordered and correspond
-    all_chi_files = sorted(glob.glob(os.path.join(base_input_folder, f'{date_str}_Station{station_id}_Chi2016*')))
-    if not all_chi_files:
-        ic("No Chi2016 files found. Exiting.")
-        return
-
-    num_files = len(all_chi_files)
-    
-    # Iterate through files in chunks
-    for i in range(0, num_files, chunk_size):
-        ic(f"Processing chunk {i // chunk_size + 1}/{(num_files + chunk_size - 1) // chunk_size}")
-        chunk_files = all_chi_files[i:i + chunk_size]
-        
-        # Load data for the current chunk for all parameters
-        # You'll need to adapt load_parameter_data to load specific files, or iterate within it
-        current_chunk_data = {}
-        try:
-            for param in params_to_process:
-                # This part needs careful thought: how do your files align?
-                # If each param's files are independent but correspond by index/event,
-                # you'd load the corresponding chunk of files for each param.
-                # A better approach might be to load all relevant parameters for one "event" or small group of events at a time.
-                
-                # For demonstration, let's assume we load all files for a parameter,
-                # but only process a specific range of events.
-                # A more robust solution involves passing the list of files to load_parameter_data
-                
-                # For a true chunking strategy, you might need to rewrite load_parameter_data
-                # to accept a list of specific files to load.
-                
-                # For now, let's simplify and assume all parameters have the same number of files
-                # and you can map them directly by index.
-                
-                param_files_in_chunk = sorted(glob.glob(os.path.join(base_input_folder, f'{date_str}_Station{station_id}_{param}*')))[i:i+chunk_size]
-                if not param_files_in_chunk:
-                    ic(f"Warning: No files for {param} in this chunk. Skipping.")
-                    continue
-                
-                # Temporarily load data for the chunk
-                temp_data_list = [np.load(f) for f in param_files_in_chunk]
-                
-                # Concatenate the temporary list for the current chunk
-                if param == "Traces":
-                    # Special handling for traces if they are truly (N, 4, 256) after loading
-                    processed_temp_list = []
-                    for arr_part in temp_data_list:
-                        squeezed_part = arr_part.squeeze()
-                        if squeezed_part.ndim == 2 and arr_part.shape[0]==1:
-                            processed_temp_list.append(arr_part)
-                        elif squeezed_part.ndim == 3 and arr_part.shape[0]==1 :
-                            processed_temp_list.append(arr_part)
-                        else:
-                            processed_temp_list.append(squeezed_part if param != "Traces" else arr_part) # this logic might need refinement based on how files are saved
-                    
-                    if all(p.ndim >=3 and p.shape[1:3] == (4,256) for p in processed_temp_list):
-                        chunk_concatenated_data = np.concatenate(processed_temp_list, axis=0)
-                    elif all(p.ndim == 2 and p.shape == (4,256) for p in processed_temp_list):
-                        chunk_concatenated_data = np.stack(processed_temp_list, axis=0)
-                    else:
-                        ic(f"Warning: Traces for {param} in chunk {i} have inconsistent shapes. Attempting simple concatenation.")
-                        chunk_concatenated_data = np.concatenate([p.reshape(-1, 4, 256) if p.size % (4*256) == 0 and p.size > 0 else np.array([]).reshape(0,4,256) for p in processed_temp_list if p.size > 0], axis=0)
-                else:
-                    chunk_concatenated_data = np.concatenate([p.squeeze() for p in temp_data_list], axis=0).squeeze() # Ensure 1D after concat
-
-                current_chunk_data[param] = chunk_concatenated_data
-                ic(f"  Loaded {param} for chunk: shape {chunk_concatenated_data.shape}")
-
-            # --- Filtering Logic for the current chunk ---
-            if 'Chi2016' not in current_chunk_data:
-                ic("Chi2016 not found in chunk data, skipping filtering for this chunk.")
-                continue
-
-            chi2016_chunk = current_chunk_data['Chi2016']
-            if chi2016_chunk.ndim > 1:
-                chi2016_chunk = chi2016_chunk.flatten() # Ensure 1D for comparison
-            
-            # Example filtering (adjust as per your actual filtering criteria)
-            # You haven't specified your filtering criteria, so this is a placeholder.
-            # Let's assume you want to filter based on some threshold.
-            threshold_mask = (chi2016_chunk > 0.5) & (chi2016_chunk < 10) # Example threshold
-
-            if not np.any(threshold_mask):
-                ic("No data passes the threshold in this chunk.")
-                continue
-
-            # Apply filter to all parameters in the current chunk
-            for param in params_to_process:
-                if param in current_chunk_data:
-                    # Ensure the mask is applicable to the data's first dimension
-                    if current_chunk_data[param].shape[0] == len(threshold_mask):
-                        filtered_data = current_chunk_data[param][threshold_mask]
-                        # Append to the overall list
-                        if param == 'Traces':
-                            all_filtered_traces.append(filtered_data)
-                        elif param == 'SNR':
-                            all_filtered_snr.append(filtered_data)
-                        elif param == 'Chi2016':
-                            all_filtered_chi2016.append(filtered_data)
-                        elif param == 'ChiRCR':
-                            all_filtered_chiRCR.append(filtered_data)
-                        elif param == 'Times':
-                            all_filtered_times.append(filtered_data)
-                    else:
-                        ic(f"Shape mismatch for {param} in chunk. Cannot apply filter.")
-            
-            # Explicitly delete chunk data to free memory
-            del current_chunk_data
-            
-        except Exception as e:
-            ic(f"Error processing chunk starting at index {i}: {e}")
-            continue
-
-    ic("Concatenating all filtered data...")
-    # Concatenate all collected chunks at the very end
-    final_data = {}
-    if all_filtered_traces:
-        final_data['Traces'] = np.concatenate(all_filtered_traces, axis=0)
-    if all_filtered_snr:
-        final_data['SNR'] = np.concatenate(all_filtered_snr, axis=0)
-    if all_filtered_chi2016:
-        final_data['Chi2016'] = np.concatenate(all_filtered_chi2016, axis=0)
-    if all_filtered_chiRCR:
-        final_data['ChiRCR'] = np.concatenate(all_filtered_chiRCR, axis=0)
-    if all_filtered_times:
-        final_data['Times'] = np.concatenate(all_filtered_times, axis=0)
-
-    # --- Save Filtered Data ---
-    ic("Saving filtered data...")
-    for param, data in final_data.items():
-        output_filepath = os.path.join(base_output_folder, f'{date_str}_Station{station_id}_{param}_filtered.npy')
-        np.save(output_filepath, data)
-        ic(f"  Saved filtered {param} to {output_filepath} with shape {data.shape}")
-
-    ic("Processing complete.")
+    ic("Loading data...") 
+    for param in params_to_process:
+        data = load_parameter_data(base_input_folder, date_str, station_id, param, partition_number)
+        if data is None or data.size == 0:
+            ic(f"Failed to load or data is empty for {param}. Exiting.")
+            return
+        loaded_data_raw[param] = data
+        ic(f"  Loaded {param}: shape {data.shape}")
 
     # --- Basic Consistency Check (Number of Events) ---
     num_events_initial = -1
@@ -296,7 +165,7 @@ def main():
             # Construct filename
             # Replacing '.' in threshold with 'p' for cleaner filenames (e.g., 0.7 -> 0p70)
             thresh_str = f"{chi_thresh:.2f}".replace('.', 'p') 
-            output_filename = f"St{station_id}_{date_str}_Chi2016_ge{thresh_str}_{num_passed_events}evts_SelectedData.npy"
+            output_filename = f"St{station_id}_{date_str}_Chi2016_ge{thresh_str}_{num_passed_events}evts_SelectedData_part{partition_number}.npy"
             output_filepath = os.path.join(base_output_folder, output_filename)
             
             try:

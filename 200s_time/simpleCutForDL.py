@@ -11,12 +11,14 @@ def load_parameter_data(base_folder, date_str, station_id, param_name):
     Handles potential .squeeze() issues if data is scalar or nearly scalar after loading parts.
     """
     file_pattern = os.path.join(base_folder, f'{date_str}_Station{station_id}_{param_name}*')
+    print(len(file_pattern))
     files = sorted(glob.glob(file_pattern))
     if not files:
         ic(f"Warning: No files found for Station {station_id}, {param_name}, Date {date_str} with pattern {file_pattern}")
         return None
 
     try:
+        print(len(files))
         data_list = [np.load(f) for f in files]
         # Handle cases where loaded arrays might be 0-dimensional after squeeze in saving
         # or if only one file with one event is loaded.
@@ -73,12 +75,12 @@ def main():
 
     # --- Configuration for Paths ---
     base_input_folder = os.path.join('/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/', date_str)
-    base_output_folder = os.path.join('highChiForTraining', date_str, f"Station{station_id}")   # Modify as needed
+    base_output_folder = os.path.join('/pub/tangch3/ARIANNA/DeepLearning/new_chi_data', date_str, f"Station{station_id}")   # Modify as needed
     
     os.makedirs(base_output_folder, exist_ok=True)
 
     # --- Parameters to Load and Save ---
-    params_to_process = ['Traces', 'SNR', 'Chi2016', 'ChiRCR', 'Times']
+    params_to_process = ['Traces'] # , 'SNR', 'Chi2016', 'ChiRCR', 'Times'
     loaded_data_raw = {}
 
     ic("Loading data...")

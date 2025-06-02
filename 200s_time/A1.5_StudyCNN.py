@@ -566,7 +566,7 @@ if __name__ == "__main__":
             
             print(f'------> Saved pot_RCR trace for event {original_event_index} to {plot_filename}')
 
-    elif RCR_like_BL > 50:
+    elif RCR_like_BL > threshold:
         print(f'Skipping plotting individual traces: {RCR_like_BL} events found, which is more than the limit of{threshold}.')
     else:
         print('No Backlobe events were potentially RCR. No individual trace plots needed.')

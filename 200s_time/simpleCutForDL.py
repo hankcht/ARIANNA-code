@@ -186,7 +186,7 @@ if __name__ == '__main__':
     station_id = 14
     part_number = [0, 1, 2]
     load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
-    loaded_data = np.load(f'{load_path}Station{station_id}/St14_4.4.25_Chi2016_ge0p60_836evts_SelectedData_part0.npy', allow_pickle=True)
+    loaded_data = np.load(f'{load_path}Station{station_id}/St14_4.4.25_Chi2016_ge0p60_836evts_SelectedData_part0.npy', allow_pickle=True).item()
     traces_data = loaded_data['Traces']
     snr_data = loaded_data['SNR']
     chi2016_data = loaded_data['Chi2016']

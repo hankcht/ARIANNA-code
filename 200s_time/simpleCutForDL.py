@@ -183,12 +183,12 @@ def main():
 if __name__ == '__main__':
     # main()
 
-    station_id = 30
+    station_id = 13
     load_path = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}/'
 
     import re
     file_names = [
-"St30_4.4.25_Chi2016_ge0p60_3113evts_SelectedData_part0.npy", "St30_4.4.25_Chi2016_ge0p65_41evts_SelectedData_part1.npy", "St30_4.4.25_Chi2016_ge0p60_316evts_SelectedData_part1.npy", "St30_4.4.25_Chi2016_ge0p70_10evts_SelectedData_part1.npy", "St30_4.4.25_Chi2016_ge0p60_72188evts_SelectedData_part2.npy", "St30_4.4.25_Chi2016_ge0p70_44evts_SelectedData_part0.npy", "St30_4.4.25_Chi2016_ge0p65_163evts_SelectedData_part0.npy", "St30_4.4.25_Chi2016_ge0p70_7749evts_SelectedData_part2.npy", "St30_4.4.25_Chi2016_ge0p65_25193evts_SelectedData_part2.npy"
+"St13_4.4.25_Chi2016_ge0p60_18evts_SelectedData_part0.npy", "St13_4.4.25_Chi2016_ge0p65_7evts_SelectedData_part0.npy", "St13_4.4.25_Chi2016_ge0p60_42826evts_SelectedData_part1.npy", "St13_4.4.25_Chi2016_ge0p70_1119evts_SelectedData_part1.npy", "St13_4.4.25_Chi2016_ge0p65_14058evts_SelectedData_part1.npy", "St13_4.4.25_Chi2016_ge0p70_4evts_SelectedData_part0.npy"
     ]
 
     # Define the correct load path based on your clarification.

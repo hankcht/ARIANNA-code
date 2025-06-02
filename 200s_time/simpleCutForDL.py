@@ -193,19 +193,23 @@ if __name__ == '__main__':
     chiRCR_data = []
     times_data = []
 
-    # Define a more general pattern to find all relevant partition files
-    search_pattern = os.path.join(load_path, f'Station{station_id}', f'St{station_id}_{date_str}_Chi2016_ge0p60_*evts_SelectedData_part*.npy')
+    target_chi_threshold = '0p60'
 
-    # Find all files matching the pattern
+    target_directory = os.path.join(load_path, date_str, f'Station{station_id}')
+    print(f"Attempting to find files in directory: {target_directory}")
+
+    # Refined search pattern to explicitly target the desired threshold
+    search_pattern = os.path.join(target_directory, f'St{station_id}_{date_str}_Chi2016_ge{target_chi_threshold}_*evts_SelectedData_part*.npy')
+
+    print(f"Using search pattern: {search_pattern}")
+
     all_partition_files = glob.glob(search_pattern)
 
-    # Sort the files by partition number to ensure correct concatenation order
-    all_partition_files.sort(key=lambda f: int(f.split('_part')[-1].replace('.npy', '')))
+    if all_partition_files:
+        # Sort the files by partition number
+        all_partition_files.sort(key=lambda f: int(f.split('_part')[-1].replace('.npy', '')))
+        print(f"Found {len(all_partition_files)} partition files for Chi2016_ge{target_chi_threshold}.")
 
-    if not all_partition_files:
-        print(f"No partition files found for Station {station_id}, Date {date_str}.")
-    else:
-        print(f"Found {len(all_partition_files)} partition files.")
         for i, file_path in enumerate(all_partition_files):
             try:
                 loaded_dict = np.load(file_path, allow_pickle=True)
@@ -216,13 +220,13 @@ if __name__ == '__main__':
                 chiRCR_data.append(loaded_dict['ChiRCR'])
                 times_data.append(loaded_dict['Times'])
 
-                print(f"Successfully loaded partition {i} from {os.path.basename(file_path)}")
+                print(f"Successfully loaded file: {os.path.basename(file_path)}")
 
             except Exception as e:
                 print(f"An error occurred while loading {os.path.basename(file_path)}: {e}")
-                # Decide whether to break or continue with other files
-                # It's usually safer to break if a critical file is missing or corrupted
-                break # Or 'continue' if you want to try loading other partitions
+                # If one file fails, decide if you want to skip it or stop entirely.
+                # For concatenation, it's often better to stop if a partition is truly missing.
+                break
 
         # --- IMPORTANT: Concatenate the lists *after* the loop ---
         if traces_data: # Check if any data was actually loaded before concatenating

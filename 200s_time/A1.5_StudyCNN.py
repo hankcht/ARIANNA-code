@@ -559,7 +559,7 @@ if __name__ == "__main__":
             
             plot_title = f'pot_RCR Trace (Event {original_event_index})\nTime: {dt_object.strftime("%Y-%m-%d %H:%M:%S")}'
 
-            pT(traces=[trace], title=plot_title, saveLoc=plot_filename)
+            pT(traces=trace, title=plot_title, saveLoc=plot_filename)
             
             print(f'------> Saved pot_RCR trace for event {original_event_index} to {plot_filename}')
 

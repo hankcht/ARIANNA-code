@@ -183,68 +183,103 @@ def main():
 if __name__ == '__main__':
     # main()
 
+    import re
     station_id = 14
-    date_str = '4.4.25' 
-    load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/' 
+    part_number = [0, 1, 2]
+    file_names = [
+        "St14_4.4.25_Chi2016_ge0p60_188evts_SelectedData_part1.npy",
+        "St14_4.4.25_Chi2016_ge0p60_836evts_SelectedData_part0.npy",
+        "St14_4.4.25_Chi2016_ge0p60_976evts_SelectedData_part2.npy",
+        "St14_4.4.25_Chi2016_ge0p65_362evts_SelectedData_part2.npy",
+        "St14_4.4.25_Chi2016_ge0p65_518evts_SelectedData_part0.npy",
+        "St14_4.4.25_Chi2016_ge0p65_96evts_SelectedData_part1.npy",
+        "St14_4.4.25_Chi2016_ge0p70_229evts_SelectedData_part0.npy",
+        "St14_4.4.25_Chi2016_ge0p70_76evts_SelectedData_part2.npy",
+        "St14_4.4.25_Chi2016_ge0p70_9evts_SelectedData_part1.npy"
+    ]
 
-    traces_data = []
-    snr_data = []
-    chi2016_data = []
-    chiRCR_data = []
-    times_data = []
+    # Define the correct load path based on your clarification.
+    load_path = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}/'
 
-    target_chi_threshold = '0p60'
+    # Create a dictionary to store files grouped by their ge0p number.
+    grouped_files = {}
 
-    target_directory = os.path.join(load_path, date_str, f'Station{station_id}')
-    print(f"Attempting to find files in directory: {target_directory}")
+    # Iterate over the filenames and extract the ge0p value for each file.
+    for filename in file_names:
+        # Use regular expression to extract the ge0p number.
+        match = re.search(r'ge0p(\d+)', filename)
+        if match:
+            ge0p = 'ge0p' + match.group(1)
+            if ge0p not in grouped_files:
+                grouped_files[ge0p] = []
+            grouped_files[ge0p].append(filename)
 
-    # Refined search pattern to explicitly target the desired threshold
-    search_pattern = os.path.join(target_directory, f'St{station_id}_{date_str}_Chi2016_ge{target_chi_threshold}_*evts_SelectedData_part*.npy')
+    print("Processing and saving data...")
 
-    print(f"Using search pattern: {search_pattern}")
+    # Iterate over the grouped files and process each ge0p number separately.
+    for ge0p, files in grouped_files.items():
+        # Initialize lists to store data for each parameter.
+        all_traces = []
+        all_snr = []
+        all_chi2016 = []
+        all_chiRCR = []
+        all_times = []
 
-    all_partition_files = glob.glob(search_pattern)
+        # Sort files by part number to ensure consistent concatenation if order matters
+        # (though concatenate should handle it based on event content).
+        files.sort(key=lambda x: int(re.search(r'part(\d+)', x).group(1)))
 
-    if all_partition_files:
-        # Sort the files by partition number
-        all_partition_files.sort(key=lambda f: int(f.split('_part')[-1].replace('.npy', '')))
-        print(f"Found {len(all_partition_files)} partition files for Chi2016_ge{target_chi_threshold}.")
+        # Iterate over the files for the current ge0p number.
+        for filename in files:
+            # Construct the full file path.
+            full_path = os.path.join(load_path, filename)
 
-        for i, file_path in enumerate(all_partition_files):
             try:
-                loaded_dict = np.load(file_path, allow_pickle=True)
+                # Load the data from the file.
+                loaded_data = np.load(full_path, allow_pickle=True).item()
 
-                traces_data.append(loaded_dict['Traces'])
-                snr_data.append(loaded_dict['SNR'])
-                chi2016_data.append(loaded_dict['Chi2016'])
-                chiRCR_data.append(loaded_dict['ChiRCR'])
-                times_data.append(loaded_dict['Times'])
+                # Extract the data for each parameter and append to the lists.
+                all_traces.append(loaded_data['Traces'])
+                all_snr.append(loaded_data['SNR'])
+                all_chi2016.append(loaded_data['Chi2016'])
+                all_chiRCR.append(loaded_data['ChiRCR'])
+                all_times.append(loaded_data['Times'])
+            except FileNotFoundError:
+                print(f"Error: File not found at {full_path}. Skipping this file.")
+                continue
+            except KeyError as e:
+                print(f"Error: Missing key '{e}' in {filename}. Skipping this file.")
+                continue
 
-                print(f"Successfully loaded file: {os.path.basename(file_path)}")
+        # Only attempt concatenation if data was loaded successfully.
+        if all_traces: # Check if the list is not empty
+            # Concatenate the lists of arrays into single NumPy arrays.
+            traces_combined = np.concatenate(all_traces, axis=0)
+            snr_combined = np.concatenate(all_snr, axis=0)
+            chi2016_combined = np.concatenate(all_chi2016, axis=0)
+            chiRCR_combined = np.concatenate(all_chiRCR, axis=0)
+            times_combined = np.concatenate(all_times, axis=0)
 
-            except Exception as e:
-                print(f"An error occurred while loading {os.path.basename(file_path)}: {e}")
-                # If one file fails, decide if you want to skip it or stop entirely.
-                # For concatenation, it's often better to stop if a partition is truly missing.
-                break
+            # Save the combined data for each parameter.
+            np.save(f'Traces_{ge0p}.npy', traces_combined)
+            np.save(f'SNR_{ge0p}.npy', snr_combined)
+            np.save(f'Chi2016_{ge0p}.npy', chi2016_combined)
+            np.save(f'ChiRCR_{ge0p}.npy', chiRCR_combined)
+            np.save(f'Times_{ge0p}.npy', times_combined)
 
-        # --- IMPORTANT: Concatenate the lists *after* the loop ---
-        if traces_data: # Check if any data was actually loaded before concatenating
-            traces_data = np.concatenate(traces_data, axis=0)
-            snr_data = np.concatenate(snr_data, axis=0)
-            chi2016_data = np.concatenate(chi2016_data, axis=0)
-            chiRCR_data = np.concatenate(chiRCR_data, axis=0)
-            times_data = np.concatenate(times_data, axis=0)
+            print(f"\nSuccessfully saved data for {ge0p}:")
+            print(f"  Traces_{ge0p}.npy with shape: {traces_combined.shape}")
+            print(f"  SNR_{ge0p}.npy with shape: {snr_combined.shape}")
+            print(f"  Chi2016_{ge0p}.npy with shape: {chi2016_combined.shape}")
+            print(f"  ChiRCR_{ge0p}.npy with shape: {chiRCR_combined.shape}")
+            print(f"  Times_{ge0p}.npy with shape: {times_combined.shape}")
+        else:
+            print(f"\nNo data loaded for {ge0p}. Skipping saving.")
 
-            # --- NOW you can print the shapes of the concatenated NumPy arrays ---
-            print(f"\nConcatenated Data Shapes:")
-            print(f"Traces shape: {traces_data.shape}")
-            print(f"SNR shape: {snr_data.shape}")
-            print(f"Chi2016 shape: {chi2016_data.shape}")
-            print(f"ChiRCR shape: {chiRCR_data.shape}")
-            print(f"Times shape: {times_data.shape}")
 
-    print(f"First 5 SNR values: {snr_data[:5]}")
+    # You can now work with each NumPy array
+    # For example, print the first 5 SNR values:
+    print(f"First 5 SNR values: {snr_combined[:5]}")
 
 
 

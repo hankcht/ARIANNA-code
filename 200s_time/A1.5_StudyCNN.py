@@ -315,7 +315,7 @@ def Train_CNN():
     fixed_config = {
         "conv1_filters": 20,
         "conv2_filters": 10,
-        "kernel_width_1": 10, #(2,10) (1,5) (10,10)
+        "kernel_width_1": 2, #(2,10) (1,5) (10,10)
         "kernel_width_2": 10,
         "dropout_rate": 0.5,
         "learning_rate": 1e-3,

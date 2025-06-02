@@ -314,7 +314,7 @@ def Train_CNN():
     # first define training hyperparameters
     fixed_config = {
         "conv1_filters": 20,
-        "conv2_filters": 1,
+        "conv2_filters": 10,
         "kernel_width_1": 5, #(1,10) (1,5) (10,10)
         "kernel_width_2": 10,
         "dropout_rate": 0.5,

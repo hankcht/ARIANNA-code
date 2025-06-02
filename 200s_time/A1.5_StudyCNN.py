@@ -544,18 +544,20 @@ if __name__ == "__main__":
 
         traces_to_plot = Backlobe[RCR_like_indices]
         unix_times_to_plot = data_Backlobe_UNIX[RCR_like_indices]
+        RCR_like_network_output = prob_Backlobe[RCR_like_indices] 
 
         save_dir = f'/pub/tangch3/ARIANNA/DeepLearning/plots/RCR_like_BL/{amp}_time/RCR_like_Traces/'
         os.makedirs(save_dir, exist_ok=True) 
 
         for i, trace in enumerate(traces_to_plot):
             unix_timestamp = unix_times_to_plot[i]
+            RCR_like_no = RCR_like_network_output[i]
             
             dt_object = datetime.fromtimestamp(unix_timestamp)
             formatted_time_for_filename = dt_object.strftime('%Y%m%d_%H%M%S')
 
             original_event_index = RCR_like_indices[i]
-            plot_filename = os.path.join(save_dir, f'{if_sim}_{timestamp}_pot_RCR_event_{original_event_index}_{formatted_time_for_filename}.png')
+            plot_filename = os.path.join(save_dir, f'{if_sim}_{timestamp}_pot_RCR_event_{original_event_index}_{formatted_time_for_filename}_netout{RCR_like_no}.png')
             
             plot_title = f'pot_RCR Trace (Event {original_event_index})\nTime: {dt_object.strftime("%Y-%m-%d %H:%M:%S")}'
 

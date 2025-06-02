@@ -181,4 +181,26 @@ def main():
     ic("\nProcessing complete for Station {station_id}, Date {date_str}.")
 
 if __name__ == '__main__':
-    main()
+    # main()
+
+    station_id = 14
+    part_number = [0, 1, 2]
+    loaded_data = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}/St14_4.4.25_Chi2016_ge0p60_836evts_SelectedData_part0.npy')
+    traces_data = loaded_data['Traces']
+    snr_data = loaded_data['SNR']
+    chi2016_data = loaded_data['Chi2016']
+    chiRCR_data = loaded_data['ChiRCR']
+    times_data = loaded_data['Times']
+
+    print(f"Loaded 'Traces' shape: {traces_data.shape}")
+    print(f"Loaded 'SNR' shape: {snr_data.shape}")
+    print(f"Loaded 'Chi2016' shape: {chi2016_data.shape}")
+    print(f"Loaded 'ChiRCR' shape: {chiRCR_data.shape}")
+    print(f"Loaded 'Times' shape: {times_data.shape}")
+
+    # You can now work with each NumPy array
+    # For example, print the first 5 SNR values:
+    print(f"First 5 SNR values: {snr_data[:5]}")
+
+
+

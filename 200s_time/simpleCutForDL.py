@@ -262,11 +262,11 @@ if __name__ == '__main__':
             times_combined = np.concatenate(all_times, axis=0)
 
             # Save the combined data for each parameter.
-            np.save(f'Traces_{ge0p}.npy', traces_combined)
-            np.save(f'SNR_{ge0p}.npy', snr_combined)
-            np.save(f'Chi2016_{ge0p}.npy', chi2016_combined)
-            np.save(f'ChiRCR_{ge0p}.npy', chiRCR_combined)
-            np.save(f'Times_{ge0p}.npy', times_combined)
+            np.save(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Stn{station_id}_Traces_{ge0p}.npy', traces_combined)
+            np.save(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Stn{station_id}_SNR_{ge0p}.npy', snr_combined)
+            np.save(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Stn{station_id}_Chi2016_{ge0p}.npy', chi2016_combined)
+            np.save(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Stn{station_id}_ChiRCR_{ge0p}.npy', chiRCR_combined)
+            np.save(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Stn{station_id}_Times_{ge0p}.npy', times_combined)
 
             print(f"\nSuccessfully saved data for {ge0p}:")
             print(f"  Traces_{ge0p}.npy with shape: {traces_combined.shape}")

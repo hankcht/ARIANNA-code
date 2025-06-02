@@ -184,14 +184,61 @@ if __name__ == '__main__':
     # main()
 
     station_id = 14
-    part_number = [0, 1, 2]
-    load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
-    loaded_data = np.load(f'{load_path}Station{station_id}/St14_4.4.25_Chi2016_ge0p60_836evts_SelectedData_part0.npy', allow_pickle=True).item()
-    traces_data = loaded_data['Traces']
-    snr_data = loaded_data['SNR']
-    chi2016_data = loaded_data['Chi2016']
-    chiRCR_data = loaded_data['ChiRCR']
-    times_data = loaded_data['Times']
+    date_str = '4.4.25' 
+    load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/' 
+
+    traces_data = []
+    snr_data = []
+    chi2016_data = []
+    chiRCR_data = []
+    times_data = []
+
+    # Define a more general pattern to find all relevant partition files
+    # The '*' will match the number of events (e.g., '836evts')
+    # and also match the partition number if you need to load all of them.
+    # We will sort them by partition number.
+    search_pattern = os.path.join(load_path, f'Station{station_id}', f'St{station_id}_{date_str}_Chi2016_ge0p60_*evts_SelectedData_part*.npy')
+
+    # Find all files matching the pattern
+    all_partition_files = glob.glob(search_pattern)
+
+    # Sort the files by partition number to ensure correct concatenation order
+    # This assumes the 'partX' is at the end of the filename and can be parsed.
+    # A more sophisticated sort might be needed if filenames are more complex.
+    all_partition_files.sort(key=lambda f: int(f.split('_part')[-1].replace('.npy', '')))
+
+    if not all_partition_files:
+        print(f"No partition files found for Station {station_id}, Date {date_str}.")
+    else:
+        print(f"Found {len(all_partition_files)} partition files.")
+        for i, file_path in enumerate(all_partition_files):
+            try:
+                loaded_dict = np.load(file_path, allow_pickle=True) 
+
+                traces_data.append(loaded_dict['Traces'])
+                snr_data.append(loaded_dict['SNR'])
+                chi2016_data.append(loaded_dict['Chi2016'])
+                chiRCR_data.append(loaded_dict['ChiRCR'])
+                times_data.append(loaded_dict['Times'])
+
+                print(f"Successfully loaded partition {i} from {os.path.basename(file_path)}")
+
+            except Exception as e:
+                print(f"An error occurred while loading {os.path.basename(file_path)}: {e}")
+                break # Or continue
+
+        # Concatenate if data was actually loaded
+        if traces_data:
+            traces_data = np.concatenate(traces_data, axis=0)
+            snr_data = np.concatenate(snr_data, axis=0)
+            chi2016_data = np.concatenate(chi2016_data, axis=0)
+            chiRCR_data = np.concatenate(chiRCR_data, axis=0)
+            times_data = np.concatenate(times_data, axis=0)
+
+            print(f"Concatenated Traces shape: {traces_data.shape}")
+            # ... print other shapes
+        else:
+            print("No data could be loaded from the found partitions.")
 
     print(f"Loaded 'Traces' shape: {traces_data.shape}")
     print(f"Loaded 'SNR' shape: {snr_data.shape}")

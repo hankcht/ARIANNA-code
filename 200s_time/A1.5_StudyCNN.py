@@ -24,7 +24,7 @@ import templateCrossCorr as txc
 import matplotlib
 from matplotlib import pyplot as plt
 matplotlib.use('Agg')
-from A0_Utilities import getMaxChi, getMaxSNR, load_sim, load_data
+from A0_Utilities import getMaxChi, getMaxSNR, load_sim, load_data, pT
 
 def saves_best_result(best_result, algorithm=''):
     """
@@ -469,14 +469,14 @@ if __name__ == "__main__":
 
     ##################################
 
-    # Now we can test run our trained model on the non trained events
-    non_trained_RCR = rcr[RCR_non_training_indices,:]
+    # # Now we can test run our trained model on the non trained events
+    # non_trained_RCR = rcr[RCR_non_training_indices,:]
     # We can either run on sim BL or "BL data events"
-    if if_sim == 'sim_sim' or if_sim == 'data_sim':
-        non_trained_Backlobe =  Backlobe[BL_non_training_indices,:] 
-    elif if_sim == 'sim_data' or if_sim == 'data_data':
-        non_trained_Backlobe =  Backlobe[BL_non_training_indices,:]
-        non_trained_Backlobe_UNIX = data_Backlobe_UNIX[BL_non_training_indices] 
+    # if if_sim == 'sim_sim' or if_sim == 'data_sim':
+    #     non_trained_Backlobe =  Backlobe[BL_non_training_indices,:] 
+    # elif if_sim == 'sim_data' or if_sim == 'data_data':
+    #     non_trained_Backlobe =  Backlobe[BL_non_training_indices,:]
+    #     non_trained_Backlobe_UNIX = data_Backlobe_UNIX[BL_non_training_indices] 
 
     # prob_RCR = model.predict(non_trained_RCR) # Network output of RCR
     # prob_Backlobe = model.predict(non_trained_Backlobe) # Network output of Backlobe
@@ -529,4 +529,42 @@ if __name__ == "__main__":
     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/{if_sim}_{timestamp}_histogram.png')
     print(f'------> network output plot for {amp} {if_sim} is done!')
 
+
+    # Here we plot data events that are RCR-like
+    threshold = 25
+    RCR_like_indices = np.where(prob_Backlobe > output_cut_value)[0]
+    print(f'RCR-like events indices {RCR_like_indices}') # use this later to get station
+    RCR_like_BL = len(RCR_like_indices)
+
+    print(f'\nChecking for Backlobe events misidentified as RCR (above {output_cut_value} threshold)...')
+    print(f'Found {RCR_like_BL} such events.')
+
+    if 0 < RCR_like_BL <= threshold:
+        print(f'Plotting {RCR_like_BL} misidentified Backlobe event traces using pT function.')
+
+        traces_to_plot = Backlobe[RCR_like_indices]
+        unix_times_to_plot = data_Backlobe_UNIX[RCR_like_indices]
+
+        save_dir = f'/pub/tangch3/ARIANNA/DeepLearning/plots/RCR_like_BL/{amp}_time/RCR_like_Traces/'
+        os.makedirs(save_dir, exist_ok=True) 
+
+        for i, trace in enumerate(traces_to_plot):
+            unix_timestamp = unix_times_to_plot[i]
+            
+            dt_object = datetime.datetime.fromtimestamp(unix_timestamp)
+            formatted_time_for_filename = dt_object.strftime('%Y%m%d_%H%M%S')
+
+            original_event_index = RCR_like_indices[i]
+            plot_filename = os.path.join(save_dir, f'{if_sim}_{timestamp}_pot_RCR_event_{original_event_index}_{formatted_time_for_filename}.png')
+            
+            plot_title = f'pot_RCR Trace (Event {original_event_index})\nTime: {dt_object.strftime("%Y-%m-%d %H:%M:%S")}'
+
+            pT(traces=[trace], title=plot_title, saveLoc=plot_filename)
+            
+            print(f'------> Saved pot_RCR trace for event {original_event_index} to {plot_filename}')
+
+    elif RCR_like_BL > 50:
+        print(f'Skipping plotting individual traces: {RCR_like_BL} events found, which is more than the limit of{threshold}.')
+    else:
+        print('No Backlobe events were potentially RCR. No individual trace plots needed.')
 

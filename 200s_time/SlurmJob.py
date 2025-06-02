@@ -57,7 +57,7 @@ stations_to_run_on_pt2 = [14,17,19,30,15,18]
 '''always remember to first input a new model in A0'''
 
 # Can Train if needed
-cmd = f'python /home/tangch3/ARIANNA/ARIANNA-code/200s_time/A0.5_LoadNewData.py 14' # simpleCutForDL.py 13 4.4.25
+cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0.5_LoadNewData.py 14' # simpleCutForDL.py 13 4.4.25
     # 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A1.5_StudyCNN.py data_data'
 RunMultipleJobs(cmd , jobName=f'genericBatchJob')
 

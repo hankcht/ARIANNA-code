@@ -552,7 +552,7 @@ if __name__ == "__main__":
         for i, trace in enumerate(traces_to_plot):
             unix_timestamp = unix_times_to_plot[i]
             RCR_like_no = RCR_like_network_output[i].item()
-            RCR_like_no = RCR_like_no.round(decimals=2)
+            RCR_like_no = round(RCR_like_no, 2)
             
             dt_object = datetime.fromtimestamp(unix_timestamp)
             formatted_time_for_filename = dt_object.strftime('%Y%m%d_%H%M%S')

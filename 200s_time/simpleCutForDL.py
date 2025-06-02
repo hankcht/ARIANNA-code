@@ -194,17 +194,12 @@ if __name__ == '__main__':
     times_data = []
 
     # Define a more general pattern to find all relevant partition files
-    # The '*' will match the number of events (e.g., '836evts')
-    # and also match the partition number if you need to load all of them.
-    # We will sort them by partition number.
     search_pattern = os.path.join(load_path, f'Station{station_id}', f'St{station_id}_{date_str}_Chi2016_ge0p60_*evts_SelectedData_part*.npy')
 
     # Find all files matching the pattern
     all_partition_files = glob.glob(search_pattern)
 
     # Sort the files by partition number to ensure correct concatenation order
-    # This assumes the 'partX' is at the end of the filename and can be parsed.
-    # A more sophisticated sort might be needed if filenames are more complex.
     all_partition_files.sort(key=lambda f: int(f.split('_part')[-1].replace('.npy', '')))
 
     if not all_partition_files:
@@ -213,7 +208,7 @@ if __name__ == '__main__':
         print(f"Found {len(all_partition_files)} partition files.")
         for i, file_path in enumerate(all_partition_files):
             try:
-                loaded_dict = np.load(file_path, allow_pickle=True) 
+                loaded_dict = np.load(file_path, allow_pickle=True)
 
                 traces_data.append(loaded_dict['Traces'])
                 snr_data.append(loaded_dict['SNR'])
@@ -225,29 +220,26 @@ if __name__ == '__main__':
 
             except Exception as e:
                 print(f"An error occurred while loading {os.path.basename(file_path)}: {e}")
-                break # Or continue
+                # Decide whether to break or continue with other files
+                # It's usually safer to break if a critical file is missing or corrupted
+                break # Or 'continue' if you want to try loading other partitions
 
-        # Concatenate if data was actually loaded
-        if traces_data:
+        # --- IMPORTANT: Concatenate the lists *after* the loop ---
+        if traces_data: # Check if any data was actually loaded before concatenating
             traces_data = np.concatenate(traces_data, axis=0)
             snr_data = np.concatenate(snr_data, axis=0)
             chi2016_data = np.concatenate(chi2016_data, axis=0)
             chiRCR_data = np.concatenate(chiRCR_data, axis=0)
             times_data = np.concatenate(times_data, axis=0)
 
-            print(f"Concatenated Traces shape: {traces_data.shape}")
-            # ... print other shapes
-        else:
-            print("No data could be loaded from the found partitions.")
+            # --- NOW you can print the shapes of the concatenated NumPy arrays ---
+            print(f"\nConcatenated Data Shapes:")
+            print(f"Traces shape: {traces_data.shape}")
+            print(f"SNR shape: {snr_data.shape}")
+            print(f"Chi2016 shape: {chi2016_data.shape}")
+            print(f"ChiRCR shape: {chiRCR_data.shape}")
+            print(f"Times shape: {times_data.shape}")
 
-    print(f"Loaded 'Traces' shape: {traces_data.shape}")
-    print(f"Loaded 'SNR' shape: {snr_data.shape}")
-    print(f"Loaded 'Chi2016' shape: {chi2016_data.shape}")
-    print(f"Loaded 'ChiRCR' shape: {chiRCR_data.shape}")
-    print(f"Loaded 'Times' shape: {times_data.shape}")
-
-    # You can now work with each NumPy array
-    # For example, print the first 5 SNR values:
     print(f"First 5 SNR values: {snr_data[:5]}")
 
 

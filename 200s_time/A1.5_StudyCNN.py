@@ -389,10 +389,18 @@ if __name__ == "__main__":
     rcr, sim_Backlobe = load_sim(path, RCR_path, backlobe_path, amp)
     data_Backlobe = []
     data_Backlobe_UNIX = [] 
+    data_chi = []
     for id in station_id: # since we load traces depending on stn, we need to make data_Backlobe a full list
         snr, chi, trace, unix = load_data('AboveCurve_data', amp_type = amp, station_id=id)
         data_Backlobe.extend(trace)
         data_Backlobe_UNIX.extend(unix)
+        data_chi.extend(chi)
+
+    print(len(data_chi))
+    print(data_chi[2645-1])
+    print(data_chi[7266-1])
+    print(data_chi[7546-1])
+    exit
 
     # With argparse, we can either use [1] sim BL, or [2] "BL data events" 
     parser = argparse.ArgumentParser(description='Determine To Use sim BL or "BL data events"') 

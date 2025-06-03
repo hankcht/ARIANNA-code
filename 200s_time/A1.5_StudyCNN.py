@@ -399,6 +399,7 @@ if __name__ == "__main__":
 
     model = keras.models.load_model('/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/data_data_2025-06-02_09-45_RCR_BL_model_2Layer_two_ws_stdy.h5')
     rcr = np.array(rcr)
+    data_Backlobe = np.array(data_Backlobe)
     prob_RCR = model.predict(rcr)
     prob_Backlobe = model.predict(data_Backlobe)
 

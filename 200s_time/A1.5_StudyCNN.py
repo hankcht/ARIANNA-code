@@ -396,11 +396,49 @@ if __name__ == "__main__":
         data_Backlobe_UNIX.extend(unix)
         data_chi.extend(chi)
 
-    print(len(data_chi))
-    print(data_chi[2645-1])
-    print(data_chi[7266-1])
-    print(data_chi[7546-1])
-    exit
+
+    model = keras.models.load_model('/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/data_data_2025-06-02_09-45_RCR_BL_model_2Layer_two_ws_stdy.h5')
+    rcr = np.array(rcr)
+    prob_RCR = model.predict(rcr)
+    prob_Backlobe = model.predict(data_Backlobe)
+
+    RCR_like_indices = np.where(prob_Backlobe > 0.2)[0]
+    print(f'RCR-like events indices {RCR_like_indices}') # use this later to get station
+    RCR_like_BL = len(RCR_like_indices)
+    assert RCR_like_BL == 5
+
+
+    print(f'Plotting {RCR_like_BL} misidentified Backlobe event traces using pT function.')
+
+    traces_to_plot = data_Backlobe[RCR_like_indices]
+    unix_times_to_plot = data_Backlobe_UNIX[RCR_like_indices]
+    RCR_like_network_output = prob_Backlobe[RCR_like_indices] 
+    RCR_like_chi = data_chi[RCR_like_indices]
+
+    save_dir = f'/pub/tangch3/ARIANNA/DeepLearning/plots/RCR_like_BL/{amp}_time/RCR_like_Traces/'
+    os.makedirs(save_dir, exist_ok=True) 
+
+    for i, trace in enumerate(traces_to_plot):
+        unix_timestamp = unix_times_to_plot[i]
+        RCR_like_no = RCR_like_network_output[i].item()
+        RCR_like_no = round(RCR_like_no, 2)
+        RCR_like_chi_val = RCR_like_chi[i]
+        
+        dt_object = datetime.fromtimestamp(unix_timestamp)
+        formatted_time_for_filename = dt_object.strftime('%Y%m%d_%H%M%S')
+
+        original_event_index = RCR_like_indices[i]
+        plot_filename = os.path.join(save_dir, f'data_data_{timestamp}_pot_RCR_event_{original_event_index}_{formatted_time_for_filename}_netout{RCR_like_no}_chi{RCR_like_chi_val}.png')
+        
+        plot_title = f'pot_RCR Trace (Event {original_event_index})\nTime: {dt_object.strftime("%Y-%m-%d %H:%M:%S")}'
+
+        pT(traces=trace, title=plot_title, saveLoc=plot_filename)
+        
+        print(f'------> Saved pot_RCR trace for event {original_event_index} to {plot_filename}')
+    
+    import sys
+    sys.exit()
+
 
     # With argparse, we can either use [1] sim BL, or [2] "BL data events" 
     parser = argparse.ArgumentParser(description='Determine To Use sim BL or "BL data events"') 

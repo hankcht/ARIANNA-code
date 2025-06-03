@@ -35,6 +35,26 @@ from NuRadioReco.utilities import units
 # print(RCR_freq.shape, Backlobe_freq.shape)
 
 
+from tensorflow import keras
+model = keras.models.load_model('/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/data_data_2025-06-02_09-45_RCR_BL_model_2Layer_two_ws_stdy.h5')
+
+rcr, sim_Backlobe = load_sim(path, RCR_path, backlobe_path, amp)
+data_Backlobe = []
+data_Backlobe_UNIX = [] 
+data_chi = []
+for id in station_id: # since we load traces depending on stn, we need to make data_Backlobe a full list
+    snr, chi, trace, unix = load_data('AboveCurve_data', amp_type = amp, station_id=id)
+    data_Backlobe.extend(trace)
+    data_Backlobe_UNIX.extend(unix)
+    data_chi.extend(chi)
+rcr = np.array(rcr)
+prob_RCR = model.predict(rcr)
+prob_Backlobe = model.predict(Backlobe)
+
+
+import sys
+sys.exit()
+
 algorithm = 'RS'
 best_result = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.npy')
 print(best_result)

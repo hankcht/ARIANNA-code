@@ -269,12 +269,12 @@ if __name__ == '__main__':
     input_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/'
     output_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
 
-    print(len('/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14_Chi2016_base.npy'))
+    print(len(np.load('/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14_Chi2016_base.npy')))
 
     # Run the concatenation process
     concatenate_npy_by_station(input_dir, output_dir)
 
-    files_to_delete_pattern = os.path.join(output_dir, 'Station14_SNR_c*')
+    files_to_delete_pattern = os.path.join(output_dir, 'Station14_ChiRCR_c*')
 
     # Get the list of files matching the pattern
     files_to_delete = glob.glob(files_to_delete_pattern)

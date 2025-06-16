@@ -14,7 +14,7 @@ import pickle
 import templateCrossCorr as txc
 import NuRadioReco
 from NuRadioReco.utilities import units, fft
-from B1_BLcurve import plotalldata
+
 
     
 def getMaxChi(traces, sampling_rate, template_trace, template_sampling_rate, parallelChannels=[[0, 2], [1, 3]]):

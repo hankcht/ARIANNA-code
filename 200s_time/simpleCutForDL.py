@@ -261,29 +261,29 @@ def concatenate_npy_by_station(input_directory, output_directory):
 
 
 if __name__ == "__main__":
-    main()
+    # main()
     
 
-    # input_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/'
-    # output_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
+    input_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/'
+    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
 
-    # # Run the concatenation process
-    # concatenate_npy_by_station(input_dir, output_dir)
+    # Run the concatenation process
+    concatenate_npy_by_station(input_dir, output_dir)
 
-    # print("\n--- Concatenation process complete ---")
+    print("\n--- Concatenation process complete ---")
 
-    # # Load the specific concatenated file and print its length
-    # target_file_path = os.path.join(output_dir, 'Station14_Chi2016_base.npy')
+    # Load the specific concatenated file and print its length
+    target_file_path = os.path.join(output_dir, 'Station14_Chi2016_base.npy')
     
-    # if os.path.exists(target_file_path):
-    #     try:
-    #         loaded_array = np.load(target_file_path)
-    #         print(f"Length of '{os.path.basename(target_file_path)}': {len(loaded_array)}")
-    #         print(f"Shape of '{os.path.basename(target_file_path)}': {loaded_array.shape}")
-    #     except Exception as e:
-    #         print(f"Error loading or getting length of '{os.path.basename(target_file_path)}': {e}")
-    # else:
-    #     print(f"File '{os.path.basename(target_file_path)}' not found in '{output_dir}'.")
+    if os.path.exists(target_file_path):
+        try:
+            loaded_array = np.load(target_file_path)
+            print(f"Length of '{os.path.basename(target_file_path)}': {len(loaded_array)}")
+            print(f"Shape of '{os.path.basename(target_file_path)}': {loaded_array.shape}")
+        except Exception as e:
+            print(f"Error loading or getting length of '{os.path.basename(target_file_path)}': {e}")
+    else:
+        print(f"File '{os.path.basename(target_file_path)}' not found in '{output_dir}'.")
 
 
     

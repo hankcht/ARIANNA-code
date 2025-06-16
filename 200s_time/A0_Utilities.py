@@ -257,23 +257,73 @@ def RunTrainedModel(events, model_path):
 
     return prob_events
 
+
+def load_new_chi(load_path, station_numbers, file_types, thresholds, single_files=None):
+    """
+    Returns:
+        dict: A dictionary where keys are constructed filenames (e.g., 'Stn14_Chi2016_ge0p60')
+              and values are the loaded NumPy arrays.
+    """
+    loaded_data = {}
+    print(f"Loading data from: {load_path}\n")
+
+    if single_files:
+        for single_file in single_files:
+            file_path = os.path.join(load_path, single_file)
+            dict_key = os.path.splitext(single_file)[0] # Remove .npy extension for key
+            try:
+                loaded_data[dict_key] = np.load(file_path)
+                print(f"Loaded {single_file}. Shape: {loaded_data[dict_key].shape}")
+            except FileNotFoundError:
+                print(f"Warning: {single_file} not found at {file_path}")
+            except Exception as e:
+                print(f"Error loading {single_file}: {e}")
+
+    # Load files based on the station, file_type, and threshold patterns
+    for stn_num in station_numbers:
+        for file_type in file_types:
+            for threshold in thresholds:
+                filename = f"Stn{stn_num}_{file_type}_ge0p{threshold}.npy"
+                file_path = os.path.join(load_path, filename)
+                dict_key = f"Stn{stn_num}_{file_type}_ge0p{threshold}"
+
+                try:
+                    loaded_data[dict_key] = np.load(file_path)
+                    print(f"Loaded {filename}. Shape: {loaded_data[dict_key].shape}")
+                except FileNotFoundError:
+                    print(f"Warning: {filename} not found at {file_path}")
+                except Exception as e:
+                    print(f"Error loading {filename}: {e}")
+    
+    print("\n--- Data loading complete ---")
+    # access using loaded_data['Stn{stn_num}_{file_type}_ge0p{threshold}']
+    return loaded_data
+
 if __name__ == "__main__":
 
-    # profiling method:
-    start = time.time()
+    # # profiling method:
+    # start = time.time()
 
-    end = time.time()
-    print(f"task: {end - start}s")
-    start = end
+    # end = time.time()
+    # print(f"task: {end - start}s")
+    # start = end
 
-    # to delete files:
-    directory = '/pub/tangch3/ARIANNA/DeepLearning/logs'
-    for i in range(154):
-        files_to_delete = glob.glob(os.path.join(directory, f'Stn17_{i}.out'))
+    # # to delete files:
+    # directory = '/pub/tangch3/ARIANNA/DeepLearning/logs'
+    # for i in range(154):
+    #     files_to_delete = glob.glob(os.path.join(directory, f'Stn17_{i}.out'))
 
-        for file in files_to_delete:
-            os.remove(file)
-            print(f'Deleted :{file}')
+    #     for file in files_to_delete:
+    #         os.remove(file)
+    #         print(f'Deleted :{file}')
+
+    load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
+    station_numbers = [14]
+    file_types = ['Chi2016', 'ChiRCR', 'SNR', 'Times', 'Traces']
+    thresholds = ['60', '65', '70']
+    new_chi_dict = load_new_chi(load_path, station_numbers, file_types, thresholds)
+    new_chi2016 = new_chi_dict['Stn14_Chi2016_ge0p60']
+    print(len(new_chi2016))
 
 
     

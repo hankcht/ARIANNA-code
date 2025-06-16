@@ -5,61 +5,86 @@ import argparse
 import datetime
 from icecream import ic
 
-def load_parameter_data(base_folder, date_str, station_id, param_name, partition_number):
+def load_parameter_data(base_folder, date_str, station_id, param_name, partition_number, total_partitions=3):
     """
-    Loads and concatenates parameter data for a given station, date, and parameter name.
-    Handles potential .squeeze() issues if data is scalar or nearly scalar after loading parts.
+    Loads, concatenates ALL parameter data for a given station, date, and parameter name,
+    then returns a specific non-overlapping partition of that data.
     """
     file_pattern = os.path.join(base_folder, f'{date_str}_Station{station_id}_{param_name}*')
     files = sorted(glob.glob(file_pattern))
+
     if not files:
         ic(f"Warning: No files found for Station {station_id}, {param_name}, Date {date_str} with pattern {file_pattern}")
         return None
 
     try:
-        if partition_number == 0:
-            data_list = [np.load(f) for i, f in enumerate(files) if i <= 30]
-        elif partition_number == 1:
-            data_list = [np.load(f) for i, f in enumerate(files) if 30 <= i <= 60]
-        elif partition_number == 2:
-            data_list = [np.load(f) for i, f in enumerate(files) if 60 <= i]
-        
-        # Handle cases where loaded arrays might be 0-dimensional after squeeze in saving
-        # or if only one file with one event is loaded.
-        
-        # Ensure all parts are at least 1D before trying to concatenate more complex structures like Traces
-        processed_list = []
-        for arr_part in data_list:
-            squeezed_part = arr_part.squeeze()
-            if squeezed_part.ndim == 0: # Was scalar
-                processed_list.append(np.array([squeezed_part.item()]))
-            elif param_name == "Traces" and squeezed_part.ndim == 2 and arr_part.shape[0]==1: # Single trace was (1,4,256) squeezed to (4,256)
-                 processed_list.append(arr_part) # Keep original shape for single trace
-            elif param_name == "Traces" and squeezed_part.ndim == 3 and arr_part.shape[0]==1 : # Single trace already (1,4,256)
-                 processed_list.append(arr_part)
-            else:
-                processed_list.append(squeezed_part if param_name != "Traces" else arr_part)
+        # Step 1: Load all data from all relevant files first
+        all_data_list = []
+        for f in files:
+            try:
+                all_data_list.append(np.load(f))
+            except Exception as e:
+                ic(f"Error loading individual file {f}: {e}")
+                continue # Skip this file and try to load others
 
-
-        if not processed_list:
+        if not all_data_list:
+            ic(f"No valid data loaded from any files for {param_name}.")
             return None
 
-        # Concatenate. Special care for Traces if they are already (N, 4, 256)
-        if param_name == "Traces":
-            # Check if all parts have the expected subsequent dimensions (4, 256)
-            if all(p.ndim >=3 and p.shape[1:3] == (4,256) for p in processed_list):
-                 concatenated_data = np.concatenate(processed_list, axis=0)
-            elif all(p.ndim == 2 and p.shape == (4,256) for p in processed_list): # list of (4,256) from single events
-                 concatenated_data = np.stack(processed_list, axis=0)
+        # Step 2: Concatenate all loaded data
+        processed_all_data_list = []
+        for arr_part in all_data_list:
+            squeezed_part = arr_part.squeeze()
+            if squeezed_part.ndim == 0: # Was scalar
+                processed_all_data_list.append(np.array([squeezed_part.item()]))
+            elif param_name == "Traces" and squeezed_part.ndim == 2 and arr_part.shape[0]==1:
+                processed_all_data_list.append(arr_part)
+            elif param_name == "Traces" and squeezed_part.ndim == 3 and arr_part.shape[0]==1:
+                processed_all_data_list.append(arr_part)
             else:
-                # Try a general concatenate, might fail or produce wrong shape if mixed.
-                ic(f"Warning: Traces for {param_name} have inconsistent shapes. Attempting simple concatenation.")
-                concatenated_data = np.concatenate([p.reshape(-1, 4, 256) if p.size % (4*256) == 0 and p.size > 0 else np.array([]).reshape(0,4,256) for p in processed_list if p.size > 0], axis=0)
-
-        else: # For 1D parameters like Times, SNR, Chi*
-            concatenated_data = np.concatenate(processed_list, axis=0)
+                processed_all_data_list.append(squeezed_part if param_name != "Traces" else arr_part)
         
-        return concatenated_data.squeeze() # Final squeeze for 1D arrays if they ended up (N,1)
+        if not processed_all_data_list:
+            return None # No data after processing, even if files were found
+
+        # Concatenate all data from all files based on parameter type
+        if param_name == "Traces":
+            # Assuming Traces are (N, 4, 256) or (4, 256) for single events.
+            # Convert single event (4,256) to (1,4,256) for stacking
+            processed_all_data_list = [p if p.ndim == 3 else p[np.newaxis, :, :] for p in processed_all_data_list]
+            if not all(p.shape[1:] == (4,256) for p in processed_all_data_list):
+                 ic(f"Warning: Traces for {param_name} have inconsistent shapes beyond (N,4,256). Attempting general concatenation.")
+            concatenated_all_data = np.concatenate(processed_all_data_list, axis=0)
+        else: # For 1D parameters like Times, SNR, Chi*
+            concatenated_all_data = np.concatenate(processed_all_data_list, axis=0)
+        
+        # Ensure it's squeezed appropriately at the end of full concatenation
+        full_data_squeezed = concatenated_all_data.squeeze()
+
+        # Step 3: Apply partitioning based on event count
+        total_events = full_data_squeezed.shape[0] # Assumes first dimension is event count
+        
+        # Handle cases where total_events might be 0 after squeeze or for empty files
+        if total_events == 0:
+            ic(f"No events found after concatenating all files for {param_name}.")
+            return None
+
+        # Calculate start and end indices for the current partition
+        # Ensure even distribution, with last partition getting any remainder
+        start_idx = (total_events * partition_number) // total_partitions
+        end_idx = (total_events * (partition_number + 1)) // total_partitions
+        
+        # For the very last partition, make sure it goes to the end
+        if partition_number == total_partitions - 1:
+            end_idx = total_events
+
+        # Extract the specific partition
+        partition_data = full_data_squeezed[start_idx:end_idx]
+        
+        if partition_data.shape[0] == 0:
+            ic(f"Warning: Partition {partition_number} for {param_name} is empty. Check partition logic or data size.")
+
+        return partition_data
 
     except Exception as e:
         ic(f"Error loading or concatenating data for {param_name} at Station {station_id}, Date {date_str}: {e}")
@@ -69,54 +94,61 @@ def main():
     parser = argparse.ArgumentParser(description="Filter station data based on Chi2016 thresholds and save selected parameters.")
     parser.add_argument("station_id", type=int, help="Station ID to process.")
     parser.add_argument("date", type=str, help="Date string (e.g., YYYYMMDD) for the data.")
+    # Add an argument for partition number
+    parser.add_argument("--partition", type=int, default=0,
+                        help="Partition number to process (0-indexed).")
+    parser.add_argument("--total_partitions", type=int, default=3,
+                        help="Total number of partitions to divide the data into.")
     
     args = parser.parse_args()
     station_id = args.station_id
     date_str = args.date
+    partition_number = args.partition
+    total_partitions = args.total_partitions
 
     ic.enable()
-    ic(f"Processing Station {station_id} for Date {date_str}")
+    ic(f"Processing Station {station_id} for Date {date_str}, Partition {partition_number}/{total_partitions}")
 
     # --- Configuration for Paths ---
     base_input_folder = os.path.join('/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/', date_str)
-    base_output_folder = os.path.join(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/', date_str, f"Station{station_id}")   # Modify as needed
+    base_output_folder = os.path.join(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/', date_str, f"Station{station_id}") # Modify as needed
     
     os.makedirs(base_output_folder, exist_ok=True)
 
     # --- Parameters to Load and Save ---
-    params_to_process = ['Traces', 'SNR', 'Chi2016', 'ChiRCR', 'Times'] # 
+    params_to_process = ['Traces', 'SNR', 'Chi2016', 'ChiRCR', 'Times']
     loaded_data_raw = {}
-    partition_number = 2
 
-    ic("Loading data...") 
+    ic("Loading data for specified partition...") 
     for param in params_to_process:
-        data = load_parameter_data(base_input_folder, date_str, station_id, param, partition_number)
+        # Pass total_partitions to the load function
+        data = load_parameter_data(base_input_folder, date_str, station_id, param, partition_number, total_partitions)
         if data is None or data.size == 0:
-            ic(f"Failed to load or data is empty for {param}. Exiting.")
+            ic(f"Failed to load or data is empty for {param} for partition {partition_number}. Exiting.")
             return
         loaded_data_raw[param] = data
-        ic(f"  Loaded {param}: shape {data.shape}")
+        ic(f" Loaded {param} for partition {partition_number}: shape {data.shape}")
 
     # --- Basic Consistency Check (Number of Events) ---
     num_events_initial = -1
     for param, data in loaded_data_raw.items():
-        if data is None: # Should have exited above if critical data is None
+        if data is None:
             ic(f"Critical error: {param} data is None after load attempt. Exiting.")
             return
         current_param_event_count = data.shape[0]
         if num_events_initial == -1:
             num_events_initial = current_param_event_count
         elif num_events_initial != current_param_event_count:
-            ic(f"Error: Mismatch in number of events between parameters.")
-            ic(f"  Times has {loaded_data_raw.get('Times', np.array([])).shape[0]} events.")
-            ic(f"  {param} has {current_param_event_count} events.")
+            ic(f"Error: Mismatch in number of events between parameters for partition {partition_number}.")
+            ic(f" Times has {loaded_data_raw.get('Times', np.array([])).shape[0]} events.")
+            ic(f" {param} has {current_param_event_count} events.")
             ic(f"Please check data consistency for Station {station_id}, Date {date_str}. Exiting.")
             return
             
     if num_events_initial == 0:
-        ic("No events found in the loaded data. Exiting.")
+        ic(f"No events found in the loaded data for partition {partition_number}. Exiting.")
         return
-    ic(f"Successfully loaded data for {num_events_initial} initial events.")
+    ic(f"Successfully loaded data for {num_events_initial} events in partition {partition_number}.")
 
     # --- Initial Time Filtering (Consistent with C00_eventSearchCuts.py) ---
     ic("Applying initial time filters...")
@@ -137,10 +169,10 @@ def main():
     filtered_data_for_chi_cuts = {}
     for param in params_to_process:
         filtered_data_for_chi_cuts[param] = loaded_data_raw[param][initial_valid_mask]
-        ic(f"  {param} after initial filters: shape {filtered_data_for_chi_cuts[param].shape}")
+        ic(f" {param} after initial filters: shape {filtered_data_for_chi_cuts[param].shape}")
     
     # --- Chi2016 Thresholding and Saving ---
-    chi2016_thresholds = [0.7, 0.65, 0.6]
+    # chi2016_thresholds = [0.7, 0.65, 0.6] # Commented out as this section was also commented out
     base_chi2016_values = filtered_data_for_chi_cuts['Chi2016']
     base_chircr_values = filtered_data_for_chi_cuts['ChiRCR']
     base_snr_values = filtered_data_for_chi_cuts['SNR']
@@ -153,150 +185,107 @@ def main():
     np.save(chi2016_base_filename, base_chi2016_values)
     ic(f"Saved base Chi2016 values to: {chi2016_base_filename}")
 
-    # Correction: You were saving ChiRCR to the Chi2016 filename, fixed this.
     np.save(chircr_base_filename, base_chircr_values)
     ic(f"Saved base ChiRCR values to: {chircr_base_filename}")
 
     np.save(snr_base_filename, base_snr_values)
     ic(f"Saved base SNR values to: {snr_base_filename}")
 
-    # for chi_thresh in chi2016_thresholds:
-    #     ic(f"\nApplying Chi2016 threshold: >= {chi_thresh}")
-        
-    #     # Ensure base_chi2016_values is not empty and is 1D for comparison
-    #     if base_chi2016_values.size == 0 :
-    #         ic(f"  No Chi2016 values to apply threshold {chi_thresh} to (array is empty). Skipping.")
-    #         continue
-        
-    #     current_chi_mask = (base_chi2016_values >= chi_thresh)
-    #     num_passed_events = np.sum(current_chi_mask)
-        
-    #     ic(f"  {num_passed_events} events passed Chi2016 >= {chi_thresh}")
+    ic(f"\nProcessing complete for Station {station_id}, Date {date_str}, Partition {partition_number}.")
 
-    #     if num_passed_events > 0:
-    #         output_data_dict = {}
-    #         for param in params_to_process:
-    #             output_data_dict[param] = filtered_data_for_chi_cuts[param][current_chi_mask]
-            
-    #         # Construct filename
-    #         # Replacing '.' in threshold with 'p' for cleaner filenames (e.g., 0.7 -> 0p70)
-    #         thresh_str = f"{chi_thresh:.2f}".replace('.', 'p') 
-    #         output_filename = f"St{station_id}_{date_str}_Chi2016_ge{thresh_str}_{num_passed_events}evts_SelectedData_part{partition_number}.npy"
-    #         output_filepath = os.path.join(base_output_folder, output_filename)
-            
-    #         try:
-    #             np.save(output_filepath, output_data_dict, allow_pickle=True)
-    #             ic(f"  Successfully saved: {output_filepath}")
-    #             for param, data in output_data_dict.items():
-    #                 ic(f"    Saved {param} shape: {data.shape}")
-    #         except Exception as e:
-    #             ic(f"  Error saving file {output_filepath}: {e}")
-    #     else:
-    #         ic(f"  No events to save for Chi2016 >= {chi_thresh}")
+import re
 
-    ic(f"\nProcessing complete for Station {station_id}, Date {date_str}.")
+def concatenate_npy_by_station(input_directory, output_directory):
+    """
+    Concatenates .npy files by station and type (e.g., Chi2016, ChiRCR, SNR).
 
-if __name__ == '__main__':
-    # main()
-    
+    Args:
+        input_directory (str): The path to the directory containing the .npy files.
+        output_directory (str): The path where the concatenated .npy files will be saved.
+    """
+    station_files = {}
 
-    import re
+    # Regex to parse the filename:
+    # Captures: Station Number, Part Number, Data Type (e.g., Chi2016)
+    pattern = re.compile(r'Station(\d+)_Part(\d+)_(Chi2016|ChiRCR|SNR)_base\.npy')
 
-    def concatenate_npy_by_station(input_directory, output_directory):
-        """
-        Concatenates .npy files by station and type (e.g., Chi2016, ChiRCR, SNR).
+    for filename in os.listdir(input_directory):
+        match = pattern.match(filename)
+        if match:
+            station_num = match.group(1)
+            part_num = int(match.group(2))
+            data_type = match.group(3)
+            full_path = os.path.join(input_directory, filename)
 
-        Args:
-            input_directory (str): The path to the directory containing the .npy files.
-            output_directory (str): The path where the concatenated .npy files will be saved.
-        """
-        station_files = {}
+            if station_num not in station_files:
+                station_files[station_num] = {'Chi2016': {}, 'ChiRCR': {}, 'SNR': {}}
 
-        # Regex to parse the filename:
-        # Captures: Station Number, Part Number, Data Type (e.g., Chi2016)
-        pattern = re.compile(r'Station(\d+)_Part(\d+)_(Chi2016|ChiRCR|SNR)_base\.npy')
+            station_files[station_num][data_type][part_num] = full_path
 
-        for filename in os.listdir(input_directory):
-            match = pattern.match(filename)
-            if match:
-                station_num = match.group(1)
-                part_num = int(match.group(2))
-                data_type = match.group(3)
-                full_path = os.path.join(input_directory, filename)
+    # Ensure the output directory exists
+    os.makedirs(output_directory, exist_ok=True)
 
-                if station_num not in station_files:
-                    station_files[station_num] = {'Chi2016': {}, 'ChiRCR': {}, 'SNR': {}}
+    for station_num, data_types in station_files.items():
+        print(f"--- Processing Station {station_num} ---")
+        for data_type, parts in data_types.items():
+            if not parts:
+                continue
 
-                station_files[station_num][data_type][part_num] = full_path
+            # Sort parts by their number (e.g., Part0, Part1, Part2)
+            sorted_parts = sorted(parts.items())
+            arrays_to_concatenate = []
 
-        # Ensure the output directory exists
-        os.makedirs(output_directory, exist_ok=True)
-
-        for station_num, data_types in station_files.items():
-            print(f"--- Processing Station {station_num} ---")
-            for data_type, parts in data_types.items():
-                if not parts:
+            print(f"  Concatenating {data_type} files:")
+            for part_num, filepath in sorted_parts:
+                print(f"    Loading: {os.path.basename(filepath)}")
+                try:
+                    arrays_to_concatenate.append(np.load(filepath))
+                except Exception as e:
+                    print(f"      Error loading {filepath}: {e}")
                     continue
 
-                # Sort parts by their number (e.g., Part0, Part1, Part2)
-                sorted_parts = sorted(parts.items())
-                arrays_to_concatenate = []
-
-                print(f"  Concatenating {data_type} files:")
-                for part_num, filepath in sorted_parts:
-                    print(f"    Loading: {os.path.basename(filepath)}")
-                    try:
-                        arrays_to_concatenate.append(np.load(filepath))
-                    except Exception as e:
-                        print(f"      Error loading {filepath}: {e}")
-                        continue
-
-                if arrays_to_concatenate:
-                    try:
-                        # Concatenate along axis 0. Adjust this if your data requires a different axis.
-                        concatenated_array = np.concatenate(arrays_to_concatenate, axis=0)
-                        output_filename = f"Station{station_num}_{data_type}_base.npy"
-                        output_path = os.path.join(output_directory, output_filename)
-                        np.save(output_path, concatenated_array)
-                        print(f"  Successfully saved concatenated {data_type} data for Station {station_num} to: {output_path}")
-                    except ValueError as e:
-                        print(f"  Could not concatenate {data_type} arrays for Station {station_num}. Error: {e}")
-                        print("  This often happens if arrays have incompatible shapes for concatenation along the specified axis.")
-                else:
-                    print(f"  No {data_type} files loaded for concatenation for Station {station_num}.")
-
-    # --- Specify your input and output directories ---
-    input_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/'
-    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
-
-    print(len(np.load('/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14_Chi2016_base.npy')))
-
-    # Run the concatenation process
-    concatenate_npy_by_station(input_dir, output_dir)
-
-    files_to_delete_pattern = os.path.join(output_dir, 'Station14_ChiRCR_c*')
-
-    # Get the list of files matching the pattern
-    files_to_delete = glob.glob(files_to_delete_pattern)
-
-    if not files_to_delete:
-        print(f"No files found matching '{files_to_delete_pattern}'. Nothing to delete.")
-    else:
-        print("--- Files to be deleted ---")
-        for file_path in files_to_delete:
-            print(file_path)
+            if arrays_to_concatenate:
+                try:
+                    # Concatenate along axis 0. Adjust this if your data requires a different axis.
+                    concatenated_array = np.concatenate(arrays_to_concatenate, axis=0)
+                    # The output filename now reflects the concatenation of all parts
+                    output_filename = f"Station{station_num}_{data_type}_base.npy" 
+                    output_path = os.path.join(output_directory, output_filename)
+                    np.save(output_path, concatenated_array)
+                    print(f"  Successfully saved concatenated {data_type} data for Station {station_num} to: {output_path}")
+                except ValueError as e:
+                    print(f"  Could not concatenate {data_type} arrays for Station {station_num}. Error: {e}")
+                    print("  This often happens if arrays have incompatible shapes for concatenation along the specified axis.")
+            else:
+                print(f"  No {data_type} files loaded for concatenation for Station {station_num}.")
 
 
-        print("\n--- Deleting files ---")
-        deleted_count = 0
-        for file_path in files_to_delete:
-            try:
-                os.remove(file_path)
-                print(f'Deleted: {file_path}')
-                deleted_count += 1
-            except OSError as e:
-                print(f"Error deleting {file_path}: {e}")
-        print(f"\nFinished. Successfully deleted {deleted_count} files.")
+if __name__ == "__main__":
+    main()
+    
+
+    # input_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/'
+    # output_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
+
+    # # Run the concatenation process
+    # concatenate_npy_by_station(input_dir, output_dir)
+
+    # print("\n--- Concatenation process complete ---")
+
+    # # Load the specific concatenated file and print its length
+    # target_file_path = os.path.join(output_dir, 'Station14_Chi2016_base.npy')
+    
+    # if os.path.exists(target_file_path):
+    #     try:
+    #         loaded_array = np.load(target_file_path)
+    #         print(f"Length of '{os.path.basename(target_file_path)}': {len(loaded_array)}")
+    #         print(f"Shape of '{os.path.basename(target_file_path)}': {loaded_array.shape}")
+    #     except Exception as e:
+    #         print(f"Error loading or getting length of '{os.path.basename(target_file_path)}': {e}")
+    # else:
+    #     print(f"File '{os.path.basename(target_file_path)}' not found in '{output_dir}'.")
+
+
     
 #     station_id = 18
 #     load_path = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}/'

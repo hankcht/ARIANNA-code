@@ -62,6 +62,15 @@ change chunk if needed
 
 
 
+Chi 2016 (BL template)
+Chi Threshold(above the cut)    60:              65:             70:
+stn 14:                             2000            976             314
+stn 17:     
+stn 19:     
+stn 30: 
+
+
+
 
 
 

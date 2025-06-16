@@ -2,11 +2,14 @@ import os
 import time
 import glob
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.colors
 from PIL import Image
 import keras
 from keras.models import Sequential
 from keras.layers import Conv2D, Dropout, Flatten, Dense
 import matplotlib.pyplot as plt
+from pathlib import Path
 import pickle
 import templateCrossCorr as txc
 import NuRadioReco
@@ -318,12 +321,68 @@ if __name__ == "__main__":
     #         print(f'Deleted :{file}')
 
     load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
-    station_numbers = [13, 15, 18, 17, 19, 30]
+    station_numbers = [13, 15, 18, 14, 17, 19, 30]
     file_types = ['Chi2016', 'ChiRCR', 'SNR', 'Times', 'Traces']
     thresholds = ['60', '65', '70']
     new_chi_dict = load_new_chi(load_path, station_numbers, file_types, thresholds)
     new_chi2016 = new_chi_dict['Stn17_Chi2016_ge0p60']
-    print(len(new_chi2016))
 
 
-    
+    plot_folder = f'/data/homezvol3/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/4.4.25' 
+    Path(plot_folder).mkdir(parents=True, exist_ok=True)
+
+    SNRbins = np.logspace(0.477, 2, num=80)
+    maxCorrBins = np.arange(0, 1.0001, 0.01)
+
+
+    for station_id in station_numbers:
+        for threshold in thresholds:
+            snr_key = f"Stn{station_id}_SNR_ge0p{threshold}"
+            chir_key = f"Stn{station_id}_ChiRCR_ge0p{threshold}"
+
+            current_snrs = None
+            current_rcr_chi = None
+
+            if snr_key in new_chi_dict:
+                current_snrs = new_chi_dict[snr_key]
+            else:
+                print(f"Warning: {snr_key} not found. Skipping for station {station_id}, threshold {threshold}.")
+                continue 
+
+            if chir_key in new_chi_dict:
+                current_rcr_chi = new_chi_dict[chir_key]
+            else:
+                print(f"Warning: {chir_key} not found. Skipping for station {station_id}, threshold {threshold}.")
+                continue 
+
+            if current_snrs.shape != current_rcr_chi.shape:
+                print(f"Error: Mismatched shapes for {snr_key} ({current_snrs.shape}) and {chir_key} ({current_rcr_chi.shape}). Skipping.")
+                continue
+
+            plt.figure(figsize=(10, 8)) 
+            
+            plt.hist2d(current_snrs, current_rcr_chi, bins=[SNRbins, maxCorrBins],
+                    norm=matplotlib.colors.LogNorm(), cmap='viridis')
+            plt.colorbar(label='Count (log scale)')
+            plt.xlim((3, 100))
+            plt.ylim((0, 1))
+            plt.xlabel('SNR')
+            plt.ylabel('Avg Chi Highest Parallel Channels')
+            plt.xscale('log') 
+            plt.tick_params(axis='x', which='minor', bottom=True) 
+            plt.grid(visible=True, which='both', axis='both', linestyle=':', alpha=0.7) 
+            plt.title(f'Station {station_id} - Threshold: {threshold}')
+
+            output_filename = f'ChiSNR_Stn{station_id}_ge0p{threshold}.png'
+            save_path = os.path.join(plot_folder, output_filename)
+            print(f'Saving {save_path}')
+            plt.savefig(save_path, bbox_inches='tight')
+            plt.close() 
+
+    print("\nAll station and threshold plots generated and saved.")
+
+
+        
+
+
+        

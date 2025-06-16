@@ -158,6 +158,14 @@ if __name__ == "__main__":
     station_id = args.station
 
     # data = np.load(f'../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station{station_id}_SNR_Chi.npy', allow_pickle=True)
+    # All_SNRs = data[0]
+    # All_RCR_Chi = data[1]
+    # All_Azi = data[2]
+    # All_Zen = data[3]
+    # PassingCut_SNRs = data[4]
+    # PassingCut_RCR_Chi = data[5]
+    # PassingCut_Azi = data[6]
+    # PassingCut_Zen = data[7]
     plot_folder = f'/data/homezvol3/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/Station_{station_id}' 
     Path(plot_folder).mkdir(parents=True, exist_ok=True)
 
@@ -171,14 +179,7 @@ if __name__ == "__main__":
     templates_RCR = loadTemplate(type='RCR', amp=amp_type)
 
 
-    # All_SNRs = data[0]
-    # All_RCR_Chi = data[1]
-    # All_Azi = data[2]
-    # All_Zen = data[3]
-    # PassingCut_SNRs = data[4]
-    # PassingCut_RCR_Chi = data[5]
-    # PassingCut_Azi = data[6]
-    # PassingCut_Zen = data[7]
+
 
     # print(f'total events: {len(data[4])}')
 
@@ -206,45 +207,45 @@ if __name__ == "__main__":
     #     if x != y:
     #         print(x,y)
 
-    # #Plot of all events in Chi-SNR space
-    # plt.hist2d(All_SNRs, All_RCR_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
-    # plt.colorbar()
-    # plt.xlim((3, 100))
-    # plt.ylim((0, 1))
-    # plt.xlabel('SNR')
-    # plt.ylabel('Avg Chi Highest Parallel Channels')
-    # # plt.legend()
-    # plt.xscale('log')
-    # plt.tick_params(axis='x', which='minor', bottom=True)
-    # plt.grid(visible=True, which='both', axis='both') 
-    # plt.title(f'Station {station_id}')
-    # print(f'Saving {plot_folder}/ChiSNR_All_Stnd{station_id}.png')
-    # plt.savefig(f'{plot_folder}/ChiSNR_All_Stnd{station_id}.png')
-
-
-    # #Plot of sim overlayed on top of all events
-    # plotSimSNRChi(templates_RCR, noiseRMS)
-    # plt.scatter([], [], color='red', label='Simulated Air Showers')
+    #Plot of all events in Chi-SNR space
+    plt.hist2d(All_SNRs, All_RCR_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+    plt.colorbar()
+    plt.xlim((3, 100))
+    plt.ylim((0, 1))
+    plt.xlabel('SNR')
+    plt.ylabel('Avg Chi Highest Parallel Channels')
     # plt.legend()
-    # print(f'Saving {plot_folder}/ChiSNR_wSim_Stnd{station_id}.png')
-    # plt.savefig(f'{plot_folder}/ChiSNR_wSim_Stnd{station_id}.png')
+    plt.xscale('log')
+    plt.tick_params(axis='x', which='minor', bottom=True)
+    plt.grid(visible=True, which='both', axis='both') 
+    plt.title(f'Station {station_id}')
+    print(f'Saving {plot_folder}/ChiSNR_All_Stnd{station_id}.png')
+    plt.savefig(f'{plot_folder}/ChiSNR_All_Stnd{station_id}.png')
 
-    # #Plot of station & sim, with events passing cuts circled
-    # plt.scatter(PassingCut_SNRs, PassingCut_RCR_Chi, label=f'{len(PassingCut_RCR_Chi)} Events Passing Cuts', facecolor='none', edgecolor='black')
-    # # plt.scatter(selected_SNR, selected_RCR_Chi, facecolor='yellow', edgecolor='none')
-    # plt.xlim((3, 100))
-    # plt.ylim((0, 1))
-    # plt.xlabel('SNR')
-    # plt.ylabel('Avg Chi Highest Parallel Channels')
-    # plt.legend()    
-    # plt.xscale('log')
-    # plt.tick_params(axis='x', which='minor', bottom=True)
-    # plt.grid(visible=True, which='both', axis='both')
-    # plt.title(f'Station {station_id} RCR SNR-Chi')
-    # print(f'Saving {plot_folder}/ChiSNR_PassedCuts_Stnd{station_id}.png')
-    # plt.savefig(f'{plot_folder}/ChiSNR_PassedCuts_Stnd{station_id}.png')
-    # plt.clf()
-    # plt.close()
+
+    #Plot of sim overlayed on top of all events
+    plotSimSNRChi(templates_RCR, noiseRMS)
+    plt.scatter([], [], color='red', label='Simulated Air Showers')
+    plt.legend()
+    print(f'Saving {plot_folder}/ChiSNR_wSim_Stnd{station_id}.png')
+    plt.savefig(f'{plot_folder}/ChiSNR_wSim_Stnd{station_id}.png')
+
+    #Plot of station & sim, with events passing cuts circled
+    plt.scatter(PassingCut_SNRs, PassingCut_RCR_Chi, label=f'{len(PassingCut_RCR_Chi)} Events Passing Cuts', facecolor='none', edgecolor='black')
+    # plt.scatter(selected_SNR, selected_RCR_Chi, facecolor='yellow', edgecolor='none')
+    plt.xlim((3, 100))
+    plt.ylim((0, 1))
+    plt.xlabel('SNR')
+    plt.ylabel('Avg Chi Highest Parallel Channels')
+    plt.legend()    
+    plt.xscale('log')
+    plt.tick_params(axis='x', which='minor', bottom=True)
+    plt.grid(visible=True, which='both', axis='both')
+    plt.title(f'Station {station_id} RCR SNR-Chi')
+    print(f'Saving {plot_folder}/ChiSNR_PassedCuts_Stnd{station_id}.png')
+    plt.savefig(f'{plot_folder}/ChiSNR_PassedCuts_Stnd{station_id}.png')
+    plt.clf()
+    plt.close()
 
     # # Redoing above but adding simulated backlobes on top of simulated air showers
     # plt.hist2d(All_SNRs, All_RCR_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())

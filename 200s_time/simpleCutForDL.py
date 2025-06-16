@@ -272,6 +272,30 @@ if __name__ == '__main__':
     # Run the concatenation process
     concatenate_npy_by_station(input_dir, output_dir)
 
+    files_to_delete_pattern = os.path.join(output_dir, 'Station14_Chi2016_c*')
+
+    # Get the list of files matching the pattern
+    files_to_delete = glob.glob(files_to_delete_pattern)
+
+    if not files_to_delete:
+        print(f"No files found matching '{files_to_delete_pattern}'. Nothing to delete.")
+    else:
+        print("--- Files to be deleted ---")
+        for file_path in files_to_delete:
+            print(file_path)
+
+
+        print("\n--- Deleting files ---")
+        deleted_count = 0
+        for file_path in files_to_delete:
+            try:
+                os.remove(file_path)
+                print(f'Deleted: {file_path}')
+                deleted_count += 1
+            except OSError as e:
+                print(f"Error deleting {file_path}: {e}")
+        print(f"\nFinished. Successfully deleted {deleted_count} files.")
+    
 #     station_id = 18
 #     load_path = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}/'
 

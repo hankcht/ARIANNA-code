@@ -318,7 +318,7 @@ if __name__ == "__main__":
     #         print(f'Deleted :{file}')
 
     load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
-    station_numbers = [13, 15, 18, 14, 17, 19, 30]
+    station_numbers = [13, 15, 18, 17, 19, 30]
     file_types = ['Chi2016', 'ChiRCR', 'SNR', 'Times', 'Traces']
     thresholds = ['60', '65', '70']
     new_chi_dict = load_new_chi(load_path, station_numbers, file_types, thresholds)

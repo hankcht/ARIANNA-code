@@ -336,7 +336,7 @@ if __name__ == "__main__":
     for station_id in station_numbers:
         for threshold in thresholds:
             snr_key = f"Stn{station_id}_SNR_ge0p{threshold}"
-            chir_key = f"Stn{station_id}_ChiRCR_ge0p{threshold}"
+            chir_key = f"Stn{station_id}_Chi2016_ge0p{threshold}"
 
             current_snrs = None
             current_rcr_chi = None
@@ -369,7 +369,7 @@ if __name__ == "__main__":
             plt.xscale('log') 
             plt.tick_params(axis='x', which='minor', bottom=True) 
             plt.grid(visible=True, which='both', axis='both', linestyle=':', alpha=0.7) 
-            plt.title(f'Station {station_id} - Threshold: {threshold}')
+            plt.title(f'Station {station_id} - Threshold: {threshold} (Events: {len(current_snrs):,})')
 
             output_filename = f'ChiSNR_Stn{station_id}_ge0p{threshold}.png'
             save_path = os.path.join(plot_folder, output_filename)

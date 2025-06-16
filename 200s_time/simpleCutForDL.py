@@ -198,8 +198,80 @@ def main():
 
 if __name__ == '__main__':
     # main()
-    arr = np.load('/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/Station14_Part0_Chi2016_base.npy')
-    ic(len(arr))
+    
+
+    import re
+
+    def concatenate_npy_by_station(input_directory, output_directory):
+        """
+        Concatenates .npy files by station and type (e.g., Chi2016, ChiRCR, SNR).
+
+        Args:
+            input_directory (str): The path to the directory containing the .npy files.
+            output_directory (str): The path where the concatenated .npy files will be saved.
+        """
+        station_files = {}
+
+        # Regex to parse the filename:
+        # Captures: Station Number, Part Number, Data Type (e.g., Chi2016)
+        pattern = re.compile(r'Station(\d+)_Part(\d+)_(Chi2016|ChiRCR|SNR)_base\.npy')
+
+        for filename in os.listdir(input_directory):
+            match = pattern.match(filename)
+            if match:
+                station_num = match.group(1)
+                part_num = int(match.group(2))
+                data_type = match.group(3)
+                full_path = os.path.join(input_directory, filename)
+
+                if station_num not in station_files:
+                    station_files[station_num] = {'Chi2016': {}, 'ChiRCR': {}, 'SNR': {}}
+
+                station_files[station_num][data_type][part_num] = full_path
+
+        # Ensure the output directory exists
+        os.makedirs(output_directory, exist_ok=True)
+
+        for station_num, data_types in station_files.items():
+            print(f"--- Processing Station {station_num} ---")
+            for data_type, parts in data_types.items():
+                if not parts:
+                    continue
+
+                # Sort parts by their number (e.g., Part0, Part1, Part2)
+                sorted_parts = sorted(parts.items())
+                arrays_to_concatenate = []
+
+                print(f"  Concatenating {data_type} files:")
+                for part_num, filepath in sorted_parts:
+                    print(f"    Loading: {os.path.basename(filepath)}")
+                    try:
+                        arrays_to_concatenate.append(np.load(filepath))
+                    except Exception as e:
+                        print(f"      Error loading {filepath}: {e}")
+                        continue
+
+                if arrays_to_concatenate:
+                    try:
+                        # Concatenate along axis 0. Adjust this if your data requires a different axis.
+                        concatenated_array = np.concatenate(arrays_to_concatenate, axis=0)
+                        output_filename = f"Station{station_num}_{data_type}_concatenated.npy"
+                        output_path = os.path.join(output_directory, output_filename)
+                        np.save(output_path, concatenated_array)
+                        print(f"  Successfully saved concatenated {data_type} data for Station {station_num} to: {output_path}")
+                    except ValueError as e:
+                        print(f"  Could not concatenate {data_type} arrays for Station {station_num}. Error: {e}")
+                        print("  This often happens if arrays have incompatible shapes for concatenation along the specified axis.")
+                else:
+                    print(f"  No {data_type} files loaded for concatenation for Station {station_num}.")
+
+    # --- Specify your input and output directories ---
+    input_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/'
+    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
+
+    # Run the concatenation process
+    concatenate_npy_by_station(input_dir, output_dir)
+
 #     station_id = 18
 #     load_path = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}/'
 

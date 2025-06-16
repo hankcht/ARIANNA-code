@@ -14,6 +14,7 @@ import pickle
 import templateCrossCorr as txc
 import NuRadioReco
 from NuRadioReco.utilities import units, fft
+from B1_BLcurve import plotalldata
 
     
 def getMaxChi(traces, sampling_rate, template_trace, template_sampling_rate, parallelChannels=[[0, 2], [1, 3]]):
@@ -333,49 +334,97 @@ if __name__ == "__main__":
     maxCorrBins = np.arange(0, 1.0001, 0.01)
 
 
-    for station_id in station_numbers:
-        for threshold in thresholds:
-            snr_key = f"Stn{station_id}_SNR_ge0p{threshold}"
-            chir_key = f"Stn{station_id}_Chi2016_ge0p{threshold}"
+    # for station_id in station_numbers:
+    #     for threshold in thresholds:
+    #         snr_key = f"Stn{station_id}_SNR_ge0p{threshold}"
+    #         chir_key = f"Stn{station_id}_Chi2016_ge0p{threshold}"
 
-            current_snrs = None
-            current_rcr_chi = None
+    #         current_snrs = None
+    #         current_rcr_chi = None
 
-            if snr_key in new_chi_dict:
-                current_snrs = new_chi_dict[snr_key]
-            else:
-                print(f"Warning: {snr_key} not found. Skipping for station {station_id}, threshold {threshold}.")
-                continue 
+    #         if snr_key in new_chi_dict:
+    #             current_snrs = new_chi_dict[snr_key]
+    #         else:
+    #             print(f"Warning: {snr_key} not found. Skipping for station {station_id}, threshold {threshold}.")
+    #             continue 
 
-            if chir_key in new_chi_dict:
-                current_rcr_chi = new_chi_dict[chir_key]
-            else:
-                print(f"Warning: {chir_key} not found. Skipping for station {station_id}, threshold {threshold}.")
-                continue 
+    #         if chir_key in new_chi_dict:
+    #             current_rcr_chi = new_chi_dict[chir_key]
+    #         else:
+    #             print(f"Warning: {chir_key} not found. Skipping for station {station_id}, threshold {threshold}.")
+    #             continue 
 
-            if current_snrs.shape != current_rcr_chi.shape:
-                print(f"Error: Mismatched shapes for {snr_key} ({current_snrs.shape}) and {chir_key} ({current_rcr_chi.shape}). Skipping.")
-                continue
+    #         if current_snrs.shape != current_rcr_chi.shape:
+    #             print(f"Error: Mismatched shapes for {snr_key} ({current_snrs.shape}) and {chir_key} ({current_rcr_chi.shape}). Skipping.")
+    #             continue
 
-            plt.figure(figsize=(10, 8)) 
+    #         plt.figure(figsize=(10, 8)) 
             
-            plt.hist2d(current_snrs, current_rcr_chi, bins=[SNRbins, maxCorrBins],
-                    norm=matplotlib.colors.LogNorm(), cmap='viridis')
+    #         plt.hist2d(current_snrs, current_rcr_chi, bins=[SNRbins, maxCorrBins],
+    #                 norm=matplotlib.colors.LogNorm(), cmap='viridis')
+    #         plt.colorbar(label='Count (log scale)')
+    #         plt.xlim((3, 100))
+    #         plt.ylim((0, 1))
+    #         plt.xlabel('SNR')
+    #         plt.ylabel('Avg Chi Highest Parallel Channels')
+    #         plt.xscale('log') 
+    #         plt.tick_params(axis='x', which='minor', bottom=True) 
+    #         plt.grid(visible=True, which='both', axis='both', linestyle=':', alpha=0.7) 
+    #         plt.title(f'Station {station_id} - Threshold: {threshold} (Events: {len(current_snrs):,})')
+
+    #         output_filename = f'ChiSNR_Stn{station_id}_ge0p{threshold}.png'
+    #         save_path = os.path.join(plot_folder, output_filename)
+    #         print(f'Saving {save_path}')
+    #         plt.savefig(save_path, bbox_inches='tight')
+    #         plt.close() 
+
+    station_ids_for_plotting = [14, 17, 19, 30]
+    plot_output_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/'
+    for current_station_id in station_ids_for_plotting:
+        # Call your load_data function. It returns 4 values, but we only need the first two here.
+        # We use _ for the values we don't need (Traces and UNIX).
+        all_data_snr, all_data_chi, _, _ = load_data('All_data', '200s', current_station_id)
+
+        # Check if the required data was successfully loaded and is not empty
+        if all_data_snr is not None and all_data_chi is not None and len(all_data_snr) > 0:
+            # Ensure SNR and Chi arrays have the same number of events for plotting
+            if len(all_data_snr) != len(all_data_chi):
+                print(f"Warning: Mismatched event counts for Station {current_station_id}. SNR: {len(all_data_snr)}, Chi: {len(all_data_chi)}. Skipping plot.")
+                continue # Skip this station if data lengths don't match
+
+            # Create a new figure for each plot
+            plt.figure(figsize=(10, 8))
+
+            # Generate the 2D histogram
+            plt.hist2d(all_data_snr, all_data_chi, bins=[SNRbins, maxCorrBins],
+                       norm=matplotlib.colors.LogNorm(), cmap='viridis')
+
+            # Add a color bar to show the count scale
             plt.colorbar(label='Count (log scale)')
+
+            # Set plot limits (matching your previous plot settings)
             plt.xlim((3, 100))
             plt.ylim((0, 1))
+
+            # Add labels and grid
             plt.xlabel('SNR')
             plt.ylabel('Avg Chi Highest Parallel Channels')
-            plt.xscale('log') 
-            plt.tick_params(axis='x', which='minor', bottom=True) 
-            plt.grid(visible=True, which='both', axis='both', linestyle=':', alpha=0.7) 
-            plt.title(f'Station {station_id} - Threshold: {threshold} (Events: {len(current_snrs):,})')
+            plt.xscale('log') # Set x-axis to logarithmic scale
+            plt.tick_params(axis='x', which='minor', bottom=True) # Show minor ticks on log scale
+            plt.grid(visible=True, which='both', axis='both', linestyle=':', alpha=0.7)
 
-            output_filename = f'ChiSNR_Stn{station_id}_ge0p{threshold}.png'
-            save_path = os.path.join(plot_folder, output_filename)
-            print(f'Saving {save_path}')
-            plt.savefig(save_path, bbox_inches='tight')
-            plt.close() 
+            # Set the plot title, including the station ID and number of events
+            plt.title(f'Station {current_station_id} - SNR vs. Chi (Events: {len(all_data_snr):,})')
+
+            # Define the filename and save the plot
+            output_file_name = f'ChiSNR_Stn{current_station_id}_200s.png'
+            full_save_path = os.path.join(plot_output_folder, output_file_name)
+            print(f'Saving {full_save_path}')
+            plt.savefig(full_save_path, bbox_inches='tight') # Use bbox_inches='tight' to prevent labels from being cut off
+            plt.close() # Close the current figure to free up memory
+
+        else:
+            print(f"No valid data available for Station {current_station_id} with Amp Type 200s. Skipping plot generation.")
 
     print("\nAll station and threshold plots generated and saved.")
 

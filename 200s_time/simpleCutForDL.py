@@ -255,7 +255,7 @@ if __name__ == '__main__':
                     try:
                         # Concatenate along axis 0. Adjust this if your data requires a different axis.
                         concatenated_array = np.concatenate(arrays_to_concatenate, axis=0)
-                        output_filename = f"Station{station_num}_{data_type}_concatenated.npy"
+                        output_filename = f"Station{station_num}_{data_type}_base.npy"
                         output_path = os.path.join(output_directory, output_filename)
                         np.save(output_path, concatenated_array)
                         print(f"  Successfully saved concatenated {data_type} data for Station {station_num} to: {output_path}")

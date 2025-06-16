@@ -12,6 +12,8 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     header += "#SBATCH -p standard                          ##Partition/queue name\n"
     header += "#SBATCH --time=3-00:00:00                ##Max runtime D-HH:MM:SS, 3 days free maximum\n"
     header += "#SBATCH --nodes=1                        ##Nodes to be used\n"
+    header += "SBATCH --mem-per-cpu=6G                  ##requesting max memory per CPU\n"
+    header += "SBATCH --ntasks=30                       ##Numer of processes to be\n"
     header += "#SBATCH --ntasks=1                       ##Numer of processes to be launched\n"
     header += "#SBATCH --cpus-per-task=1                ##Cpu's to be used\n"
     header += "#SBATCH --mem=18G\n"		       
@@ -57,9 +59,9 @@ stations_to_run_on_pt2 = [14,17,19,30,15,18]
 '''always remember to first input a new model in A0'''
 
 # Can Train if needed
-cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
+cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL.py 13 4.4.25'
     #'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A1.5_StudyCNN.py data_data'
-    # 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL.py 13 4.4.25' 
+    #'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
 RunMultipleJobs(cmd , jobName=f'genericBatchJob')
 
 # Part One: sim and data network output analysis

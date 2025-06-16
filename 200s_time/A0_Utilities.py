@@ -322,7 +322,7 @@ if __name__ == "__main__":
     file_types = ['Chi2016', 'ChiRCR', 'SNR', 'Times', 'Traces']
     thresholds = ['60', '65', '70']
     new_chi_dict = load_new_chi(load_path, station_numbers, file_types, thresholds)
-    new_chi2016 = new_chi_dict['Stn14_Chi2016_ge0p60']
+    new_chi2016 = new_chi_dict['Stn17_Chi2016_ge0p60']
     print(len(new_chi2016))
 
 

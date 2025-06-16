@@ -11,7 +11,6 @@ def load_parameter_data(base_folder, date_str, station_id, param_name, partition
     Handles potential .squeeze() issues if data is scalar or nearly scalar after loading parts.
     """
     file_pattern = os.path.join(base_folder, f'{date_str}_Station{station_id}_{param_name}*')
-    print(len(file_pattern))
     files = sorted(glob.glob(file_pattern))
     if not files:
         ic(f"Warning: No files found for Station {station_id}, {param_name}, Date {date_str} with pattern {file_pattern}")
@@ -80,14 +79,14 @@ def main():
 
     # --- Configuration for Paths ---
     base_input_folder = os.path.join('/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/', date_str)
-    base_output_folder = os.path.join('/pub/tangch3/ARIANNA/DeepLearning/new_chi_data', date_str, f"Station{station_id}")   # Modify as needed
+    base_output_folder = os.path.join(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/', date_str, f"Station{station_id}")   # Modify as needed
     
     os.makedirs(base_output_folder, exist_ok=True)
 
     # --- Parameters to Load and Save ---
     params_to_process = ['Traces', 'SNR', 'Chi2016', 'ChiRCR', 'Times'] # 
     loaded_data_raw = {}
-    partition_number = 2 
+    partition_number = 0 
 
     ic("Loading data...") 
     for param in params_to_process:
@@ -145,14 +144,18 @@ def main():
     base_chi2016_values = filtered_data_for_chi_cuts['Chi2016']
     base_chircr_values = filtered_data_for_chi_cuts['ChiRCR']
     base_snr_values = filtered_data_for_chi_cuts['SNR']
-    chi2016_base_filename = os.path.join(base_output_folder, f"Station{station_id}_Chi2016_base.npy")
-    chircr_base_filename = os.path.join(base_output_folder, f"Station{station_id}_ChiRCR_base.npy")
-    snr_base_filename = os.path.join(base_output_folder, f"Station{station_id}_SNR_base.npy")
+
+    # Modified: Include partition_number in the filename
+    chi2016_base_filename = os.path.join(base_output_folder, f"Station{station_id}_Part{partition_number}_Chi2016_base.npy")
+    chircr_base_filename = os.path.join(base_output_folder, f"Station{station_id}_Part{partition_number}_ChiRCR_base.npy")
+    snr_base_filename = os.path.join(base_output_folder, f"Station{station_id}_Part{partition_number}_SNR_base.npy")
+    
     np.save(chi2016_base_filename, base_chi2016_values)
     ic(f"Saved base Chi2016 values to: {chi2016_base_filename}")
 
-    np.save(chi2016_base_filename, base_chircr_values)
-    ic(f"Saved base Chi2016 values to: {chircr_base_filename}")
+    # Correction: You were saving ChiRCR to the Chi2016 filename, fixed this.
+    np.save(chircr_base_filename, base_chircr_values)
+    ic(f"Saved base ChiRCR values to: {chircr_base_filename}")
 
     np.save(snr_base_filename, base_snr_values)
     ic(f"Saved base SNR values to: {snr_base_filename}")

@@ -86,7 +86,7 @@ def main():
     # --- Parameters to Load and Save ---
     params_to_process = ['Traces', 'SNR', 'Chi2016', 'ChiRCR', 'Times'] # 
     loaded_data_raw = {}
-    partition_number = 1
+    partition_number = 2
 
     ic("Loading data...") 
     for param in params_to_process:

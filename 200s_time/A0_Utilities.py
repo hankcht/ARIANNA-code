@@ -325,10 +325,8 @@ if __name__ == "__main__":
     file_types = ['Chi2016', 'ChiRCR', 'SNR', 'Times', 'Traces']
     thresholds = ['60', '65', '70']
     new_chi_dict = load_new_chi(load_path, station_numbers, file_types, thresholds)
-    new_chi2016 = new_chi_dict['Stn17_Chi2016_ge0p60']
 
-
-    plot_folder = f'/data/homezvol3/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/4.4.25' 
+    plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/4.4.25/' 
     Path(plot_folder).mkdir(parents=True, exist_ok=True)
 
     SNRbins = np.logspace(0.477, 2, num=80)

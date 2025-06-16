@@ -197,8 +197,9 @@ def main():
     ic(f"\nProcessing complete for Station {station_id}, Date {date_str}.")
 
 if __name__ == '__main__':
-    main()
-
+    # main()
+    arr = np.load('/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/Station14_Part0_Chi2016_base.npy')
+    ic(len(arr))
 #     station_id = 18
 #     load_path = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}/'
 

@@ -430,7 +430,7 @@ if __name__ == "__main__":
     #         print(f"No valid data available for Station {current_station_id} with Amp Type 200s. Skipping plot generation.")
 
     data_directory = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
-    plot_output_folder = './ChiSNR_base_plots/'
+    plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/'
     os.makedirs(plot_output_folder, exist_ok=True)
 
 

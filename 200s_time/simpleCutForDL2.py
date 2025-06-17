@@ -199,7 +199,7 @@ def plot_new_chi_data(param, All_SNRs, All_Chi, station_id, plot_folder):
     print(f'Saving {plot_folder}/SNR-Chi{param}_All_Stn{station_id}.png')
     plt.savefig(f'{plot_folder}/SNR-Chi{param}_All_Stn{station_id}.png')
     plt.close()
-    
+
     return
 
 if __name__ == '__main__':
@@ -215,7 +215,7 @@ if __name__ == '__main__':
     for station_id in stations:
 
         data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
-        plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/'
+        plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR'
         os.makedirs(plot_output_folder, exist_ok=True)
 
         All_SNRs = np.load(f'{data_directory}/station{station_id}_all_SNR.npy')

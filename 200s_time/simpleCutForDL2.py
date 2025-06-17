@@ -4,8 +4,8 @@ import os
 import argparse
 import datetime
 from icecream import ic
-import matplotlib as plt
-import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.colors
 
 def load_parameter_data(base_folder, date_str, station_id, param_name):
     """
@@ -199,8 +199,7 @@ def plot_new_chi_data(param, All_SNRs, All_Chi, station_id, plot_folder):
     print(f'Saving {plot_folder}/SNR-Chi{param}_All_Stn{station_id}.png')
     plt.savefig(f'{plot_folder}/SNR-Chi{param}_All_Stn{station_id}.png')
     plt.close()
-    plt.clf()
-
+    
     return
 
 if __name__ == '__main__':

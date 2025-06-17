@@ -385,7 +385,7 @@ if __name__ == "__main__":
     for current_station_id in station_ids_for_plotting:
         # Call your load_data function. It returns 4 values, but we only need the first two here.
         # We use _ for the values we don't need (Traces and UNIX).
-        all_data_snr, all_data_chi, _, _ = load_data('All_data', '200s', current_station_id)
+        all_data_snr, all_data_chi, _, _ = load_data('All_data', '100s', current_station_id)
         print(f'total num of events is {len(all_data_chi)}')
 
         # Check if the required data was successfully loaded and is not empty

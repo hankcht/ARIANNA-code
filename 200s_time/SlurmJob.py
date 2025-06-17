@@ -13,10 +13,10 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     header += "#SBATCH --nodes=1                       ##Nodes to be used\n"
     
     header += "#SBATCH --ntasks=30                     ##Number of processes to be launched (CPUs)\n" 
-    header += "#SBATCH --mem-per-cpu=6G                ##Requesting 6GB memory per CPU\n"
+    # header += "#SBATCH --mem-per-cpu=6G                ##Requesting 6GB memory per CPU\n"
     # If keep --mem, it will override --mem-per-cpu * --ntasks if it's a lower value.
     # It's better to explicitly calculate and rely on mem-per-cpu * ntasks for clarity.
-    # header += "#SBATCH --mem=18G\n" 
+    header += "#SBATCH --mem=18G\n" 
     
     header += "#SBATCH --output={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.out'))
     header += "#SBATCH --error={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.err'))
@@ -63,7 +63,7 @@ for station_id in stations:
         amp = '100s'
         print(f'amp: {amp}') 
 
-    cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL2.py {station_id} 4.4.25'
+    cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL2.py' # {station_id} 4.4.25'
     # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
     RunMultipleJobs(cmd , jobName=f'genericBatchJob')
 

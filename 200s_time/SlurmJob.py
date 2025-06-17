@@ -13,10 +13,10 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     header += "#SBATCH --nodes=1                       ##Nodes to be used\n"
     
     header += "#SBATCH --ntasks=30                     ##Number of processes to be launched (CPUs)\n" 
-    # header += "#SBATCH --mem-per-cpu=6G                ##Requesting 6GB memory per CPU\n"
+    header += "#SBATCH --mem-per-cpu=6G                ##Requesting 6GB memory per CPU\n"
     # If keep --mem, it will override --mem-per-cpu * --ntasks if it's a lower value.
     # It's better to explicitly calculate and rely on mem-per-cpu * ntasks for clarity.
-    header += "#SBATCH --mem=18G\n" 
+    # header += "#SBATCH --mem=18G\n" 
     
     header += "#SBATCH --output={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.out'))
     header += "#SBATCH --error={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.err'))
@@ -61,8 +61,9 @@ stations_to_run_on_pt2 = [14,17,19,30,15,18]
 '''always remember to first input a new model in A0'''
 
 # Can Train if needed
-cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
-#'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL.py 14 4.4.25 --partition 2'
+cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL2.py 14 4.4.25'
+#'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
+#
     #'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A1.5_StudyCNN.py data_data'
     #  
 

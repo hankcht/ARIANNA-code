@@ -198,7 +198,8 @@ def plot_new_chi_data(param, All_SNRs, All_Chi, station_id, plot_folder):
     plt.title(f'Station {station_id} - SNR vs. Chi (Events: {len(All_SNRs):,})')
     print(f'Saving {plot_folder}/SNR-Chi{param}_All_Stn{station_id}.png')
     plt.savefig(f'{plot_folder}/SNR-Chi{param}_All_Stn{station_id}.png')
-
+    plt.close()
+    plt.clf()
 
     return
 
@@ -224,4 +225,4 @@ if __name__ == '__main__':
 
             ic(f'number of all data is {len(All_SNRs)} and {len(All_Chi)}')
 
-            # plot_new_chi_data(All_SNRs, All_Chi, station_id, plot_output_folder)
+            plot_new_chi_data(param, All_SNRs, All_Chi, station_id, plot_output_folder)

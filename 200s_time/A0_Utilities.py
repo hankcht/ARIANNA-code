@@ -380,7 +380,7 @@ if __name__ == "__main__":
 
     # print("\nAll station and threshold plots generated and saved.")
 
-    station_ids_for_plotting = [14, 17, 19, 30]
+    station_ids_for_plotting = [13,15,18]
     plot_output_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/'
     for current_station_id in station_ids_for_plotting:
         # Call your load_data function. It returns 4 values, but we only need the first two here.

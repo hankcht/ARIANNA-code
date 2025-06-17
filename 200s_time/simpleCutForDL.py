@@ -191,7 +191,9 @@ def main():
     np.save(snr_base_filename, base_snr_values)
     ic(f"Saved base SNR values to: {snr_base_filename}")
 
-    ic(f"\nProcessing complete for Station {station_id}, Date {date_str}, Partition {partition_number}.")
+    os.makedirs(base_output_folder, exist_ok=True)
+
+
 
 import re
 

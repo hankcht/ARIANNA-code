@@ -438,7 +438,7 @@ if __name__ == "__main__":
     station_data_files = {
         14: {
             'snr': 'Station14_SNR_base.npy',
-            'chi': 'Station14_ChiRCR_base.npy' # Using ChiRCR as the default Chi.
+            'chi': 'Station14_Chi2016_base.npy' # Using ChiRCR as the default Chi.
                                             # Change to 'Station14_Chi2016_base.npy' if needed.
         }
     }

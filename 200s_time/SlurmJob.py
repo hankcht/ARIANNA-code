@@ -53,19 +53,26 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     return
 
 
-# --- Run multiple stations ---
-stations = [13,15,18,14,17,19,30]
-for station_id in stations:
-    if station_id in [14,17,19,30]:
-        amp = '200s'   
-        print(f'amp: {amp}') 
-    elif station_id in [13,15,18]:
-        amp = '100s'
-        print(f'amp: {amp}') 
+multi_run = False
 
-    cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL2.py' # {station_id} 4.4.25'
-    # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
-    RunMultipleJobs(cmd , jobName=f'genericBatchJob')
+if multi_run == True:
+    # --- Run multiple stations ---
+    stations = [13,15,18,14,17,19,30]
+    for station_id in stations:
+        if station_id in [14,17,19,30]:
+            amp = '200s'   
+            print(f'amp: {amp}') 
+        elif station_id in [13,15,18]:
+            amp = '100s'
+            print(f'amp: {amp}') 
+
+        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL2.py' # {station_id} 4.4.25'
+        # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
+        RunMultipleJobs(cmd , jobName=f'genericBatchJob')
+else: 
+        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL2.py' # {station_id} 4.4.25'
+        # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
+        RunMultipleJobs(cmd , jobName=f'genericBatchJob')
 
 
 

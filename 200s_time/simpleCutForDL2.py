@@ -4,6 +4,8 @@ import os
 import argparse
 import datetime
 from icecream import ic
+import matplotlib as plt
+import matplotlib
 
 def load_parameter_data(base_folder, date_str, station_id, param_name):
     """
@@ -181,14 +183,45 @@ def main():
 
     ic(f"\nProcessing complete for Station {station_id}, Date {date_str}.")
 
-def plot_new_chi_data():
+def plot_new_chi_data(param, All_SNRs, All_Chi, station_id, plot_folder):
+    #Plot of all events in Chi-SNR space
+    plt.hist2d(All_SNRs, All_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+    plt.colorbar()
+    plt.xlim((3, 100))
+    plt.ylim((0, 1))
+    plt.xlabel('SNR')
+    plt.ylabel('Avg Chi Highest Parallel Channels')
+    # plt.legend()
+    plt.xscale('log')
+    plt.tick_params(axis='x', which='minor', bottom=True)
+    plt.grid(visible=True, which='both', axis='both') 
+    plt.title(f'Station {station_id} - SNR vs. Chi (Events: {len(All_SNRs):,})')
+    print(f'Saving {plot_folder}/SNR-Chi{param}_All_Stn{station_id}.png')
+    plt.savefig(f'{plot_folder}/SNR-Chi{param}_All_Stn{station_id}.png')
 
 
     return
 
 if __name__ == '__main__':
-    main()
+    # main()
 
-    
+
     SNRbins = np.logspace(0.477, 2, num=80)
     maxCorrBins = np.arange(0, 1.0001, 0.01)
+    
+    stations = [13,15,18,14,17,19,30]
+    parameters = ['2016', 'RCR']
+
+    for station_id in stations:
+
+        data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
+        plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/'
+        os.makedirs(plot_output_folder, exist_ok=True)
+
+        All_SNRs = np.load(f'{data_directory}/station{station_id}_all_SNR.npy')
+        for param in parameters:
+            All_Chi = np.load(f'{data_directory}/station{station_id}_all_Chi{param}.npy')
+
+            ic(f'number of all data is {len(All_SNRs)} and {len(All_Chi)}')
+
+            # plot_new_chi_data(All_SNRs, All_Chi, station_id, plot_output_folder)

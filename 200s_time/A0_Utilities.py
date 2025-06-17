@@ -303,37 +303,39 @@ def load_new_chi(load_path, station_numbers, file_types, thresholds, single_file
     # access using loaded_data['Stn{stn_num}_{file_type}_ge0p{threshold}']
     return loaded_data
 
+def profiling():
+    start = time.time()
+
+    end = time.time()
+    print(f"task: {end - start}s")
+    start = end
+
+def deleting():
+    # --- to delete files ---
+    directory = '/pub/tangch3/ARIANNA/DeepLearning/logs'
+    for i in range(154):
+        files_to_delete = glob.glob(os.path.join(directory, f'Stn17_{i}.out'))
+
+        for file in files_to_delete:
+            os.remove(file)
+            print(f'Deleted :{file}')
+
 if __name__ == "__main__":
-
-    # # profiling method:
-    # start = time.time()
-
-    # end = time.time()
-    # print(f"task: {end - start}s")
-    # start = end
-
-    # # to delete files:
-    # directory = '/pub/tangch3/ARIANNA/DeepLearning/logs'
-    # for i in range(154):
-    #     files_to_delete = glob.glob(os.path.join(directory, f'Stn17_{i}.out'))
-
-    #     for file in files_to_delete:
-    #         os.remove(file)
-    #         print(f'Deleted :{file}')
-
-    # load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
-    # station_numbers = [13, 15, 18, 14, 17, 19, 30]
-    # file_types = ['Chi2016', 'ChiRCR', 'SNR', 'Times', 'Traces']
-    # thresholds = ['60', '65', '70']
-    # new_chi_dict = load_new_chi(load_path, station_numbers, file_types, thresholds)
-
-    # plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/4.4.25/' 
-    # Path(plot_folder).mkdir(parents=True, exist_ok=True)
 
     SNRbins = np.logspace(0.477, 2, num=80)
     maxCorrBins = np.arange(0, 1.0001, 0.01)
 
+    # --- Setup for loading above threshold new chi data ---
+    load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
+    station_numbers = [13, 15, 18, 14, 17, 19, 30]
+    file_types = ['Chi2016', 'ChiRCR', 'SNR', 'Times', 'Traces']
+    thresholds = ['60', '65', '70']
+    new_chi_dict = load_new_chi(load_path, station_numbers, file_types, thresholds)
 
+    plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/4.4.25/' 
+    Path(plot_folder).mkdir(parents=True, exist_ok=True)
+
+    
     # for station_id in station_numbers:
     #     for threshold in thresholds:
     #         snr_key = f"Stn{station_id}_SNR_ge0p{threshold}"
@@ -429,62 +431,62 @@ if __name__ == "__main__":
     #     else:
     #         print(f"No valid data available for Station {current_station_id} with Amp Type 200s. Skipping plot generation.")
 
-    data_directory = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
-    plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/'
-    os.makedirs(plot_output_folder, exist_ok=True)
+    # data_directory = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
+    # plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/'
+    # os.makedirs(plot_output_folder, exist_ok=True)
 
 
-    # Specific base file mappings for Station 14
-    station_data_files = {
-        14: {
-            'snr': 'Station14_SNR_base.npy',
-            'chi': 'Station14_Chi2016_base.npy' # Using ChiRCR as the default Chi.
-                                            # Change to 'Station14_Chi2016_base.npy' if needed.
-        }
-    }
+    # # Specific base file mappings for Station 14
+    # station_data_files = {
+    #     14: {
+    #         'snr': 'Station14_SNR_base.npy',
+    #         'chi': 'Station14_Chi2016_base.npy' # Using ChiRCR as the default Chi.
+    #                                         # Change to 'Station14_Chi2016_base.npy' if needed.
+    #     }
+    # }
 
-    # List of station IDs to process (only Station 14 as per your request)
-    station_ids_for_plotting = [14]
+    # # List of station IDs to process (only Station 14 as per your request)
+    # station_ids_for_plotting = [14]
 
-    def load_specified_base_data(station_id, data_files_map, data_dir):
-        """
-        Loads SNR and Chi data from specific base .npy files for a given station.
-        """
-        if station_id not in data_files_map:
-            print(f"Error: No base file definitions found for Station {station_id} in the map.")
-            return None, None
+    # def load_specified_base_data(station_id, data_files_map, data_dir):
+    #     """
+    #     Loads SNR and Chi data from specific base .npy files for a given station.
+    #     """
+    #     if station_id not in data_files_map:
+    #         print(f"Error: No base file definitions found for Station {station_id} in the map.")
+    #         return None, None
 
-        snr_filename = data_files_map[station_id]['snr']
-        chi_filename = data_files_map[station_id]['chi']
+    #     snr_filename = data_files_map[station_id]['snr']
+    #     chi_filename = data_files_map[station_id]['chi']
 
-        snr_filepath = os.path.join(data_dir, snr_filename)
-        chi_filepath = os.path.join(data_dir, chi_filename)
+    #     snr_filepath = os.path.join(data_dir, snr_filename)
+    #     chi_filepath = os.path.join(data_dir, chi_filename)
 
-        all_data_snr = None
-        all_data_chi = None
+    #     all_data_snr = None
+    #     all_data_chi = None
 
-        try:
-            # Load SNR data
-            if os.path.exists(snr_filepath):
-                all_data_snr = np.load(snr_filepath)
-                print(f"Loaded SNR data from: {snr_filepath} (Shape: {all_data_snr.shape})")
-            else:
-                print(f"Error: SNR base file not found: {snr_filepath}")
-                return None, None
+    #     try:
+    #         # Load SNR data
+    #         if os.path.exists(snr_filepath):
+    #             all_data_snr = np.load(snr_filepath)
+    #             print(f"Loaded SNR data from: {snr_filepath} (Shape: {all_data_snr.shape})")
+    #         else:
+    #             print(f"Error: SNR base file not found: {snr_filepath}")
+    #             return None, None
 
-            # Load Chi data
-            if os.path.exists(chi_filepath):
-                all_data_chi = np.load(chi_filepath)
-                print(f"Loaded Chi data from: {chi_filepath} (Shape: {all_data_chi.shape})")
-            else:
-                print(f"Error: Chi base file not found: {chi_filepath}")
-                return None, None
+    #         # Load Chi data
+    #         if os.path.exists(chi_filepath):
+    #             all_data_chi = np.load(chi_filepath)
+    #             print(f"Loaded Chi data from: {chi_filepath} (Shape: {all_data_chi.shape})")
+    #         else:
+    #             print(f"Error: Chi base file not found: {chi_filepath}")
+    #             return None, None
 
-        except Exception as e:
-            print(f"An error occurred while loading base files for Station {station_id}: {e}")
-            return None, None
+    #     except Exception as e:
+    #         print(f"An error occurred while loading base files for Station {station_id}: {e}")
+    #         return None, None
 
-        return all_data_snr, all_data_chi
+    #     return all_data_snr, all_data_chi
 
     # --- Main Plotting Logic ---
     for current_station_id in station_ids_for_plotting:

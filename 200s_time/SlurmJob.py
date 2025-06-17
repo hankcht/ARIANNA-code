@@ -52,6 +52,24 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
 
     return
 
+
+# --- Run multiple stations ---
+stations = [13,15,18,14,17,19,30]
+for station_id in stations:
+    if station_id in [14,17,19,30]:
+        amp = '200s'   
+        print(f'amp: {amp}') 
+    elif station_id in [13,15,18]:
+        amp = '100s'
+        print(f'amp: {amp}') 
+
+    cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL2.py {station_id} 4.4.25'
+    # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
+    RunMultipleJobs(cmd , jobName=f'genericBatchJob')
+
+
+
+
 # Set parameters
 single_file = False # If True, we run each nur file individually (See DO4B1)
 stations_to_run_on_pt1 = [14,17,19,30,13,15,18]
@@ -61,13 +79,13 @@ stations_to_run_on_pt2 = [14,17,19,30,15,18]
 '''always remember to first input a new model in A0'''
 
 # Can Train if needed
-cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL2.py 14 4.4.25'
+# cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL2.py 14 4.4.25'
 #'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
 #
     #'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A1.5_StudyCNN.py data_data'
     #  
 
-RunMultipleJobs(cmd , jobName=f'genericBatchJob')
+# RunMultipleJobs(cmd , jobName=f'genericBatchJob')
 
 # Part One: sim and data network output analysis
 # 

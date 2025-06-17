@@ -141,45 +141,54 @@ def main():
 
 
 
-    # # --- Chi2016 Thresholding and Saving ---
-    # chi2016_thresholds = [0.7, 0.65, 0.6]
-    # base_chi2016_values = filtered_data_for_chi_cuts['Chi2016']
+    # --- Chi2016 Thresholding and Saving ---
+    chi2016_thresholds = [0.7, 0.65, 0.6]
+    base_chi2016_values = filtered_data_for_chi_cuts['Chi2016']
 
-    # for chi_thresh in chi2016_thresholds:
-    #     ic(f"\nApplying Chi2016 threshold: >= {chi_thresh}")
+    for chi_thresh in chi2016_thresholds:
+        ic(f"\nApplying Chi2016 threshold: >= {chi_thresh}")
         
-    #     # Ensure base_chi2016_values is not empty and is 1D for comparison
-    #     if base_chi2016_values.size == 0 :
-    #         ic(f"  No Chi2016 values to apply threshold {chi_thresh} to (array is empty). Skipping.")
-    #         continue
+        # Ensure base_chi2016_values is not empty and is 1D for comparison
+        if base_chi2016_values.size == 0 :
+            ic(f"  No Chi2016 values to apply threshold {chi_thresh} to (array is empty). Skipping.")
+            continue
         
-    #     current_chi_mask = (base_chi2016_values >= chi_thresh)
-    #     num_passed_events = np.sum(current_chi_mask)
+        current_chi_mask = (base_chi2016_values >= chi_thresh)
+        num_passed_events = np.sum(current_chi_mask)
         
-    #     ic(f"  {num_passed_events} events passed Chi2016 >= {chi_thresh}")
+        ic(f"  {num_passed_events} events passed Chi2016 >= {chi_thresh}")
 
-    #     if num_passed_events > 0:
-    #         output_data_dict = {}
-    #         for param in params_to_process:
-    #             output_data_dict[param] = filtered_data_for_chi_cuts[param][current_chi_mask]
+        if num_passed_events > 0:
+            output_data_dict = {}
+            for param in params_to_process:
+                output_data_dict[param] = filtered_data_for_chi_cuts[param][current_chi_mask]
             
-    #         # Construct filename
-    #         # Replacing '.' in threshold with 'p' for cleaner filenames (e.g., 0.7 -> 0p70)
-    #         thresh_str = f"{chi_thresh:.2f}".replace('.', 'p') 
-    #         output_filename = f"St{station_id}_{date_str}_Chi2016_ge{thresh_str}_{num_passed_events}evts_SelectedData.npy"
-    #         output_filepath = os.path.join(base_output_folder, output_filename)
+            # Construct filename
+            # Replacing '.' in threshold with 'p' for cleaner filenames (e.g., 0.7 -> 0p70)
+            thresh_str = f"{chi_thresh:.2f}".replace('.', 'p') 
+            output_filename = f"St{station_id}_{date_str}_Chi2016_ge{thresh_str}_{num_passed_events}evts_SelectedData.npy"
+            output_filepath = os.path.join(base_output_folder, output_filename)
             
-    #         try:
-    #             np.save(output_filepath, output_data_dict, allow_pickle=True)
-    #             ic(f"  Successfully saved: {output_filepath}")
-    #             for param, data in output_data_dict.items():
-    #                 ic(f"    Saved {param} shape: {data.shape}")
-    #         except Exception as e:
-    #             ic(f"  Error saving file {output_filepath}: {e}")
-    #     else:
-    #         ic(f"  No events to save for Chi2016 >= {chi_thresh}")
+            try:
+                np.save(output_filepath, output_data_dict, allow_pickle=True)
+                ic(f"  Successfully saved: {output_filepath}")
+                for param, data in output_data_dict.items():
+                    ic(f"    Saved {param} shape: {data.shape}")
+            except Exception as e:
+                ic(f"  Error saving file {output_filepath}: {e}")
+        else:
+            ic(f"  No events to save for Chi2016 >= {chi_thresh}")
 
     ic(f"\nProcessing complete for Station {station_id}, Date {date_str}.")
 
+def plot_new_chi_data():
+
+
+    return
+
 if __name__ == '__main__':
     main()
+
+    
+    SNRbins = np.logspace(0.477, 2, num=80)
+    maxCorrBins = np.arange(0, 1.0001, 0.01)

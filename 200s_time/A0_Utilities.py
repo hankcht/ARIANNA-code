@@ -322,8 +322,7 @@ def deleting():
 
 if __name__ == "__main__":
 
-    SNRbins = np.logspace(0.477, 2, num=80)
-    maxCorrBins = np.arange(0, 1.0001, 0.01)
+    
 
     # --- Setup for loading above threshold new chi data ---
     load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
@@ -488,60 +487,60 @@ if __name__ == "__main__":
 
     #     return all_data_snr, all_data_chi
 
-    # --- Main Plotting Logic ---
-    for current_station_id in station_ids_for_plotting:
-        print(f"\nProcessing Station {current_station_id} using specified base files...")
+    # # --- Main Plotting Logic ---
+    # for current_station_id in station_ids_for_plotting:
+    #     print(f"\nProcessing Station {current_station_id} using specified base files...")
 
-        # Load the SNR and Chi data from the defined base files
-        all_data_snr, all_data_chi = load_specified_base_data(current_station_id, station_data_files, data_directory)
+    #     # Load the SNR and Chi data from the defined base files
+    #     all_data_snr, all_data_chi = load_specified_base_data(current_station_id, station_data_files, data_directory)
 
-        # Proceed only if both datasets are successfully loaded and not empty
-        if all_data_snr is not None and all_data_chi is not None and len(all_data_snr) > 0:
-            # Crucial check: Ensure both arrays have the same number of events
-            if len(all_data_snr) != len(all_data_chi):
-                print(f"Warning: Mismatched event counts for Station {current_station_id} base files. "
-                    f"SNR events: {len(all_data_snr)}, Chi events: {len(all_data_chi)}. Skipping plot.")
-                continue # Skip this station if data lengths don't match
+    #     # Proceed only if both datasets are successfully loaded and not empty
+    #     if all_data_snr is not None and all_data_chi is not None and len(all_data_snr) > 0:
+    #         # Crucial check: Ensure both arrays have the same number of events
+    #         if len(all_data_snr) != len(all_data_chi):
+    #             print(f"Warning: Mismatched event counts for Station {current_station_id} base files. "
+    #                 f"SNR events: {len(all_data_snr)}, Chi events: {len(all_data_chi)}. Skipping plot.")
+    #             continue # Skip this station if data lengths don't match
 
-            print(f'Total number of events for Station {current_station_id} is {len(all_data_snr):,}')
+    #         print(f'Total number of events for Station {current_station_id} is {len(all_data_snr):,}')
 
-            # Create a new figure for each plot to ensure clean separation
-            plt.figure(figsize=(10, 8))
+    #         # Create a new figure for each plot to ensure clean separation
+    #         plt.figure(figsize=(10, 8))
 
-            # Generate the 2D histogram (density plot)
-            plt.hist2d(all_data_snr, all_data_chi, bins=[SNRbins, maxCorrBins],
-                    norm=matplotlib.colors.LogNorm(), cmap='viridis')
+    #         # Generate the 2D histogram (density plot)
+    #         plt.hist2d(all_data_snr, all_data_chi, bins=[SNRbins, maxCorrBins],
+    #                 norm=matplotlib.colors.LogNorm(), cmap='viridis')
 
-            # Add a color bar to indicate the count scale
-            plt.colorbar(label='Event Count (log scale)')
+    #         # Add a color bar to indicate the count scale
+    #         plt.colorbar(label='Event Count (log scale)')
 
-            # Set the plot limits for clarity
-            plt.xlim((3, 100))
-            plt.ylim((0, 1))
+    #         # Set the plot limits for clarity
+    #         plt.xlim((3, 100))
+    #         plt.ylim((0, 1))
 
-            # Add axis labels, logarithmic scale for SNR, and a grid
-            plt.xlabel('SNR')
-            plt.ylabel('Avg Chi Highest Parallel Channels')
-            plt.xscale('log') # Use a logarithmic scale for the SNR axis
-            plt.tick_params(axis='x', which='minor', bottom=True) # Show minor ticks on log scale
-            plt.grid(visible=True, which='both', axis='both', linestyle=':', alpha=0.7)
+    #         # Add axis labels, logarithmic scale for SNR, and a grid
+    #         plt.xlabel('SNR')
+    #         plt.ylabel('Avg Chi Highest Parallel Channels')
+    #         plt.xscale('log') # Use a logarithmic scale for the SNR axis
+    #         plt.tick_params(axis='x', which='minor', bottom=True) # Show minor ticks on log scale
+    #         plt.grid(visible=True, which='both', axis='both', linestyle=':', alpha=0.7)
 
-            # Set the plot title with station ID and event count
-            plt.title(f'Station {current_station_id} - SNR vs. Chi (Base Files - Events: {len(all_data_snr):,})')
+    #         # Set the plot title with station ID and event count
+    #         plt.title(f'Station {current_station_id} - SNR vs. Chi (Base Files - Events: {len(all_data_snr):,})')
 
-            # Define the output filename and save the plot
-            # The filename will reflect that it's from base files
-            chi_type_for_filename = station_data_files[current_station_id]['chi'].replace('.npy', '').split('_')[-2] # Extracts 'ChiRCR' or 'Chi2016'
-            output_file_name = f'ChiSNR_Stn{current_station_id}_BaseFiles_{chi_type_for_filename}.png'
-            full_save_path = os.path.join(plot_output_folder, output_file_name)
-            print(f'Saving plot to: {full_save_path}')
-            plt.savefig(full_save_path, bbox_inches='tight') # Ensures labels aren't cut off
-            plt.close() # Close the figure to free up memory
+    #         # Define the output filename and save the plot
+    #         # The filename will reflect that it's from base files
+    #         chi_type_for_filename = station_data_files[current_station_id]['chi'].replace('.npy', '').split('_')[-2] # Extracts 'ChiRCR' or 'Chi2016'
+    #         output_file_name = f'ChiSNR_Stn{current_station_id}_BaseFiles_{chi_type_for_filename}.png'
+    #         full_save_path = os.path.join(plot_output_folder, output_file_name)
+    #         print(f'Saving plot to: {full_save_path}')
+    #         plt.savefig(full_save_path, bbox_inches='tight') # Ensures labels aren't cut off
+    #         plt.close() # Close the figure to free up memory
 
-        else:
-            print(f"No valid data loaded for Station {current_station_id} from base files. Skipping plot generation.")
+    #     else:
+    #         print(f"No valid data loaded for Station {current_station_id} from base files. Skipping plot generation.")
 
-    print("\nAll requested base file plots are complete!")
+    # print("\nAll requested base file plots are complete!")
 
         
 

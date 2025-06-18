@@ -199,9 +199,9 @@ if __name__ == "__main__":
     # define BL curves
     def find_curve_13(curve_x):
         curve_y = []
-        x1, y1 = 4.2, 0.48
-        x2, y2 = 8, 0.6
-        x3, y3 = 30, 0.63
+        x1, y1 = 4.5, 0.6
+        x2, y2 = 15, 0.8
+        x3, y3 = 20, 0.9
         x4, y4 = 40, 0.75
 
         for x in curve_x:
@@ -213,11 +213,11 @@ if __name__ == "__main__":
             elif x2 < x <= x3:
                 y = (y3 - y2) / (x3 - x2) * (x - x2) + y2  
                 curve_y.append(y)
-            elif x3 < x <= x4:
-                y = (y4 - y3) / (x4 - x3) * (x - x3) + y3  
-                curve_y.append(y)
+            # elif x3 < x <= x4:
+            #     y = (y4 - y3) / (x4 - x3) * (x - x3) + y3  
+            #     curve_y.append(y)
             else:
-                curve_y.append(y4)
+                curve_y.append(y3)
         
         return curve_y
         

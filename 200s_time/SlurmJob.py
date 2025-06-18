@@ -70,7 +70,7 @@ if multi_run == True:
         # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
         RunMultipleJobs(cmd , jobName=f'genericBatchJob')
 else: 
-        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL2.py' # {station_id} 4.4.25'
+        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/B1_BLcurve.py 14'
         # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
         RunMultipleJobs(cmd , jobName=f'genericBatchJob')
 

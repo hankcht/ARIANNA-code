@@ -379,14 +379,14 @@ if __name__ == "__main__":
     SNRbins = np.logspace(0.477, 2, num=80)
     maxCorrBins = np.arange(0, 1.0001, 0.01)
 
-    plot_BL_curve()
-    plotalldata(plot_folder)
+    # plot_BL_curve()
+    # plotalldata(plot_folder)
 
-    plot_BL_curve()
-    plotabovecurvedata(plot_folder)
+    # plot_BL_curve()
+    # plotabovecurvedata(plot_folder)
 
-    plot_BL_curve()
-    plotalldata_withsim(plot_folder)
+    # plot_BL_curve()
+    # plotalldata_withsim(plot_folder)
 
     print('Plotting Done!')
 

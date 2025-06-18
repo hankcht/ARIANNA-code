@@ -13,6 +13,7 @@ from NuRadioReco.utilities.io_utilities import read_pickle
 
 import templateCrossCorr as txc
 from A0_Utilities import getMaxChi, getMaxSNR, load_data
+from B3_simpleCutForDL import plot_new_chi_data
 
 # curve is a list of tuples (x, y) with x sorted 
 # be sure that all x values of blobs are in the curve 
@@ -116,7 +117,7 @@ def plotSimSNRChi(templates_RCR, noiseRMS, amp, type):
 
     return RCR_sim, sim_Chi, sim_SNRs, sim_weights, simulation_date
 
-def plotalldata(plot_folder):
+def plotalldata(plot_folder, All_data_SNR, All_data_Chi):
     plt.hist2d(All_data_SNR, All_data_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
     plt.colorbar()
     plt.xlim((3, 100))
@@ -132,7 +133,7 @@ def plotalldata(plot_folder):
     plt.savefig(f'{plot_folder}/All_stn{station_id}.png')
     plt.clf()
     
-def plotabovecurvedata(plot_folder):
+def plotabovecurvedata(plot_folder, above_curve_data_SNR, above_curve_data_Chi):
     plt.hist2d(above_curve_data_SNR, above_curve_data_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
     plt.colorbar()
     plt.xlim((3, 100))
@@ -148,7 +149,7 @@ def plotabovecurvedata(plot_folder):
     plt.savefig(f'{plot_folder}/2Above_curve_stn{station_id}.png')
     plt.clf()
 
-def plotalldata_withsim(plot_folder):
+def plotalldata_withsim(plot_folder, All_data_SNR, All_data_Chi):
     plt.hist2d(All_data_SNR, All_data_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
     plt.colorbar()
     plt.scatter(sim_SNRs, sim_chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
@@ -346,27 +347,7 @@ if __name__ == "__main__":
     curve_y = find_curve_func(curve_x)
     curve_y = np.array(curve_y)
 
-    # --- load data ---
-    All_data_SNR, All_data_Chi, All_data_Traces, All_data_UNIX = load_data('All_data', amp_type, station_id)
-    # above_curve_data_SNR, above_curve_data_Chi, above_curve_data_Traces, above_curve_data_UNIX = load_data('AboveCurve_data', amp_type, station_id)
-
-    # --- Now I want data above the BL curve we defined above ---
-    # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x
-    # Above_curve_sim = list(filter(lambda p: p[1] >= get_curve_y(curve_x, curve_y, p[0]), zip(sim_SNRs, sim_chi, sim_weights)))
-    # Above_curve_sim_x, Above_curve_sim_y, Above_curve_weights = list(zip(*Above_curve_sim))
-    Above_curve_data = list(filter(lambda p: p[1] >= get_curve_y(curve_x, curve_y, p[0]), zip(All_data_SNR, All_data_Chi, range(len(All_data_SNR)))))
-    Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = list(zip(*Above_curve_data)) 
-    
-
-    # #Calculate RCR efficiency (We actually don't need this, but good for sanity check)
-    # RCR_efficiency = sum(Above_curve_weights)/sum(sim_weights)
-    # RCR_efficiency = round(RCR_efficiency *100, 4)
-    # print(f'{RCR_efficiency}') 
- 
-    plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/Station_{station_id}'
-    os.makedirs(plot_folder, exist_ok=True)
-
-    def plot_BL_curve():
+    def plot_BL_curve(Above_curve_data_x):
         # --- How I make the whole plot is to plot orange curve then events --- 
         plt.plot(curve_x, curve_y, color = 'orange')
         plt.xlim((3,100))
@@ -374,34 +355,67 @@ if __name__ == "__main__":
         plt.ylim((0,1))
         plt.figtext(0.48, 0.7, f'Above Cut: {len(Above_curve_data_x)} events')
 
-    print(f'creating plots at {plot_folder}')
+    # --- load data ---
+    data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
+    plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR'
+    os.makedirs(plot_output_folder, exist_ok=True)  
 
+    parameters = ['2016', 'RCR'] # to plot both Chi2016 and ChiRCR4  
     SNRbins = np.logspace(0.477, 2, num=80)
     maxCorrBins = np.arange(0, 1.0001, 0.01)
 
-    plot_BL_curve()
-    plotalldata(plot_folder)
 
-    plot_BL_curve()
-    plotabovecurvedata(plot_folder)
 
-    plot_BL_curve()
-    plotalldata_withsim(plot_folder)
+    All_SNRs = np.load(f'{data_directory}/station{station_id}_all_SNR.npy')
+    for param in parameters:
+        All_Chi = np.load(f'{data_directory}/station{station_id}_all_Chi{param}.npy')
+
+        ic(f'number of all data is {len(All_SNRs)} and {len(All_Chi)}')
+
+
+        Above_curve_data = list(filter(lambda p: p[1] >= get_curve_y(curve_x, curve_y, p[0]), zip(All_SNRs, All_Chi, range(len(All_SNRs)))))
+        Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = list(zip(*Above_curve_data)) 
+        plot_BL_curve(Above_curve_data_x)
+        plot_new_chi_data(param, All_SNRs, All_Chi, station_id, plot_output_folder, extraname="withCurve")
+
+    # --- Now I want data above the BL curve we defined above ---
+    # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x
+    # Above_curve_sim = list(filter(lambda p: p[1] >= get_curve_y(curve_x, curve_y, p[0]), zip(sim_SNRs, sim_chi, sim_weights)))
+    # Above_curve_sim_x, Above_curve_sim_y, Above_curve_weights = list(zip(*Above_curve_sim))
+
+    # #Calculate RCR efficiency (We actually don't need this, but good for sanity check)
+    # RCR_efficiency = sum(Above_curve_weights)/sum(sim_weights)
+    # RCR_efficiency = round(RCR_efficiency *100, 4)
+    # print(f'{RCR_efficiency}') 
+ 
+    # plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/Station_{station_id}'
+    # os.makedirs(plot_folder, exist_ok=True)
+
+    # print(f'creating plots at {plot_folder}')
+
+    # plot_BL_curve()
+    # plotalldata(plot_folder)
+
+    # plot_BL_curve()
+    # plotabovecurvedata(plot_folder)
+
+    # plot_BL_curve()
+    # plotalldata_withsim(plot_folder)
 
     print('Plotting Done!')
 
-    def saveabovecurve_info():
-        above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data'
-        np.save(f'{above_curve_folder}/Station_SNR/{amp_type}/Stn{station_id}_SNR.npy', Above_curve_data_x)
-        np.save(f'{above_curve_folder}/Station_Chi/{amp_type}/Stn{station_id}_Chi.npy', Above_curve_data_y)
+    # def saveabovecurve_info(All_data_Traces, All_data_UNIX):
+    #     above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data'
+    #     np.save(f'{above_curve_folder}/Station_SNR/{amp_type}/Stn{station_id}_SNR.npy', Above_curve_data_x)
+    #     np.save(f'{above_curve_folder}/Station_Chi/{amp_type}/Stn{station_id}_Chi.npy', Above_curve_data_y)
 
-        above_curve_data_Traces = [All_data_Traces[i] for i in Above_curve_data_index]
-        np.save(f'{above_curve_folder}/Station_Traces/{amp_type}/Stn{station_id}_Traces.npy', above_curve_data_Traces)
+    #     above_curve_data_Traces = [All_data_Traces[i] for i in Above_curve_data_index]
+    #     np.save(f'{above_curve_folder}/Station_Traces/{amp_type}/Stn{station_id}_Traces.npy', above_curve_data_Traces)
 
-        above_curve_data_UNIX = [All_data_UNIX[i] for i in Above_curve_data_index]
-        np.save(f'{above_curve_folder}/Station_UNIX/{amp_type}/Stn{station_id}_UNIX.npy', above_curve_data_UNIX)
+    #     above_curve_data_UNIX = [All_data_UNIX[i] for i in Above_curve_data_index]
+    #     np.save(f'{above_curve_folder}/Station_UNIX/{amp_type}/Stn{station_id}_UNIX.npy', above_curve_data_UNIX)
 
-        print('Above Curve files SAVED')
+    #     print('Above Curve files SAVED')
 
     # for ts in BL_cut_station_time_unix:
     #     formatted_time = datetime.datetime.fromtimestamp(ts).strftime("%m-%d-%Y, %H:%M:%S")

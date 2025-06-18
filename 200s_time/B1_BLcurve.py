@@ -204,43 +204,67 @@ if __name__ == "__main__":
         x3, y3 = 20, 0.9
         x4, y4 = 40, 0.75
 
+        log_x1 = np.log10(x1)
+        log_x2 = np.log10(x2)
+        log_x3 = np.log10(x3)
+        log_x4 = np.log10(x4)
+
         for x in curve_x:
             if x <= x1:
                 curve_y.append(y1)
             elif x1 < x <= x2:
-                y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
+                m = (y2 - y1) / (log_x2 - log_x1)
+                C = y1 - m * log_x1
+                y = m * np.log10(x) + C
                 curve_y.append(y)
             elif x2 < x <= x3:
-                y = (y3 - y2) / (x3 - x2) * (x - x2) + y2  
+                m = (y3 - y2) / (log_x3 - log_x2)
+                C = y2 - m * log_x2
+                y = m * np.log10(x) + C
                 curve_y.append(y)
-            # elif x3 < x <= x4:
-            #     y = (y4 - y3) / (x4 - x3) * (x - x3) + y3  
-            #     curve_y.append(y)
+            elif x3 < x <= x4:
+                m = (y4 - y3) / (log_x4 - log_x3)
+                C = y3 - m * log_x3
+                y = m * np.log10(x) + C
+                curve_y.append(y)
             else:
-                curve_y.append(y3)
-        
+                curve_y.append(y4) # Flatline after x4
+
         return curve_y
-        
+
     def find_curve_14(curve_x):
-        
         curve_y = []
         x1, y1 = 4.5, 0.5
         x2, y2 = 15, 0.8
         x3, y3 = 20, 0.675
         x4, y4 = 40, 0.625
 
+        log_x1 = np.log10(x1)
+        log_x2 = np.log10(x2)
+        log_x3 = np.log10(x3)
+        log_x4 = np.log10(x4)
+
         for x in curve_x:
             if x <= x1:
                 curve_y.append(y1)
             elif x1 < x <= x2:
-                y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
+                m = (y2 - y1) / (log_x2 - log_x1)
+                C = y1 - m * log_x1
+                y = m * np.log10(x) + C
                 curve_y.append(y)
-            # elif x2 < x <= x3:
-            #     y = (y3 - y2) / (x3 - x2) * (x - x2) + y2  
-            #     curve_y.append(y)
+            elif x2 < x <= x3:
+                m = (y3 - y2) / (log_x3 - log_x2)
+                C = y2 - m * log_x2
+                y = m * np.log10(x) + C
+                curve_y.append(y)
+            elif x3 < x <= x4:
+                m = (y4 - y3) / (log_x4 - log_x3)
+                C = y3 - m * log_x3
+                y = m * np.log10(x) + C
+                curve_y.append(y)
             else:
-                curve_y.append(y2)
-        
+                curve_y.append(y4) # Flatline after x4
+
         return curve_y
 
     def find_curve_15(curve_x):
@@ -249,18 +273,26 @@ if __name__ == "__main__":
         x2, y2 = 7, 0.55
         x3, y3 = 40, 0.7
 
+        log_x1 = np.log10(x1)
+        log_x2 = np.log10(x2)
+        log_x3 = np.log10(x3)
+
         for x in curve_x:
             if x <= x1:
                 curve_y.append(y1)
             elif x1 < x <= x2:
-                y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
+                m = (y2 - y1) / (log_x2 - log_x1)
+                C = y1 - m * log_x1
+                y = m * np.log10(x) + C
                 curve_y.append(y)
             elif x2 < x <= x3:
-                y = (y3 - y2) / (x3 - x2) * (x - x2) + y2  
+                m = (y3 - y2) / (log_x3 - log_x2)
+                C = y2 - m * log_x2
+                y = m * np.log10(x) + C
                 curve_y.append(y)
             else:
-                curve_y.append(y3)
-        
+                curve_y.append(y3) # Flatline after x3
+
         return curve_y
 
     def find_curve_17(curve_x):
@@ -268,14 +300,19 @@ if __name__ == "__main__":
         x1, y1 = 3.8, 0.6
         x2, y2 = 9, 0.7
 
+        log_x1 = np.log10(x1)
+        log_x2 = np.log10(x2)
+
         for x in curve_x:
             if x <= x1:
                 curve_y.append(y1)
             elif x1 < x <= x2:
-                y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
+                m = (y2 - y1) / (log_x2 - log_x1)
+                C = y1 - m * log_x1
+                y = m * np.log10(x) + C
                 curve_y.append(y)
             else:
-                curve_y.append(y2)
+                curve_y.append(y2) # Flatline after x2
 
         return curve_y
 
@@ -285,18 +322,26 @@ if __name__ == "__main__":
         x2, y2 = 7, 0.57
         x3, y3 = 40, 0.63
 
+        log_x1 = np.log10(x1)
+        log_x2 = np.log10(x2)
+        log_x3 = np.log10(x3)
+
         for x in curve_x:
             if x <= x1:
                 curve_y.append(y1)
             elif x1 < x <= x2:
-                y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
+                m = (y2 - y1) / (log_x2 - log_x1)
+                C = y1 - m * log_x1
+                y = m * np.log10(x) + C
                 curve_y.append(y)
             elif x2 < x <= x3:
-                y = (y3 - y2) / (x3 - x2) * (x - x2) + y2
+                m = (y3 - y2) / (log_x3 - log_x2)
+                C = y2 - m * log_x2
+                y = m * np.log10(x) + C
                 curve_y.append(y)
             else:
-                curve_y.append(y3)
-        
+                curve_y.append(y3) # Flatline after x3
+
         return curve_y
 
     def find_curve_19(curve_x):
@@ -304,14 +349,19 @@ if __name__ == "__main__":
         x1, y1 = 4, 0.5
         x2, y2 = 14, 0.615
 
+        log_x1 = np.log10(x1)
+        log_x2 = np.log10(x2)
+
         for x in curve_x:
             if x <= x1:
                 curve_y.append(y1)
             elif x1 < x <= x2:
-                y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
+                m = (y2 - y1) / (log_x2 - log_x1)
+                C = y1 - m * log_x1
+                y = m * np.log10(x) + C
                 curve_y.append(y)
             else:
-                curve_y.append(y2)
+                curve_y.append(y2) # Flatline after x2
 
         return curve_y
 
@@ -320,14 +370,19 @@ if __name__ == "__main__":
         x1, y1 = 4.5, 0.53
         x2, y2 = 20, 0.63
 
+        log_x1 = np.log10(x1)
+        log_x2 = np.log10(x2)
+
         for x in curve_x:
             if x <= x1:
                 curve_y.append(y1)
             elif x1 < x <= x2:
-                y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
+                m = (y2 - y1) / (log_x2 - log_x1)
+                C = y1 - m * log_x1
+                y = m * np.log10(x) + C
                 curve_y.append(y)
             else:
-                curve_y.append(y2)
+                curve_y.append(y2) # Flatline after x2
 
         return curve_y
 

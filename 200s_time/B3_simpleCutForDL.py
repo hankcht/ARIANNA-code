@@ -7,6 +7,8 @@ from icecream import ic
 import matplotlib.pyplot as plt
 import matplotlib.colors
 
+# --- Need Max Memory to Run this File ---
+
 def load_parameter_data(base_folder, date_str, station_id, param_name):
     """
     Loads and concatenates parameter data for a given station, date, and parameter name.
@@ -184,7 +186,7 @@ def main():
     ic(f"\nProcessing complete for Station {station_id}, Date {date_str}.")
 
 def plot_new_chi_data(param, All_SNRs, All_Chi, station_id, plot_folder):
-    #Plot of all events in Chi-SNR space
+    # --- Plot of all events in Chi-SNR space ---
     plt.hist2d(All_SNRs, All_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
     plt.colorbar()
     plt.xlim((3, 100))
@@ -210,7 +212,7 @@ if __name__ == '__main__':
     maxCorrBins = np.arange(0, 1.0001, 0.01)
     
     stations = [13,15,18,14,17,19,30]
-    parameters = ['2016', 'RCR']
+    parameters = ['2016', 'RCR'] # to plot both Chi2016 and ChiRCR4
 
     for station_id in stations:
 

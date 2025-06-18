@@ -262,7 +262,7 @@ def RunTrainedModel(events, model_path):
     return prob_events
 
 
-def load_new_chi(load_path, station_numbers, file_types, thresholds, single_files=None):
+def load_new_chi_with_threshold(load_path, station_numbers, file_types, thresholds, single_files=None):
     """
     Returns:
         dict: A dictionary where keys are constructed filenames (e.g., 'Stn14_Chi2016_ge0p60')
@@ -296,8 +296,7 @@ def load_new_chi(load_path, station_numbers, file_types, thresholds, single_file
                     print(f"Loaded {filename}. Shape: {loaded_data[dict_key].shape}")
                 except FileNotFoundError:
                     print(f"Warning: {filename} not found at {file_path}")
-                except Exception as e:
-                    print(f"Error loading {filename}: {e}")
+
     
     print("\n--- Data loading complete ---")
     # access using loaded_data['Stn{stn_num}_{file_type}_ge0p{threshold}']
@@ -329,7 +328,7 @@ if __name__ == "__main__":
     station_numbers = [13, 15, 18, 14, 17, 19, 30]
     file_types = ['Chi2016', 'ChiRCR', 'SNR', 'Times', 'Traces']
     thresholds = ['60', '65', '70']
-    new_chi_dict = load_new_chi(load_path, station_numbers, file_types, thresholds)
+    new_chi_dict = load_new_chi_with_threshold(load_path, station_numbers, file_types, thresholds)
 
     plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/4.4.25/' 
     Path(plot_folder).mkdir(parents=True, exist_ok=True)

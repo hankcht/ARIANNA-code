@@ -353,7 +353,7 @@ if __name__ == "__main__":
         plt.xlim((3,100))
         plt.xscale('log')
         plt.ylim((0,1))
-        plt.figtext(0.48, 0.7, f'Above Cut: {len(Above_curve_data_x)} events')
+        plt.figtext(0.48, 0.9, f'Above Cut: {len(Above_curve_data_x)} events')
 
     # --- load data ---
     data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'

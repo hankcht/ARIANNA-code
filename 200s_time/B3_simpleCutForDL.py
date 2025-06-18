@@ -185,7 +185,7 @@ def main():
 
     ic(f"\nProcessing complete for Station {station_id}, Date {date_str}.")
 
-def plot_new_chi_data(param, All_SNRs, All_Chi, station_id, plot_folder, extraname=""):
+def plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_folder, extraname=""):
     # --- Plot of all events in Chi-SNR space ---
     plt.hist2d(All_SNRs, All_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
     plt.colorbar()

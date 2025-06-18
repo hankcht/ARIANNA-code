@@ -53,7 +53,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     return
 
 
-multi_run = False
+multi_run = True
 
 if multi_run == True:
     # --- Run multiple stations ---
@@ -66,7 +66,7 @@ if multi_run == True:
             amp = '100s'
             print(f'amp: {amp}') 
 
-        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simpleCutForDL2.py' # {station_id} 4.4.25'
+        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/B1_BLcurve.py {station_id}' # {station_id} 4.4.25'
         # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
         RunMultipleJobs(cmd , jobName=f'genericBatchJob')
 else: 

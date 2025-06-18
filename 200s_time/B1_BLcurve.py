@@ -222,13 +222,8 @@ if __name__ == "__main__":
                 C = y2 - m * log_x2
                 y = m * np.log10(x) + C
                 curve_y.append(y)
-            elif x3 < x <= x4:
-                m = (y4 - y3) / (log_x4 - log_x3)
-                C = y3 - m * log_x3
-                y = m * np.log10(x) + C
-                curve_y.append(y)
             else:
-                curve_y.append(y4) # Flatline after x4
+                curve_y.append(y3) # Flatline after x4
 
         return curve_y
 
@@ -252,18 +247,18 @@ if __name__ == "__main__":
                 C = y1 - m * log_x1
                 y = m * np.log10(x) + C
                 curve_y.append(y)
-            elif x2 < x <= x3:
-                m = (y3 - y2) / (log_x3 - log_x2)
-                C = y2 - m * log_x2
-                y = m * np.log10(x) + C
-                curve_y.append(y)
-            elif x3 < x <= x4:
-                m = (y4 - y3) / (log_x4 - log_x3)
-                C = y3 - m * log_x3
-                y = m * np.log10(x) + C
-                curve_y.append(y)
+            # elif x2 < x <= x3:
+            #     m = (y3 - y2) / (log_x3 - log_x2)
+            #     C = y2 - m * log_x2
+            #     y = m * np.log10(x) + C
+            #     curve_y.append(y)
+            # elif x3 < x <= x4:
+            #     m = (y4 - y3) / (log_x4 - log_x3)
+            #     C = y3 - m * log_x3
+            #     y = m * np.log10(x) + C
+            #     curve_y.append(y)
             else:
-                curve_y.append(y4) # Flatline after x4
+                curve_y.append(y2) # Flatline after x4
 
         return curve_y
 

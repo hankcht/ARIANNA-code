@@ -376,7 +376,7 @@ if __name__ == "__main__":
         Above_curve_data = list(filter(lambda p: p[1] >= get_curve_y(curve_x, curve_y, p[0]), zip(All_SNRs, All_Chi, range(len(All_SNRs)))))
         Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = list(zip(*Above_curve_data)) 
         plot_BL_curve(Above_curve_data_x)
-        plot_new_chi_data(param, All_SNRs, All_Chi, station_id, plot_output_folder, extraname="withCurve")
+        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve")
 
     # --- Now I want data above the BL curve we defined above ---
     # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x

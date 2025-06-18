@@ -224,8 +224,8 @@ if __name__ == "__main__":
     def find_curve_14(curve_x):
         
         curve_y = []
-        x1, y1 = 4.2, 0.48
-        x2, y2 = 10, 0.6
+        x1, y1 = 4.5, 0.5
+        x2, y2 = 10, 0.8
         x3, y3 = 20, 0.675
         x4, y4 = 40, 0.625
 
@@ -235,11 +235,11 @@ if __name__ == "__main__":
             elif x1 < x <= x2:
                 y = (y2 - y1) / (x2 - x1) * (x - x1) + y1
                 curve_y.append(y)
-            elif x2 < x <= x3:
-                y = (y3 - y2) / (x3 - x2) * (x - x2) + y2  
-                curve_y.append(y)
+            # elif x2 < x <= x3:
+            #     y = (y3 - y2) / (x3 - x2) * (x - x2) + y2  
+            #     curve_y.append(y)
             else:
-                curve_y.append(y3)
+                curve_y.append(y2)
         
         return curve_y
 

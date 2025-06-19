@@ -387,12 +387,12 @@ if __name__ == "__main__":
 
         sim_RCR = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
         print(f'number of sim is{len(sim_RCR)}')
-        pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim__{amp}_noisefalse_{index}.png')
+        pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_noisefalse_{index}.png')
 
 
         sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=False, amp=amp)
         print(f'number of sim is{len(sim_RCR)}')
-        pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim__{amp}_filterfalse_{index}.png')
+        pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_filterfalse_{index}.png')
     
 
         

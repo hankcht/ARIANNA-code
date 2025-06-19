@@ -376,21 +376,23 @@ if __name__ == "__main__":
     #     Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, Above_curve_data_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', '2', station_id)
 
     amp='100s'
+    indices = [100,101,102,103]
     sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
 
-    sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
-    print(f'number of sim is{len(sim_RCR)}')
-    pT(sim_RCR[10], 'test plot new sim', '/pub/tangch3/ARIANNA/DeepLearning/test_new_sim.png')
+    for index in indices:
+        sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
+        print(f'number of sim is{len(sim_RCR)}')
+        pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{index}.png')
 
 
-    sim_RCR = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
-    print(f'number of sim is{len(sim_RCR)}')
-    pT(sim_RCR[10], 'test plot new sim', '/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_noisefalse.png')
+        sim_RCR = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
+        print(f'number of sim is{len(sim_RCR)}')
+        pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_noisefalse_{index}.png')
 
 
-    sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=False, amp=amp)
-    print(f'number of sim is{len(sim_RCR)}')
-    pT(sim_RCR[10], 'test plot new sim', '/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_filterfalse.png')
+        sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=False, amp=amp)
+        print(f'number of sim is{len(sim_RCR)}')
+        pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_filterfalse_{index}.png')
     
 
         

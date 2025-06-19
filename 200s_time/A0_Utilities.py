@@ -154,7 +154,7 @@ def load_sim(path, RCR_path, backlobe_path, amp):
 
     return rcr, Backlobe
 
-def load_sim_rcr(sim_path: str, noise_enabled: bool, filter_enabled: bool, amp) -> np.ndarray | None:
+def load_sim_rcr(sim_path: str, noise_enabled: bool, filter_enabled: bool, amp) -> np.ndarray:
     """
     The expected file format is:
     'SimRCR_200s_Noise{True/False}_forcedFalse_{events}events_Filter{True/False}_part0.npy'

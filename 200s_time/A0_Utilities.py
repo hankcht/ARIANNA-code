@@ -336,7 +336,7 @@ if __name__ == "__main__":
     station_numbers = [13, 15, 18, 14, 17, 19, 30]
     file_types = ['Chi2016', 'ChiRCR', 'SNR', 'Times', 'Traces']
     thresholds = ['60', '65', '70']
-    new_chi_dict = load_new_chi_with_threshold(load_path, station_numbers, file_types, thresholds)
+    # new_chi_dict = load_new_chi_with_threshold(load_path, station_numbers, file_types, thresholds)
 
     plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/4.4.25/' 
     Path(plot_folder).mkdir(parents=True, exist_ok=True)

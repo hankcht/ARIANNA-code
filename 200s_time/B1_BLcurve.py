@@ -431,7 +431,7 @@ if __name__ == "__main__":
     plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR'
     os.makedirs(plot_output_folder, exist_ok=True)  
 
-    parameters = ['2016', 'RCR'] # to plot both Chi2016 and ChiRCR4  
+    parameters = ['RCR', '2016'] # to plot both Chi2016 and ChiRCR  
     SNRbins = np.logspace(0.477, 2, num=80)
     maxCorrBins = np.arange(0, 1.0001, 0.01)
 

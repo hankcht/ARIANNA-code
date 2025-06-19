@@ -376,7 +376,7 @@ if __name__ == "__main__":
     #     Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, Above_curve_data_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', '2', station_id)
 
     amp='100s'
-    sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.8.25/'
+    sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
 
     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
     print(f'number of sim is{len(sim_RCR)}')

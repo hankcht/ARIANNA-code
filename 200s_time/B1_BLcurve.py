@@ -400,6 +400,19 @@ if __name__ == "__main__":
         30: find_curve_30
     }
 
+    def saveabovecurve_info(All_data_Traces, All_data_UNIX):
+        above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi'
+        np.save(f'{above_curve_folder}/Stn{station_id}_SNR_above.npy', Above_curve_data_x)
+        np.save(f'{above_curve_folder}/Stn{station_id}_Chi_above.npy', Above_curve_data_y)
+
+        above_curve_data_Traces = [All_data_Traces[i] for i in Above_curve_data_index]
+        np.save(f'{above_curve_folder}/Stn{station_id}_Traces_above.npy', above_curve_data_Traces)
+
+        above_curve_data_UNIX = [All_data_UNIX[i] for i in Above_curve_data_index]
+        np.save(f'{above_curve_folder}/Stn{station_id}_UNIX_above.npy', above_curve_data_UNIX)
+
+        print('Above Curve files SAVED')
+
     find_curve_func = curve_functions.get(args.station)
     print(curve_functions.get(args.station))
     curve_y = find_curve_func(curve_x)
@@ -422,8 +435,8 @@ if __name__ == "__main__":
     SNRbins = np.logspace(0.477, 2, num=80)
     maxCorrBins = np.arange(0, 1.0001, 0.01)
 
-
-
+    All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
+    All_UNIX = np.load(f'{data_directory}/station{station_id}_all_Times.npy')
     All_SNRs = np.load(f'{data_directory}/station{station_id}_all_SNR.npy')
     for param in parameters:
         All_Chi = np.load(f'{data_directory}/station{station_id}_all_Chi{param}.npy')
@@ -435,6 +448,7 @@ if __name__ == "__main__":
         Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = list(zip(*Above_curve_data)) 
         plot_BL_curve(Above_curve_data_x)
         plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve")
+        saveabovecurve_info(All_Traces, All_UNIX)
 
     # --- Now I want data above the BL curve we defined above ---
     # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x
@@ -461,27 +475,6 @@ if __name__ == "__main__":
     # plotalldata_withsim(plot_folder)
 
     print('Plotting Done!')
-
-
-    # def saveabovecurve_info(All_data_Traces, All_data_UNIX):
-    #     above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi'
-    #     np.save(f'{above_curve_folder}/Station_SNR/{amp_type}/Stn{station_id}_SNR.npy', Above_curve_data_x)
-    #     np.save(f'{above_curve_folder}/Station_Chi/{amp_type}/Stn{station_id}_Chi.npy', Above_curve_data_y)
-
-    #     above_curve_data_Traces = [All_data_Traces[i] for i in Above_curve_data_index]
-    #     np.save(f'{above_curve_folder}/Station_Traces/{amp_type}/Stn{station_id}_Traces.npy', above_curve_data_Traces)
-
-    #     above_curve_data_UNIX = [All_data_UNIX[i] for i in Above_curve_data_index]
-    #     np.save(f'{above_curve_folder}/Station_UNIX/{amp_type}/Stn{station_id}_UNIX.npy', above_curve_data_UNIX)
-
-    #     print('Above Curve files SAVED')
-
-    All_data_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
-    All_data_Times = np.load(f'{data_directory}/station{station_id}_all_Times.npy')
-    print(f'loading {data_directory}/station{station_id}_all_Times.npy')
-    print(All_data_Times)
-
-    # saveabovecurve_info(All_data_Traces, All_data_UNIX)
 
     # for ts in BL_cut_station_time_unix:
     #     formatted_time = datetime.datetime.fromtimestamp(ts).strftime("%m-%d-%Y, %H:%M:%S")

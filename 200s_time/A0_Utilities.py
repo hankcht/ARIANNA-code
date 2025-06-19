@@ -376,7 +376,7 @@ if __name__ == "__main__":
     #     Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, Above_curve_data_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', '2', station_id)
 
     amp='200s'
-    indices = [100,101,102,103]
+    indices = [100,101,102,103,104,105,106]
     sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
 
     for index in indices:

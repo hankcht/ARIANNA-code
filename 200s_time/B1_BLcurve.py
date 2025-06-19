@@ -400,10 +400,10 @@ if __name__ == "__main__":
         30: find_curve_30
     }
 
-    def saveabovecurve_info(All_data_Traces, All_data_UNIX):
+    def saveabovecurve_info(All_data_Traces, All_data_UNIX, param):
         above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi'
         np.save(f'{above_curve_folder}/Stn{station_id}_SNR_above.npy', Above_curve_data_x)
-        np.save(f'{above_curve_folder}/Stn{station_id}_Chi_above.npy', Above_curve_data_y)
+        np.save(f'{above_curve_folder}/Stn{station_id}_Chi{param}_above.npy', Above_curve_data_y)
 
         above_curve_data_Traces = [All_data_Traces[i] for i in Above_curve_data_index]
         np.save(f'{above_curve_folder}/Stn{station_id}_Traces_above.npy', above_curve_data_Traces)
@@ -448,7 +448,7 @@ if __name__ == "__main__":
         Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = list(zip(*Above_curve_data)) 
         plot_BL_curve(Above_curve_data_x)
         plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve")
-        saveabovecurve_info(All_Traces, All_UNIX)
+        saveabovecurve_info(All_Traces, All_UNIX, param)
 
     # --- Now I want data above the BL curve we defined above ---
     # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x

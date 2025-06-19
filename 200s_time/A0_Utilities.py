@@ -110,6 +110,16 @@ def load_data(type, amp_type, station_id):
         Circled_data_UNIX = np.load(f'{data_folder}/Station_UNIX/{amp_type}/Stn{station_id}_UNIX.npy')
 
         return Circled_data_SNR, Circled_data_Chi, Circled_data_Traces, Circled_data_UNIX
+    
+    if type == 'new_chi_above_curve':
+        print(f'using {type}')        
+        Above_curve_data_SNR = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/Stn{station_id}_SNR_above.npy')
+        Above_curve_data_Chi2016 = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/Stn{station_id}_Chi2016_above.npy')
+        Above_curve_data_ChiRCR = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/Stn{station_id}_ChiRCR_above.npy')
+        Above_curve_data_Traces = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/Stn{station_id}_Traces_above.npy')
+        Above_curve_data_UNIX = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/Stn{station_id}_UNIX_above.npy')
+
+        return Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, Above_curve_data_Traces, Above_curve_data_UNIX
 
 def load_sim(path, RCR_path, backlobe_path, amp):
     RCR_files = []
@@ -321,8 +331,6 @@ def deleting():
 
 if __name__ == "__main__":
 
-    
-
     # --- Setup for loading above threshold new chi data ---
     load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
     station_numbers = [13, 15, 18, 14, 17, 19, 30]
@@ -333,7 +341,15 @@ if __name__ == "__main__":
     plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/4.4.25/' 
     Path(plot_folder).mkdir(parents=True, exist_ok=True)
 
-    
+
+    Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, Above_curve_data_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', '2', 13)
+    print(f"Length of Above_curve_data_SNR: {len(Above_curve_data_SNR)}")
+    print(f"Length of Above_curve_data_Chi2016: {len(Above_curve_data_Chi2016)}")
+    print(f"Length of Above_curve_data_ChiRCR: {len(Above_curve_data_ChiRCR)}")
+    print(f"Length of Above_curve_data_Traces: {len(Above_curve_data_Traces)}")
+    print(f"Length of Above_curve_data_UNIX: {len(Above_curve_data_UNIX)}")
+
+
     # for station_id in station_numbers:
     #     for threshold in thresholds:
     #         snr_key = f"Stn{station_id}_SNR_ge0p{threshold}"

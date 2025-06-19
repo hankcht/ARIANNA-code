@@ -53,7 +53,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     return
 
 
-multi_run = True
+multi_run = False
 
 if multi_run == True:
     # --- Run multiple stations ---

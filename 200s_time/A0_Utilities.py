@@ -154,6 +154,36 @@ def load_sim(path, RCR_path, backlobe_path, amp):
 
     return rcr, Backlobe
 
+def load_sim_rcr(sim_path: str, noise_enabled: bool, filter_enabled: bool, amp) -> np.ndarray | None:
+    """
+    The expected file format is:
+    'SimRCR_200s_Noise{True/False}_forcedFalse_{events}events_Filter{True/False}_part0.npy'
+    """
+    noise_str = "NoiseTrue" if noise_enabled else "NoiseFalse"
+    filter_str = "FilterTrue" if filter_enabled else "FilterFalse"
+
+    base_prefix = f"SimRCR_{amp}_{noise_str}_forcedFalse_"
+    base_suffix = f"events_{filter_str}_part0.npy"
+
+    found_file = None
+    print(f"Searching for file in: '{sim_path}' matching pattern '{base_prefix}*{base_suffix}'")
+
+    for filename in os.listdir(sim_path):
+        if filename.startswith(base_prefix) and filename.endswith(base_suffix):
+            if f"events_{filter_str}" in filename:
+                found_file = filename
+                break # Found the first matching file, assuming only one per combination
+
+    if found_file:
+        full_filepath = os.path.join(sim_path, found_file)
+        print(f"Found and loading: '{full_filepath}'")
+        sim_Traces = np.load(full_filepath)
+        print(f"Successfully loaded data with shape: {sim_Traces.shape}")
+        return sim_Traces
+    else:
+        print(f"No matching file found in '{sim_path}' for Noise='{noise_enabled}', Filter='{filter_enabled}'.")
+        return None
+
 def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_channel=[]):
     # Sampling rate should be in GHz
     print(f'printing')
@@ -341,110 +371,16 @@ if __name__ == "__main__":
     plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/4.4.25/' 
     Path(plot_folder).mkdir(parents=True, exist_ok=True)
 
-    for station_id in station_numbers:
-        print(f'station {station_id}')
-        Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, Above_curve_data_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', '2', station_id)
-        print(f"Length of Above_curve_data_SNR: {Above_curve_data_SNR}")
-        print(f"Length of Above_curve_data_Chi2016: {Above_curve_data_Chi2016}")
-        print(f"Length of Above_curve_data_ChiRCR: {Above_curve_data_ChiRCR}")
-        print(f"Length of Above_curve_data_Traces: {Above_curve_data_Traces}")
-        print(f"Length of Above_curve_data_UNIX: {Above_curve_data_UNIX}")
-
-
     # for station_id in station_numbers:
-    #     for threshold in thresholds:
-    #         snr_key = f"Stn{station_id}_SNR_ge0p{threshold}"
-    #         chir_key = f"Stn{station_id}_Chi2016_ge0p{threshold}"
+    #     print(f'station {station_id}')
+    #     Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, Above_curve_data_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', '2', station_id)
 
-    #         current_snrs = None
-    #         current_rcr_chi = None
+    amp='100s'
+    sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.8.25/'
 
-    #         if snr_key in new_chi_dict:
-    #             current_snrs = new_chi_dict[snr_key]
-    #         else:
-    #             print(f"Warning: {snr_key} not found. Skipping for station {station_id}, threshold {threshold}.")
-    #             continue 
-
-    #         if chir_key in new_chi_dict:
-    #             current_rcr_chi = new_chi_dict[chir_key]
-    #         else:
-    #             print(f"Warning: {chir_key} not found. Skipping for station {station_id}, threshold {threshold}.")
-    #             continue 
-
-    #         if current_snrs.shape != current_rcr_chi.shape:
-    #             print(f"Error: Mismatched shapes for {snr_key} ({current_snrs.shape}) and {chir_key} ({current_rcr_chi.shape}). Skipping.")
-    #             continue
-
-    #         plt.figure(figsize=(10, 8)) 
-            
-    #         plt.hist2d(current_snrs, current_rcr_chi, bins=[SNRbins, maxCorrBins],
-    #                 norm=matplotlib.colors.LogNorm(), cmap='viridis')
-    #         plt.colorbar(label='Count (log scale)')
-    #         plt.xlim((3, 100))
-    #         plt.ylim((0, 1))
-    #         plt.xlabel('SNR')
-    #         plt.ylabel('Avg Chi Highest Parallel Channels')
-    #         plt.xscale('log') 
-    #         plt.tick_params(axis='x', which='minor', bottom=True) 
-    #         plt.grid(visible=True, which='both', axis='both', linestyle=':', alpha=0.7) 
-    #         plt.title(f'Station {station_id} - Threshold: {threshold} (Events: {len(current_snrs):,})')
-
-    #         output_filename = f'ChiSNR_Stn{station_id}_ge0p{threshold}.png'
-    #         save_path = os.path.join(plot_folder, output_filename)
-    #         print(f'Saving {save_path}')
-    #         plt.savefig(save_path, bbox_inches='tight')
-    #         plt.close() 
-
-    # print("\nAll station and threshold plots generated and saved.")
-
-    # station_ids_for_plotting = [13,15,18]
-    # plot_output_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/'
-    # for current_station_id in station_ids_for_plotting:
-    #     # Call your load_data function. It returns 4 values, but we only need the first two here.
-    #     # We use _ for the values we don't need (Traces and UNIX).
-    #     all_data_snr, all_data_chi, _, _ = load_data('All_data', '100s', current_station_id)
-    #     print(f'total num of events is {len(all_data_chi)}')
-
-    #     # Check if the required data was successfully loaded and is not empty
-    #     if all_data_snr is not None and all_data_chi is not None and len(all_data_snr) > 0:
-    #         # Ensure SNR and Chi arrays have the same number of events for plotting
-    #         if len(all_data_snr) != len(all_data_chi):
-    #             print(f"Warning: Mismatched event counts for Station {current_station_id}. SNR: {len(all_data_snr)}, Chi: {len(all_data_chi)}. Skipping plot.")
-    #             continue # Skip this station if data lengths don't match
-
-    #         # Create a new figure for each plot
-    #         plt.figure(figsize=(10, 8))
-
-    #         # Generate the 2D histogram
-    #         plt.hist2d(all_data_snr, all_data_chi, bins=[SNRbins, maxCorrBins],
-    #                    norm=matplotlib.colors.LogNorm(), cmap='viridis')
-
-    #         # Add a color bar to show the count scale
-    #         plt.colorbar(label='Count (log scale)')
-
-    #         # Set plot limits (matching your previous plot settings)
-    #         plt.xlim((3, 100))
-    #         plt.ylim((0, 1))
-
-    #         # Add labels and grid
-    #         plt.xlabel('SNR')
-    #         plt.ylabel('Avg Chi Highest Parallel Channels')
-    #         plt.xscale('log') # Set x-axis to logarithmic scale
-    #         plt.tick_params(axis='x', which='minor', bottom=True) # Show minor ticks on log scale
-    #         plt.grid(visible=True, which='both', axis='both', linestyle=':', alpha=0.7)
-
-    #         # Set the plot title, including the station ID and number of events
-    #         plt.title(f'Station {current_station_id} - SNR vs. Chi (Events: {len(all_data_snr):,})')
-
-    #         # Define the filename and save the plot
-    #         output_file_name = f'ChiSNR_Stn{current_station_id}_100s.png'
-    #         full_save_path = os.path.join(plot_output_folder, output_file_name)
-    #         print(f'Saving {full_save_path}')
-    #         plt.savefig(full_save_path, bbox_inches='tight') # Use bbox_inches='tight' to prevent labels from being cut off
-    #         plt.close() # Close the current figure to free up memory
-
-    #     else:
-    #         print(f"No valid data available for Station {current_station_id} with Amp Type 200s. Skipping plot generation.")
+    sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
+    print(f'number of sim is{len(sim_RCR)}')
+    print(sim_RCR)
 
     
 

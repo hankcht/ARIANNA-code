@@ -344,11 +344,11 @@ if __name__ == "__main__":
     for station_id in station_numbers:
         print(f'station {station_id}')
         Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, Above_curve_data_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', '2', station_id)
-        print(f"Length of Above_curve_data_SNR: {len(Above_curve_data_SNR)}")
-        print(f"Length of Above_curve_data_Chi2016: {len(Above_curve_data_Chi2016)}")
-        print(f"Length of Above_curve_data_ChiRCR: {len(Above_curve_data_ChiRCR)}")
-        print(f"Length of Above_curve_data_Traces: {len(Above_curve_data_Traces)}")
-        print(f"Length of Above_curve_data_UNIX: {len(Above_curve_data_UNIX)}")
+        print(f"Length of Above_curve_data_SNR: {Above_curve_data_SNR}")
+        print(f"Length of Above_curve_data_Chi2016: {Above_curve_data_Chi2016}")
+        print(f"Length of Above_curve_data_ChiRCR: {Above_curve_data_ChiRCR}")
+        print(f"Length of Above_curve_data_Traces: {Above_curve_data_Traces}")
+        print(f"Length of Above_curve_data_UNIX: {Above_curve_data_UNIX}")
 
 
     # for station_id in station_numbers:

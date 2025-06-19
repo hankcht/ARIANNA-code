@@ -462,8 +462,9 @@ if __name__ == "__main__":
 
     print('Plotting Done!')
 
+
     # def saveabovecurve_info(All_data_Traces, All_data_UNIX):
-    #     above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data'
+    #     above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi'
     #     np.save(f'{above_curve_folder}/Station_SNR/{amp_type}/Stn{station_id}_SNR.npy', Above_curve_data_x)
     #     np.save(f'{above_curve_folder}/Station_Chi/{amp_type}/Stn{station_id}_Chi.npy', Above_curve_data_y)
 
@@ -474,6 +475,13 @@ if __name__ == "__main__":
     #     np.save(f'{above_curve_folder}/Station_UNIX/{amp_type}/Stn{station_id}_UNIX.npy', above_curve_data_UNIX)
 
     #     print('Above Curve files SAVED')
+
+    All_data_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
+    All_data_Times = np.load(f'{data_directory}/station{station_id}_all_Times.npy')
+    print(f'loading {data_directory}/station{station_id}_all_Times.npy')
+    print(All_data_Times)
+
+    # saveabovecurve_info(All_data_Traces, All_data_UNIX)
 
     # for ts in BL_cut_station_time_unix:
     #     formatted_time = datetime.datetime.fromtimestamp(ts).strftime("%m-%d-%Y, %H:%M:%S")

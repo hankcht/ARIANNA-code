@@ -197,7 +197,7 @@ if __name__ == "__main__":
     curve_x = np.linspace(3, 150, len(sim_chi)) #sim_chi same length as sim_SNRs 
 
     # define BL curves
-    def find_curve_13(curve_x):
+    def find_curve_13(curve_x) -> list:
         curve_y = []
         x1, y1 = 5.5, 0.6
         x2, y2 = 20, 0.9
@@ -218,7 +218,7 @@ if __name__ == "__main__":
                 y = m * np.log10(x) + C
                 curve_y.append(y)
             else:
-                curve_y.append(y2) # Flatline after x4
+                curve_y.append(y2) 
 
         return curve_y
 
@@ -253,7 +253,7 @@ if __name__ == "__main__":
             #     y = m * np.log10(x) + C
             #     curve_y.append(y)
             else:
-                curve_y.append(y2) # Flatline after x4
+                curve_y.append(y2) 
 
         return curve_y
 
@@ -281,7 +281,7 @@ if __name__ == "__main__":
                 y = m * np.log10(x) + C
                 curve_y.append(y)
             else:
-                curve_y.append(y3) # Flatline after x3
+                curve_y.append(y3)
 
         return curve_y
 
@@ -309,7 +309,7 @@ if __name__ == "__main__":
                 y = m * np.log10(x) + C
                 curve_y.append(y)
             else:
-                curve_y.append(y3) # Flatline after x2
+                curve_y.append(y3) 
 
         return curve_y
 
@@ -337,7 +337,7 @@ if __name__ == "__main__":
             #     y = m * np.log10(x) + C
             #     curve_y.append(y)
             else:
-                curve_y.append(y2) # Flatline after x3
+                curve_y.append(y2) 
 
         return curve_y
 
@@ -358,8 +358,7 @@ if __name__ == "__main__":
                 y = m * np.log10(x) + C
                 curve_y.append(y)
             else:
-                curve_y.append(y2) # Flatline after x2
-
+                curve_y.append(y2) 
         return curve_y
 
     def find_curve_30(curve_x):
@@ -386,7 +385,7 @@ if __name__ == "__main__":
                 y = m * np.log10(x) + C
                 curve_y.append(y)
             else:
-                curve_y.append(y3) # Flatline after x2
+                curve_y.append(y3) 
 
         return curve_y
 

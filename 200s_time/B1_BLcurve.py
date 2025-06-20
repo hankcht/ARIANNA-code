@@ -370,6 +370,7 @@ if __name__ == "__main__":
         log_x1 = np.log10(x1)
         log_x2 = np.log10(x2)
         log_x3 = np.log10(x3)
+        log_x4 = np.log10(x4)
 
         for x in curve_x:
             if x <= x1:

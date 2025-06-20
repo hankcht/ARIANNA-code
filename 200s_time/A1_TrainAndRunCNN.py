@@ -77,7 +77,7 @@ def Train_CNN():
     print(x.shape, y.shape)
     
     BATCH_SIZE = 32
-    EPOCHS = 100 
+    EPOCHS = 20 
 
     # callback automatically saves when loss increases over a number of patience cycles
     callbacks_list = [keras.callbacks.EarlyStopping(monitor='val_loss', patience=2)]
@@ -126,7 +126,7 @@ def Train_CNN():
     # window size default is 10, on 256 floats 
     model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
     model.add(Conv2D(10, (1, 10), activation='relu'))
-    model.add(Dropout(0.5))
+    # model.add(Dropout(0.5))
     model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
     model.compile(optimizer='Adam',

@@ -362,9 +362,9 @@ if __name__ == "__main__":
 
     def find_curve_19(curve_x):
         curve_y = []
-        x1, y1 = 5.3, 0.5
-        x2, y2 = 10, 0.66
-        x3, y3 = 24, 0.8
+        x1, y1 = 5, 0.5
+        x2, y2 = 15, 0.68
+        x3, y3 = 22, 0.8
 
         log_x1 = np.log10(x1)
         log_x2 = np.log10(x2)

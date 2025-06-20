@@ -124,8 +124,8 @@ def Train_CNN():
     model = Sequential()
     # change window size to capture the 100 Mhz difference in Backlobe (shadowing effect, we have integer frequencies amplified)
     # window size default is 10, on 256 floats 
-    model.add(Conv2D(8, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
-    model.add(Conv2D(16, (1, 10), activation='relu'))
+    model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
+    model.add(Conv2D(10, (1, 10), activation='relu'))
     model.add(Dropout(0.5))
     model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
@@ -176,7 +176,7 @@ def Train_CNN():
 # Set parameters
 amp = '200s' 
 output_cut_value = 0.6 # Change this depending on chosen cut, we get our passed events from this  # Originally 0.95
-TrainCut = 800 # Number of events to use for training, change accordingly if we do not have enough events
+TrainCut = 100 # Number of events to use for training, change accordingly if we do not have enough events
 
 
 if amp == '200s':
@@ -251,15 +251,15 @@ if __name__ == "__main__":
     non_trained_Backlobe =  data_Backlobe[BL_non_training_indices,:]
     non_trained_Backlobe_UNIX = data_Backlobe_UNIX[BL_non_training_indices] 
 
-    prob_RCR = model.predict(non_trained_RCR) # Network output of RCR
-    prob_Backlobe = model.predict(non_trained_Backlobe) # Network output of Backlobe
-    print(len(prob_Backlobe))
+    # prob_RCR = model.predict(non_trained_RCR) # Network output of RCR
+    # prob_Backlobe = model.predict(non_trained_Backlobe) # Network output of Backlobe
+    # print(len(prob_Backlobe))
 
     print(f'output cut value: {output_cut_value}')
 
-    # sim_RCR = np.array(sim_RCR)
-    # prob_RCR = model.predict(sim_RCR)
-    # prob_Backlobe = model.predict(data_Backlobe)
+    sim_RCR = np.array(sim_RCR)
+    prob_RCR = model.predict(sim_RCR)
+    prob_Backlobe = model.predict(data_Backlobe)
 
     # Finding not weighted RCR efficiency (percentage of RCR events that would pass the cut) 
     sim_RCR_output = prob_RCR

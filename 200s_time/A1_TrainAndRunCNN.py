@@ -210,9 +210,11 @@ if __name__ == "__main__":
 
 
     data_Backlobe = np.array(data_Backlobe)
-    print(data_Backlobe[0:10])
+    empty_count = np.sum(data_Backlobe == 0)
+    print(f"Number of empty (zero) entries: {empty_count}")
     print('hold')
-    print(sim_RCR[0:10])
+    empty_count = np.sum(sim_RCR == 0)
+    print(f"Number of empty (zero) entries: {empty_count}")
     exit()
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
     print(f'RCR shape: {sim_RCR.shape} Backlobe shape: {data_Backlobe.shape}')

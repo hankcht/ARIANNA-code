@@ -301,47 +301,6 @@ def RunTrainedModel(events, model_path):
 
     return prob_events
 
-
-def load_new_chi_with_threshold(load_path, station_numbers, file_types, thresholds, single_files=None):
-    """
-    Returns:
-        dict: A dictionary where keys are constructed filenames (e.g., 'Stn14_Chi2016_ge0p60')
-              and values are the loaded NumPy arrays.
-    """
-    loaded_data = {}
-    print(f"Loading data from: {load_path}\n")
-
-    if single_files:
-        for single_file in single_files:
-            file_path = os.path.join(load_path, single_file)
-            dict_key = os.path.splitext(single_file)[0] # Remove .npy extension for key
-            try:
-                loaded_data[dict_key] = np.load(file_path)
-                print(f"Loaded {single_file}. Shape: {loaded_data[dict_key].shape}")
-            except FileNotFoundError:
-                print(f"Warning: {single_file} not found at {file_path}")
-            except Exception as e:
-                print(f"Error loading {single_file}: {e}")
-
-    # Load files based on the station, file_type, and threshold patterns
-    for stn_num in station_numbers:
-        for file_type in file_types:
-            for threshold in thresholds:
-                filename = f"Stn{stn_num}_{file_type}_ge0p{threshold}.npy"
-                file_path = os.path.join(load_path, filename)
-                dict_key = f"Stn{stn_num}_{file_type}_ge0p{threshold}"
-
-                try:
-                    loaded_data[dict_key] = np.load(file_path)
-                    print(f"Loaded {filename}. Shape: {loaded_data[dict_key].shape}")
-                except FileNotFoundError:
-                    print(f"Warning: {filename} not found at {file_path}")
-
-    
-    print("\n--- Data loading complete ---")
-    # access using loaded_data['Stn{stn_num}_{file_type}_ge0p{threshold}']
-    return loaded_data
-
 def profiling():
     start = time.time()
 

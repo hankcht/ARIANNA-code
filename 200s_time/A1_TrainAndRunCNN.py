@@ -22,7 +22,7 @@ import templateCrossCorr as txc
 import matplotlib
 from matplotlib import pyplot as plt
 matplotlib.use('Agg')
-from A0_Utilities import getMaxChi, getMaxSNR, load_sim, load_data
+from A0_Utilities import getMaxChi, getMaxSNR, load_sim_rcr, load_data
 
 def save_best_result(best_result, algorithm=''):
     """
@@ -142,10 +142,6 @@ def Train_CNN():
     with open(f'{model_path}{timestamp}_RCR_Backlobe_model_2Layer_history.pkl', 'wb') as f:
         pickle.dump(history.history, f)
 
-
-    # defining simulation multiplier, should depend on how many training cycles done
-    simulation_multiplier = 1 # Not required anymore
-
     # Plot the training and validation loss
     plt.figure(figsize=(6, 4))
     plt.plot(history.history['loss'], label='Training Loss')
@@ -153,8 +149,8 @@ def Train_CNN():
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.title(f'Model 1: Simulation File Used {simulation_multiplier} Times')
-    plt.savefig(f'{loss_plot_path}{if_sim}_loss_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
+    plt.title(f'sim RCR vs data BL loss plot')
+    plt.savefig(f'{loss_plot_path}_loss_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
     plt.clf()
 
     # Plot the training and validation accuracy
@@ -164,8 +160,8 @@ def Train_CNN():
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.legend()
-    plt.title(f'Model 1: Simulation File Used {simulation_multiplier} Times')
-    plt.savefig(f'{accuracy_plot_path}{if_sim}_accuracy_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
+    plt.title(f'sim RCR vs data BL accuracy plot')
+    plt.savefig(f'{accuracy_plot_path}_accuracy_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
     plt.clf()
 
     model.summary()
@@ -177,12 +173,10 @@ def Train_CNN():
 
     return model
 
-
-
 # Set parameters
 amp = '200s' 
 output_cut_value = 0.6 # Change this depending on chosen cut, we get our passed events from this  # Originally 0.95
-TrainCut = 5000 # Number of events to use for training, change accordingly if we do not have enough events
+TrainCut = 800 # Number of events to use for training, change accordingly if we do not have enough events
 
 
 if amp == '200s':
@@ -192,11 +186,10 @@ elif amp == '100s':
     noiseRMS = 20 * units.mV
     station_id = [13,15,18]
 
-path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'                                                                                                     #Set which amplifier to run on
-RCR_path = f'simulatedRCRs/{amp}_2.9.24/'
-backlobe_path = f'simulatedBacklobes/{amp}_2.9.24/'
+# path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'                                                                                                     #Set which amplifier to run on
+sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
 
-model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/{amp}_time/'                                  
+model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/{amp}_time/new_chi'                                  
 accuracy_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/accuracy/{amp}_time/new_chi' 
 loss_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/loss/{amp}_time/new_chi'         
 
@@ -205,103 +198,56 @@ timestamp = current_datetime.strftime("%Y-%m-%d_%H-%M") # Format the datetime ob
 
 if __name__ == "__main__":  
 
-    rcr, sim_Backlobe = load_sim(path, RCR_path, backlobe_path, amp)
+    sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
+    print(f'number of sim is{len(sim_RCR)}')
     # since we load traces depending on stn, we need to make data_Backlobe a full list
     data_Backlobe = []
     data_Backlobe_UNIX = [] 
     for id in station_id:
-        snr, chi, trace, unix = load_data('AboveCurve_data', amp_type = amp, station_id=id)
-        data_Backlobe.extend(trace)
+        snr, chi2016, chiRCR, traces, unix = load_data('new_chi_above_curve', amp_type = amp, station_id=id)
+        data_Backlobe.extend(traces)
         data_Backlobe_UNIX.extend(unix)
 
 
-    Backlobe = np.array(Backlobe)
+    data_Backlobe = np.array(data_Backlobe)
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
-    print(f'RCR shape: {rcr.shape} Backlobe shape: {Backlobe.shape}')
+    print(f'RCR shape: {sim_RCR.shape} Backlobe shape: {data_Backlobe.shape}')
 
     # take a random selection because events are ordered based off CR simulated, so avoids overrepresenting particular Cosmic Rays
-    RCR_training_indices = np.random.choice(rcr.shape[0], size=TrainCut, replace=False)
-    BL_training_indices = np.random.choice(Backlobe.shape[0], size=TrainCut, replace=False)
-    training_RCR = rcr[RCR_training_indices, :]
-    training_Backlobe = Backlobe[BL_training_indices, :]
+    RCR_training_indices = np.random.choice(sim_RCR.shape[0], size=TrainCut, replace=False)
+    BL_training_indices = np.random.choice(data_Backlobe.shape[0], size=TrainCut, replace=False)
+    training_RCR = sim_RCR[RCR_training_indices, :]
+    training_Backlobe = data_Backlobe[BL_training_indices, :]
     # I also want to save the indices of non_trained_events, to use them for our test later
-    RCR_non_training_indices = np.setdiff1d(np.arange(rcr.shape[0]), RCR_training_indices)
-    BL_non_training_indices = np.setdiff1d(np.arange(Backlobe.shape[0]), BL_training_indices)
+    RCR_non_training_indices = np.setdiff1d(np.arange(sim_RCR.shape[0]), RCR_training_indices)
+    BL_non_training_indices = np.setdiff1d(np.arange(data_Backlobe.shape[0]), BL_training_indices)
     print(f'Training shape RCR {training_RCR.shape} Training Shape Backlobe {training_Backlobe.shape} TrainCut {TrainCut}')
     print(f'Non-training RCR count {len(RCR_non_training_indices)} Non-training Backlobe count {len(BL_non_training_indices)}')
 
     # Now Train
     model = Train_CNN()  
 
+    model.save(f'{model_path}_{timestamp}_RCR_Backlobe_model_2Layer.h5') # currently saving in h5
+    model_path = f'{model_path}_{timestamp}_RCR_Backlobe_model_2Layer.h5'
+    model = keras.models.load_model(model_path)
 
-    # input the path and file you'd like to save the model as (in h5 format)
-    if if_sim == 'sim_sim' or if_sim == 'sim_data':
-        model.save(f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
-        sim_model_path = f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5'
-        print(f'model saved at {sim_model_path}')
-    elif if_sim == 'data_sim' or if_sim == 'data_data':
-        model.save(f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
-        data_model_path = f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5'
-        print(f'model saved at {data_model_path}')
 
     print('------> Training is Done!')
-
-
-
-################################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 
     # Now we run our trained model on the remaining (non-trained) events
 
-    # Load the model that we just trained (Extra/Unnecessary Step, but I want to clearly show what model we are using) 
-    if if_sim == 'sim_sim' or if_sim == 'sim_data':
-        model_path = sim_model_path
-    elif if_sim == 'data_sim' or if_sim == 'data_data':
-        model_path = data_model_path
-
-    # model_path = '/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/data_data_2024-10-12_18-12-21_RCR_Backlobe_model_2Layer.h5'
-
-    model = keras.models.load_model(model_path)
-
-
     ##################################
     # Here I can make a list of good models by the title/time they were created
-    # 2024-10-12_11-52-29 (Used Sim BL)
 
     ##################################
 
-    # Now we can test run our trained model on the non trained events
-    non_trained_RCR = rcr[RCR_non_training_indices,:]
-    # We can either run on sim BL or "BL data events"
-    if if_sim == 'sim_sim' or if_sim == 'data_sim':
-        non_trained_Backlobe =  Backlobe[BL_non_training_indices,:] 
-    elif if_sim == 'sim_data' or if_sim == 'data_data':
-        non_trained_Backlobe =  Backlobe[BL_non_training_indices,:]
-        non_trained_Backlobe_UNIX = data_Backlobe_UNIX[BL_non_training_indices] 
+    # Now we can test run our trained model on the non trained events (or just all events)
+    non_trained_RCR = sim_RCR[RCR_non_training_indices,:]
+    non_trained_Backlobe =  data_Backlobe[BL_non_training_indices,:]
+    non_trained_Backlobe_UNIX = data_Backlobe_UNIX[BL_non_training_indices] 
 
     # prob_RCR = model.predict(non_trained_RCR) # Network output of RCR
     # prob_Backlobe = model.predict(non_trained_Backlobe) # Network output of Backlobe
@@ -309,21 +255,21 @@ if __name__ == "__main__":
 
     print(f'output cut value: {output_cut_value}')
 
-    rcr = np.array(rcr)
-    prob_RCR = model.predict(rcr)
-    prob_Backlobe = model.predict(Backlobe)
+    sim_RCR = np.array(sim_RCR)
+    prob_RCR = model.predict(sim_RCR)
+    prob_Backlobe = model.predict(data_Backlobe)
 
     # Finding not weighted RCR efficiency (percentage of RCR events that would pass the cut) 
     sim_RCR_output = prob_RCR
     RCR_efficiency = (sim_RCR_output > output_cut_value).sum() / len(sim_RCR_output)
     RCR_efficiency = (100*RCR_efficiency).round(decimals=2)
-    print(f'{if_sim} RCR efficiency: {RCR_efficiency}')
+    print(f'RCR efficiency: {RCR_efficiency}')
 
     # Finding Backlobe efficiency (percentage of backlobe that would remain after our cut)
     sim_Backlobe_output = prob_Backlobe
     Backlobe_efficiency = (sim_Backlobe_output > output_cut_value).sum() / len(sim_Backlobe_output)
     Backlobe_efficiency = (100*Backlobe_efficiency).round(decimals=4)
-    print(f'{if_sim} Backlobe efficiency: {Backlobe_efficiency}')
+    print(f'Backlobe efficiency: {Backlobe_efficiency}')
 
     print(f'lengths {len(prob_RCR)} and {len(prob_Backlobe)}')
 
@@ -350,9 +296,9 @@ if __name__ == "__main__":
     ax.axvline(x=output_cut_value, color='y', label='cut')
     ax.text(0.05, -0.12, 'BL', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=ax.transAxes, color='blue')
     ax.text(0.96, -0.12, 'RCR', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=ax.transAxes, color='red')
-    print(f'saving /pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/{if_sim}_{timestamp}_histogram.png')
-    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/{if_sim}_{timestamp}_histogram.png')
-    print(f'------> {amp} {if_sim} Done!')
+    print(f'saving /pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/new_chi/{timestamp}_histogram.png')
+    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/new_chi/{timestamp}_histogram.png')
+    print(f'------> {amp} Done!')
 
 
 

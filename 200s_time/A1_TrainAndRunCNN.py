@@ -210,11 +210,19 @@ if __name__ == "__main__":
 
 
     data_Backlobe = np.array(data_Backlobe)
-    empty_count = np.sum(data_Backlobe == 0)
-    print(f"Number of empty (zero) entries: {empty_count}")
+    sim_RCR = np.array(sim_RCR)
+
+    # Count how many (4, 256) arrays contain at least one zero
+    count_with_zeros = np.sum(np.any(data_Backlobe == 0, axis=(1, 2)))
+
+    print(f"Number of (4, 256) entries containing at least one zero: {count_with_zeros}")
     print('hold')
-    empty_count = np.sum(sim_RCR == 0)
-    print(f"Number of empty (zero) entries: {empty_count}")
+    count_with_zeros = np.sum(np.any(sim_RCR == 0, axis=(1, 2)))
+
+    print(f"Number of (4, 256) entries containing at least one zero: {count_with_zeros}")
+
+
+
     exit()
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
     print(f'RCR shape: {sim_RCR.shape} Backlobe shape: {data_Backlobe.shape}')

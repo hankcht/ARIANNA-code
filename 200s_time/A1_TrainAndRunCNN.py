@@ -190,8 +190,8 @@ elif amp == '100s':
 sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
 
 model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/{amp}_time/new_chi'                                  
-accuracy_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/accuracy/{amp}_time/new_chi' 
-loss_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/loss/{amp}_time/new_chi'         
+accuracy_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/accuracy/{amp}_time/new_chi/' 
+loss_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/loss/{amp}_time/new_chi/'         
 
 current_datetime = datetime.now() # Get the current date and time
 timestamp = current_datetime.strftime("%Y-%m-%d_%H-%M") # Format the datetime object as a string with seconds
@@ -202,11 +202,19 @@ if __name__ == "__main__":
     print(f'number of sim is{len(sim_RCR)}')
     # since we load traces depending on stn, we need to make data_Backlobe a full list
     data_Backlobe = []
+    data_Backlobe_chi2016 = []
     data_Backlobe_UNIX = [] 
     for id in station_id:
         snr, chi2016, chiRCR, traces, unix = load_data('new_chi_above_curve', amp_type = amp, station_id=id)
         data_Backlobe.extend(traces)
+        data_Backlobe_chi2016.extend(chi2016)
         data_Backlobe_UNIX.extend(unix)
+
+    data_Backlobe_chi2016 = np.array(data_Backlobe_chi2016)
+    indices = np.where(data_Backlobe_chi2016 > 0.8)[0]
+    print(indices)
+
+    exit()
 
 
     data_Backlobe = np.array(data_Backlobe)

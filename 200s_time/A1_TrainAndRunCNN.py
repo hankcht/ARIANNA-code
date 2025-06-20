@@ -210,18 +210,19 @@ if __name__ == "__main__":
         data_Backlobe_chi2016.extend(chi2016)
         data_Backlobe_UNIX.extend(unix)
 
-    data_Backlobe_chi2016 = np.array(data_Backlobe_chi2016)
-    indices = np.where(data_Backlobe_chi2016 > 0.8)[0]
-    print(indices)
+    # data_Backlobe_chi2016 = np.array(data_Backlobe_chi2016)
+    # indices = np.where(data_Backlobe_chi2016 > 0.8)[0]
+    # print(indices)
 
-    for index in indices: 
-        pT(data_Backlobe[index], 'test plot data BL', f'/pub/tangch3/ARIANNA/DeepLearning/test_plot_data_BL/test_new_data_BL_{amp}_{index}.png')
+    # for index in indices: 
+    #     pT(data_Backlobe[index], 'test plot data BL', f'/pub/tangch3/ARIANNA/DeepLearning/test_plot_data_BL/test_new_data_BL_{amp}_{index}.png')
 
-    exit()
+    # exit()
 
 
     data_Backlobe = np.array(data_Backlobe)
     sim_RCR = np.array(sim_RCR)
+    sim_RCR = np.random.choice(sim_RCR.shape[0], size = 995, replace=False)
 
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
     print(f'RCR shape: {sim_RCR.shape} Backlobe shape: {data_Backlobe.shape}')

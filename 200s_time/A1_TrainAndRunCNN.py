@@ -212,15 +212,6 @@ if __name__ == "__main__":
     data_Backlobe = np.array(data_Backlobe)
     sim_RCR = np.array(sim_RCR)
 
-    # prints out every byte in this RCR file, was printing only zeros
-    with open('/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/100s/5.28.25/SimRCR_100s_NoiseTrue_forcedFalse_4668events_FilterTrue_part0.npy', mode="rb") as f:
-        data = f.read()
-        for c in data:
-            print(c, end = " ")
-
-
-
-    exit()
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
     print(f'RCR shape: {sim_RCR.shape} Backlobe shape: {data_Backlobe.shape}')
 

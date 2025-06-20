@@ -124,7 +124,7 @@ def Train_CNN():
     model = Sequential()
     # change window size to capture the 100 Mhz difference in Backlobe (shadowing effect, we have integer frequencies amplified)
     # window size default is 10, on 256 floats 
-    model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
+    model.add(Conv2D(20, (4, 2), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
     model.add(Conv2D(10, (1, 10), activation='relu'))
     model.add(Dropout(0.5))
     model.add(Flatten())
@@ -177,12 +177,11 @@ def Train_CNN():
 
     return model
 
-
-
 # Set parameters
 amp = '200s' 
 output_cut_value = 0.6 # Change this depending on chosen cut, we get our passed events from this  # Originally 0.95
 TrainCut = 5000 # Number of events to use for training, change accordingly if we do not have enough events
+
 
 
 if amp == '200s':
@@ -197,8 +196,8 @@ RCR_path = f'simulatedRCRs/{amp}_2.9.24/'
 backlobe_path = f'simulatedBacklobes/{amp}_2.9.24/'
 
 model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/{amp}_time/'                                  
-accuracy_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/accuracy/{amp}_time/new_chi' 
-loss_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/loss/{amp}_time/new_chi'         
+accuracy_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/accuracy/{amp}_time/' 
+loss_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/loss/{amp}_time/'         
 
 current_datetime = datetime.now() # Get the current date and time
 timestamp = current_datetime.strftime("%Y-%m-%d_%H-%M") # Format the datetime object as a string with seconds
@@ -214,10 +213,23 @@ if __name__ == "__main__":
         data_Backlobe.extend(trace)
         data_Backlobe_UNIX.extend(unix)
 
+    # With argparse, we can either use [1] sim BL, or [2] "BL data events" 
+
+    parser = argparse.ArgumentParser(description='Determine To Use sim BL or "BL data events"') 
+    parser.add_argument('BLsimOrdata', type=str, default='data_data', help='Use sim BL or "BL data events')
+    args = parser.parse_args()
+    if_sim = args.BLsimOrdata
+
+    if if_sim == 'sim_data' or if_sim == 'sim_sim':
+        Backlobe = sim_Backlobe # Using [1]
+        print(f'using sim Backlobe for training')
+    elif if_sim == 'data_sim' or if_sim == 'data_data':
+        Backlobe = data_Backlobe # Using [2]
+        print('using data Backlobe for training')
 
     Backlobe = np.array(Backlobe)
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
-    print(f'RCR shape: {rcr.shape} Backlobe shape: {Backlobe.shape}')
+    print(f'RCR shape: {rcr.shape} Backlobe shape: {if_sim} {Backlobe.shape}')
 
     # take a random selection because events are ordered based off CR simulated, so avoids overrepresenting particular Cosmic Rays
     RCR_training_indices = np.random.choice(rcr.shape[0], size=TrainCut, replace=False)

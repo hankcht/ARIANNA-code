@@ -364,7 +364,8 @@ if __name__ == "__main__":
         curve_y = []
         x1, y1 = 5, 0.5
         x2, y2 = 10, 0.68
-        x3, y3 = 23, 0.8
+        x3, y3 = 16, 0.7
+        x4, y4 = 20, 0.77
 
         log_x1 = np.log10(x1)
         log_x2 = np.log10(x2)
@@ -383,8 +384,13 @@ if __name__ == "__main__":
                 C = y2 - m * log_x2
                 y = m * np.log10(x) + C
                 curve_y.append(y)
+            elif x3 < x <= x4:
+                m = (y4 - y3) / (log_x4 - log_x3)
+                C = y3 - m * log_x3
+                y = m * np.log10(x) + C
+                curve_y.append(y)
             else:
-                curve_y.append(y3)  
+                curve_y.append(y4)  
         return curve_y
 
     def find_curve_30(curve_x):

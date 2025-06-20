@@ -251,15 +251,15 @@ if __name__ == "__main__":
     non_trained_Backlobe =  data_Backlobe[BL_non_training_indices,:]
     non_trained_Backlobe_UNIX = data_Backlobe_UNIX[BL_non_training_indices] 
 
-    # prob_RCR = model.predict(non_trained_RCR) # Network output of RCR
-    # prob_Backlobe = model.predict(non_trained_Backlobe) # Network output of Backlobe
-    # print(len(prob_Backlobe))
+    prob_RCR = model.predict(non_trained_RCR) # Network output of RCR
+    prob_Backlobe = model.predict(non_trained_Backlobe) # Network output of Backlobe
+    print(len(prob_Backlobe))
 
     print(f'output cut value: {output_cut_value}')
 
-    sim_RCR = np.array(sim_RCR)
-    prob_RCR = model.predict(sim_RCR)
-    prob_Backlobe = model.predict(data_Backlobe)
+    # sim_RCR = np.array(sim_RCR)
+    # prob_RCR = model.predict(sim_RCR)
+    # prob_Backlobe = model.predict(data_Backlobe)
 
     # Finding not weighted RCR efficiency (percentage of RCR events that would pass the cut) 
     sim_RCR_output = prob_RCR

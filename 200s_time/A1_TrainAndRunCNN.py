@@ -22,7 +22,7 @@ import templateCrossCorr as txc
 import matplotlib
 from matplotlib import pyplot as plt
 matplotlib.use('Agg')
-from A0_Utilities import getMaxChi, getMaxSNR, load_sim_rcr, load_data
+from A0_Utilities import getMaxChi, getMaxSNR, load_sim_rcr, load_data, pT
 
 def save_best_result(best_result, algorithm=''):
     """
@@ -213,6 +213,9 @@ if __name__ == "__main__":
     data_Backlobe_chi2016 = np.array(data_Backlobe_chi2016)
     indices = np.where(data_Backlobe_chi2016 > 0.8)[0]
     print(indices)
+
+    for index in indices: 
+        pT(data_Backlobe[index], 'test plot data BL', f'/pub/tangch3/ARIANNA/DeepLearning/test_plot_data_BL/test_new_data_BL_{amp}_{index}.png')
 
     exit()
 

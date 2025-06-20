@@ -212,14 +212,11 @@ if __name__ == "__main__":
     data_Backlobe = np.array(data_Backlobe)
     sim_RCR = np.array(sim_RCR)
 
-    # Count how many (4, 256) arrays contain at least one zero
-    count_with_zeros = np.sum(np.all(data_Backlobe == 0, axis=(1, 2)))
-
-    print(f"Number of (4, 256) entries containing at least one zero: {count_with_zeros}")
-    print('hold')
-    count_with_zeros = np.sum(np.all(sim_RCR == 0, axis=(1, 2)))
-
-    print(f"Number of (4, 256) entries containing at least one zero: {count_with_zeros}")
+    # prints out every byte in this RCR file, was printing only zeros
+    with open('/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/100s/5.28.25/SimRCR_100s_NoiseTrue_forcedFalse_4668events_FilterTrue_part0.npy', mode="rb") as f:
+        data = f.read()
+        for c in data:
+            print(c, end = " ")
 
 
 

@@ -200,7 +200,7 @@ if __name__ == "__main__":
     def find_curve_13(curve_x) -> list:
         curve_y = []
         x1, y1 = 4.5, 0.5
-        x2, y2 = 9, 0.68
+        x2, y2 = 9, 0.66
         x3, y3 = 20, 0.8
         x4, y4 = 40, 0.75
 
@@ -390,7 +390,7 @@ if __name__ == "__main__":
     def find_curve_30(curve_x):
         curve_y = []
         x1, y1 = 4.5, 0.53
-        x2, y2 = 10, 0.70
+        x2, y2 = 10, 0.72
         x3, y3 = 20, 0.8
 
         log_x1 = np.log10(x1)

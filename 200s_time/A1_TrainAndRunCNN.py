@@ -242,8 +242,7 @@ if __name__ == "__main__":
     model = Train_CNN()  
 
     model.save(f'{model_path}_{timestamp}_RCR_Backlobe_model_2Layer.h5') # currently saving in h5
-    model_path = f'{model_path}_{timestamp}_RCR_Backlobe_model_2Layer.h5'
-    model = keras.models.load_model(model_path)
+    model = keras.models.load_model(f'{model_path}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
 
 
     print('------> Training is Done!')

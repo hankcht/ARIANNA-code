@@ -127,7 +127,7 @@ def Train_CNN():
     model.add(Conv2D(8, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
     model.add(Conv2D(16, (1, 10), activation='relu'))
     model.add(Conv2D(32, (1, 10), activation='relu'))
-    # model.add(Dropout(0.5))
+    model.add(Dropout(0.5))
     model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
     model.compile(optimizer='Adam',

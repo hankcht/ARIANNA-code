@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
 
     data_Backlobe = np.array(data_Backlobe)
-    sim_RCR = np.array(sim_RCR)
+    sim_RCR = np.array(sim_RCR) #
 
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
     print(f'RCR shape: {sim_RCR.shape} Backlobe shape: {data_Backlobe.shape}')

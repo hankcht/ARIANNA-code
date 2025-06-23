@@ -126,6 +126,7 @@ def Train_CNN():
     # window size default is 10, on 256 floats 
     model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
     model.add(Conv2D(10, (1, 10), activation='relu'))
+    model.add(Conv2D(10, (1, 10), activation='relu'))
     # model.add(Dropout(0.5))
     model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
@@ -313,8 +314,8 @@ if __name__ == "__main__":
     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/new_chi/{timestamp}_histogram.png')
     print(f'------> {amp} Done!')
 
-    print(prob_Backlobe)
-    print(prob_RCR)
+    # print(prob_Backlobe)
+    # print(prob_RCR)
 
     # # We can get get the network output, Chi, and SNR of certain events that we want to look at
     

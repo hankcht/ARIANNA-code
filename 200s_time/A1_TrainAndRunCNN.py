@@ -222,7 +222,6 @@ if __name__ == "__main__":
 
     data_Backlobe = np.array(data_Backlobe)
     sim_RCR = np.array(sim_RCR)
-    sim_RCR = np.random.choice(sim_RCR.shape[0], size = 995, replace=False)
 
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
     print(f'RCR shape: {sim_RCR.shape} Backlobe shape: {data_Backlobe.shape}')
@@ -314,7 +313,8 @@ if __name__ == "__main__":
     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/new_chi/{timestamp}_histogram.png')
     print(f'------> {amp} Done!')
 
-
+    print(prob_Backlobe)
+    print(prob_RCR)
 
     # # We can get get the network output, Chi, and SNR of certain events that we want to look at
     

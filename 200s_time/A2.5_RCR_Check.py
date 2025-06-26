@@ -11,7 +11,7 @@ from A1_TrainAndRunCNN import output_cut_value
 def loadSingleTemplate(series):
     # Series should be 200 or 100
     # Loads the first version of a template made for an average energy/zenith
-    templates_RCR = f'../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/reflectedCR_template_{series}series.pkl'
+    templates_RCR = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/reflectedCR_template_{series}series.pkl'
     templates_RCR = read_pickle(templates_RCR)
     for key in templates_RCR:
         temp = templates_RCR[key]
@@ -19,7 +19,7 @@ def loadSingleTemplate(series):
 
     return templates_RCR
 
-def loadMultipleTemplates(series, date='9.16.24', addSingle=True):
+def oldloadMultipleTemplates(series, date='9.16.24', addSingle=False):
     # Dates - 9.16.24 (noise included), 10.1.24 (no noise)
     #       - 2016 : found backlobe events from 2016
 
@@ -27,14 +27,14 @@ def loadMultipleTemplates(series, date='9.16.24', addSingle=True):
     # Series should be 200 or 100
     # Loads all the templates made for an average energy/zenith
     if not date == 'confirmed2016Templates':
-        template_series_RCR_location = f'../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/RCR/{date}/' 
+        template_series_RCR_location = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/RCR/{date}/' 
         template_series_RCR = []
         for filename in os.listdir(template_series_RCR_location):
             if filename.startswith(f'{series}s'):
                 temp = np.load(os.path.join(template_series_RCR_location, filename))
                 template_series_RCR.append(temp)
     else:
-        templates_2016_location = f'../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/'
+        templates_2016_location = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/'
         template_series_RCR = []
         for filename in os.listdir(templates_2016_location):
             temp = np.load(os.path.join(templates_2016_location, filename))
@@ -49,38 +49,38 @@ if __name__ == '__main__':
 
     model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/' 
    
-#    # first test confirmed BL
-#     confirmed_BL_path = '../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates'
+   # first test confirmed BL
+    confirmed_BL_path = '../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates'
  
-#     confirmed_Traces = []
-#     for filename in os.listdir(confirmed_BL_path):
-#         trace = np.load(f'{confirmed_BL_path}/{filename}')
-#         confirmed_Traces.append(trace)
+    confirmed_Traces = []
+    for filename in os.listdir(confirmed_BL_path):
+        trace = np.load(f'{confirmed_BL_path}/{filename}')
+        confirmed_Traces.append(trace)
 
-#     confiremd_Traces = loadMultipleTemplates('200', date='confirmed2016Templates', addSingle=False)
+    confiremd_Traces = oldloadMultipleTemplates('200', date='confirmed2016Templates', addSingle=False)
 
-#     confirmed_Traces = np.array(confirmed_Traces)
-#     print(confirmed_Traces.shape)
+    confirmed_Traces = np.array(confirmed_Traces)
+    print(confirmed_Traces.shape)
 
-#     prob_template = RunTrainedModel(confirmed_Traces, model_path)
+    prob_template = RunTrainedModel(confirmed_Traces, model_path)
 
-#     fig, ax = plt.subplots(figsize=(8, 6))
-#     hist_values, bin_edges, _ = ax.hist(prob_template, bins=20, range=(0, 1), histtype='step', color='blue', linestyle='solid', label=f'template count {len(prob_template)}', density=False)
-#     ax.set_xlabel('Network Output', fontsize=18)
-#     ax.set_ylabel('Number of Events', fontsize=18)
-#     # ax.set_yscale('log') # Set logarithmic scale for y-axis, if needed
-#     # ax.set_ylim(1, max(10 ** (np.ceil(np.log10(hist_values))))) # uncomment if needed for semi-log plot
-#     ax.set_title(f'confirmed BL network output')
-#     ax.set_xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
-#     ax.tick_params(axis='both', which='both', labelsize=12, length=5)
-#     ax.text(0.05, -0.12, 'BL', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=ax.transAxes, color='blue')
-#     ax.text(0.96, -0.12, 'RCR', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=ax.transAxes, color='red')
-#     plt.subplots_adjust(left=0.2, right=0.8, bottom=0.2, top=0.8)
-#     ax.axvline(x=output_cut_value, color='y', label='cut')
-#     ax.legend(loc='upper right', fontsize=8, bbox_to_anchor=(0.85, 0.99))
-#     print(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Histograms/confirmed_histogram.png')
-#     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Histograms/confirmed_histogram.png')
-#     print('Done!')
+    fig, ax = plt.subplots(figsize=(8, 6))
+    hist_values, bin_edges, _ = ax.hist(prob_template, bins=20, range=(0, 1), histtype='step', color='blue', linestyle='solid', label=f'template count {len(prob_template)}', density=False)
+    ax.set_xlabel('Network Output', fontsize=18)
+    ax.set_ylabel('Number of Events', fontsize=18)
+    # ax.set_yscale('log') # Set logarithmic scale for y-axis, if needed
+    # ax.set_ylim(1, max(10 ** (np.ceil(np.log10(hist_values))))) # uncomment if needed for semi-log plot
+    ax.set_title(f'confirmed BL network output')
+    ax.set_xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    ax.tick_params(axis='both', which='both', labelsize=12, length=5)
+    ax.text(0.05, -0.12, 'BL', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=ax.transAxes, color='blue')
+    ax.text(0.96, -0.12, 'RCR', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=ax.transAxes, color='red')
+    plt.subplots_adjust(left=0.2, right=0.8, bottom=0.2, top=0.8)
+    ax.axvline(x=output_cut_value, color='y', label='cut')
+    ax.legend(loc='upper right', fontsize=8, bbox_to_anchor=(0.85, 0.99))
+    print(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Histograms/confirmed_histogram.png')
+    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Histograms/confirmed_histogram.png')
+    print('Done!')
 
 
     # now check data Backlobe

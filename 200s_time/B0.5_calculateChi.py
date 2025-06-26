@@ -34,7 +34,7 @@ def loadMultipleTemplates(series, date='3.29.25', addSingle=False, bad=False):
                 temp = np.load(os.path.join(template_series_RCR_location, filename))
                 template_series_RCR.append(temp)
     else:
-        templates_2016_location = f'StationDataAnalysis/templates/confirmed2016Templates/'
+        templates_2016_location = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/'
         for filename in os.listdir(templates_2016_location):
             temp = np.load(os.path.join(templates_2016_location, filename))
             # Only use the channel of highest amplitude

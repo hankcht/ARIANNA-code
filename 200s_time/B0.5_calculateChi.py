@@ -69,13 +69,13 @@ if __name__ == "__main__":
         if file.startswith(f'station14_all_Traces'):
             traces_array = np.load(load_path+file, allow_pickle=True)
 
-            chi_2016 = np.zeros((len(traces_array)))
+            chi_2016 = []
             chi_RCR = np.zeros((len(traces_array)))
             chi_RCR_bad = np.zeros((len(traces_array)))
 
-            for iT, traces in traces_array:
+            for traces in traces_array:
 
-                chi_2016[iT] = getMaxAllChi(traces, 2*units.GHz, templates_2016, 2*units.GHz)
+                chi_2016.append(getMaxAllChi(traces, 2*units.GHz, templates_2016, 2*units.GHz))
                 # chi_RCR[iT] = getMaxAllChi(traces, 2*units.GHz, template_series, 2*units.GHz)
 
             print(chi_2016)

@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser()
     config.read('HRAStationDataAnalysis/config.ini')
-    date = config['PARAMETERS']['date']
+    # date = config['PARAMETERS']['date']
 
 
     # data_folder = f'HRAStationDataAnalysis/StationData/nurFiles/{date}/'

@@ -95,9 +95,9 @@ if __name__ == "__main__":
     print(chi_2016[0:20])
     print(chi_RCR[0:20])
 
-    save_folder = f'/pub/tangch3/ARIANNA/DeepLearning/simRCR_chi/3.29.25'
-    np.save(f'{save_folder}/3.29.25_simRCR_chi2016.npy', chi_2016)
-    np.save(f'{save_folder}/3.29.25_simRCR_chiRCR.npy', chi_RCR)
+    # save_folder = f'/pub/tangch3/ARIANNA/DeepLearning/simRCR_chi/3.29.25'
+    # np.save(f'{save_folder}/3.29.25_simRCR_chi2016.npy', chi_2016)
+    # np.save(f'{save_folder}/3.29.25_simRCR_chiRCR.npy', chi_RCR)
 
 
     # for series in stations.keys():

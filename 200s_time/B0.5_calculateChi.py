@@ -19,7 +19,7 @@ def loadSingleTemplate(series):
     return templates_RCR
 
 def loadMultipleTemplates(series, date='3.29.25', addSingle=False, bad=False):
-    # Dates 
+    # Dates - 9.16.24 (noise included), 10.1.24 (no noise)
     #       - 2016 : found backlobe events from 2016
     #       - 3.29.25 : noiseless, 100s and 200s, pruned by-hand for 'good' templates
 
@@ -28,11 +28,13 @@ def loadMultipleTemplates(series, date='3.29.25', addSingle=False, bad=False):
     # Loads all the templates made for an average energy/zenith
     template_series_RCR = {}
     if not date == '2016':
-        template_series_RCR_location = f'DeepLearning/templates/RCR/{date}/' 
+        template_series_RCR_location = f'/pub/tangch3/ARIANNA/DeepLearning/RCR_templates/{date}/' 
+        i = 0
         for filename in os.listdir(template_series_RCR_location):
             if filename.startswith(f'{series}s'):
                 temp = np.load(os.path.join(template_series_RCR_location, filename))
-                template_series_RCR.append(temp)
+                template_series_RCR[i] = temp
+                i += 1
     else:
         templates_2016_location = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/'
         for filename in os.listdir(templates_2016_location):
@@ -42,7 +44,7 @@ def loadMultipleTemplates(series, date='3.29.25', addSingle=False, bad=False):
             for t in temp:
                 if max(np.abs(t)) > max(max_temp):
                     max_temp = t
-            key = filename.split('_')[1] # since the filenames are Event2016_1449861609.0_Chi0.68_SNR20.33.npy, we key the UNIX time
+            key = filename.split('_')[1]
             template_series_RCR[key] = max_temp
 
     if addSingle:
@@ -52,34 +54,27 @@ def loadMultipleTemplates(series, date='3.29.25', addSingle=False, bad=False):
 
 if __name__ == "__main__":
 
-    config = configparser.ConfigParser()
-    config.read('HRAStationDataAnalysis/config.ini')
-    # date = config['PARAMETERS']['date']
-
-
-    # data_folder = f'HRAStationDataAnalysis/StationData/nurFiles/{date}/'
-    load_path = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/'
+    load_path = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/' 
 
     stations_100s = [13, 15, 18]
     stations_200s = [14, 17, 19, 30]
     stations = {100: stations_100s, 200: stations_200s}
 
+
+    ###########
+    series = 200
     templates_2016 = loadMultipleTemplates(200, date='2016')
-    for file in os.listdir(load_path):
-        if file.startswith(f'station14_all_Traces'):
-            traces_array = np.load(load_path+file, allow_pickle=True)
+    templates_series = loadMultipleTemplates(series)     
+    stn_14_all = np.load('/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/station14_all_Traces.npy')
 
-            chi_2016 = []
-            chi_RCR = np.zeros((len(traces_array)))
-            chi_RCR_bad = np.zeros((len(traces_array)))
+    chi_2016 = []
+    for i, event in enumerate(stn_14_all):
+        traces = [trace * units.V for trace in event]
+        chi_2016.append(getMaxAllChi(traces, 2*units.GHz, templates_2016, 2*units.GHz))
 
-            for traces in traces_array:
-
-                chi_2016.append(getMaxAllChi(traces, 2*units.GHz, templates_2016, 2*units.GHz))
-                # chi_RCR[iT] = getMaxAllChi(traces, 2*units.GHz, template_series, 2*units.GHz)
-
-            print(chi_2016)
-            print(len(chi_2016))
+    
+    print(chi_2016)
+    print(len(chi_2016))
     check_chi_2016 = np.load('/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/station14_all_Chi2016.npy')
     print(check_chi_2016)
     print(len(check_chi_2016))
@@ -105,8 +100,8 @@ if __name__ == "__main__":
     #                 print(chi_2016)
     #                 print(len(chi_2016))
 
-                    # Save the chi values
-                    # np.save(data_folder+file.replace('Traces', 'Chi_2016'), chi_2016)
-                    # print(f'Saved {file.replace("Traces", "Chi_2016")}')
-                    # np.save(data_folder+file.replace('Traces', 'Chi_RCR'), chi_RCR)
-                    # print(f'Saved {file.replace("Traces", "Chi_RCR")}')
+    #                 # Save the chi values
+    #                 np.save(data_folder+file.replace('Traces', 'Chi_2016'), chi_2016)
+    #                 print(f'Saved {file.replace("Traces", "Chi_2016")}')
+    #                 np.save(data_folder+file.replace('Traces', 'Chi_RCR'), chi_RCR)
+    #                 print(f'Saved {file.replace("Traces", "Chi_RCR")}')

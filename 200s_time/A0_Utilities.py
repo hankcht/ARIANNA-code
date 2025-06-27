@@ -14,6 +14,7 @@ import pickle
 import templateCrossCorr as txc
 import NuRadioReco
 from NuRadioReco.utilities import units, fft
+from NuRadioReco.utilities.io_utilities import read_pickle
 
     
 def getMaxChi(traces, sampling_rate, template_trace, template_sampling_rate, parallelChannels=[[0, 2], [1, 3]], use_average=False):
@@ -45,6 +46,51 @@ def getMaxAllChi(traces, sampling_rate, template_traces, template_sampling_rate,
         maxCorr.append(getMaxChi(traces, sampling_rate, trace, template_sampling_rate, parallelChannels=parallelChannels))
 
     return max(maxCorr)
+
+def loadSingleTemplate(series):
+    # Series should be 200 or 100
+    # Loads the first version of a template made for an average energy/zenith
+    templates_RCR = f'StationDataAnalysis/templates/reflectedCR_template_{series}series.pkl' # should be exact same as A2.5
+    templates_RCR = read_pickle(templates_RCR)
+    for key in templates_RCR:
+        temp = templates_RCR[key]
+    templates_RCR = temp
+
+    return templates_RCR
+
+def loadMultipleTemplates(series, date='3.29.25', addSingle=False, bad=False):
+    # Dates - 9.16.24 (noise included), 10.1.24 (no noise)
+    #       - 2016 : found backlobe events from 2016
+    #       - 3.29.25 : noiseless, 100s and 200s, pruned by-hand for 'good' templates
+
+    # 10.1.24 has issues with the templates, so use 9.16.24
+    # Series should be 200 or 100
+    # Loads all the templates made for an average energy/zenith
+    template_series_RCR = {}
+    if not date == '2016':
+        template_series_RCR_location = f'/pub/tangch3/ARIANNA/DeepLearning/RCR_templates/{date}/' 
+        i = 0
+        for filename in os.listdir(template_series_RCR_location):
+            if filename.startswith(f'{series}s'):
+                temp = np.load(os.path.join(template_series_RCR_location, filename))
+                template_series_RCR[i] = temp
+                i += 1
+    else:
+        templates_2016_location = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/'
+        for filename in os.listdir(templates_2016_location):
+            temp = np.load(os.path.join(templates_2016_location, filename))
+            # Only use the channel of highest amplitude
+            max_temp = [0]
+            for t in temp:
+                if max(np.abs(t)) > max(max_temp):
+                    max_temp = t
+            key = filename.split('_')[1]
+            template_series_RCR[key] = max_temp
+
+    if addSingle:
+        template_series_RCR.append(loadSingleTemplate(series))
+
+    return template_series_RCR
 
 def getMaxSNR(traces, noiseRMS=22.53 * units.mV):
 
@@ -200,6 +246,60 @@ def load_sim_rcr(sim_path: str, noise_enabled: bool, filter_enabled: bool, amp) 
         print(f"No matching file found in '{sim_path}' for Noise='{noise_enabled}', Filter='{filter_enabled}'.")
         return None
 
+def siminfo_forplotting(type, amp, simulation_date, templates_2016, templates_RCR, noiseRMS):
+    # alter path to load desired sim 
+    path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/'
+    
+    files = []
+    if type == 'RCR':
+        path += f'{amp}/{simulation_date}'
+        if amp == '200s':
+            sim = np.load(f'{path}/SimRCR_200s_NoiseTrue_forcedFalse_4363events_FilterTrue_part0.npy')
+            weights = np.load(f'SimWeights_SimRCR_200s_NoiseTrue_forcedFalse_4363events_part0.npy')
+        elif amp == '100s':
+            sim = np.load(f'{path}/SimRCR_100s_NoiseTrue_forcedFalse_4668events_FilterTrue_part0.npy')
+            weigths = np.load(f'SimWeights_SimRCR_100s_NoiseTrue_forcedFalse_4668events_part0.npy')
+
+    elif type == 'Backlobe':
+        # not yet developed 
+        return 
+
+    sim_SNRs = []
+    sim_Chi2016 = []
+    sim_ChiRCR = []
+    sim_weights = []
+    for iR, event in enumerate(sim):
+            
+        traces = []
+        for trace in event:
+            traces.append(trace * units.V)
+        sim_SNRs.append(getMaxSNR(traces, noiseRMS=noiseRMS))
+        sim_Chi2016.append(getMaxAllChi(traces, 2*units.GHz, templates_2016, 2*units.GHz))
+        sim_ChiRCR.append(getMaxAllChi(traces, 2*units.GHz, templates_RCR, 2*units.GHz))
+        sim_weights.append(weights[iR])
+        
+    SNRbins = np.logspace(0.477, 2, num=80)
+    maxCorrBins = np.arange(0, 1.0001, 0.01)
+
+    sim_weights = np.array(sim_weights)
+    sim_SNRs = np.array(sim_SNRs)
+    sim_Chi = np.array(sim_Chi)
+
+    sort_order = sim_weights.argsort()
+    sim = sim[sort_order]
+    sim_SNRs = sim_SNRs[sort_order]
+    sim_Chi = sim_Chi[sort_order]
+    sim_weights = sim_weights[sort_order]
+
+    if type == 'RCR':
+        cmap = 'seismic'
+    else:
+        cmap = 'PiYG'
+
+    plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+
+    return sim, sim_Chi, sim_SNRs, sim_weights, simulation_date
+
 def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_channel=[]):
     # Sampling rate should be in GHz
     print(f'printing')
@@ -336,38 +436,33 @@ def deleting():
 
 if __name__ == "__main__":
 
-    # --- Setup for loading above threshold new chi data ---
-    load_path = '/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/'
-    station_numbers = [13, 15, 18, 14, 17, 19, 30]
-    file_types = ['Chi2016', 'ChiRCR', 'SNR', 'Times', 'Traces']
-    thresholds = ['60', '65', '70']
-    # new_chi_dict = load_new_chi_with_threshold(load_path, station_numbers, file_types, thresholds)
-
-    plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR/4.4.25/' 
-    Path(plot_folder).mkdir(parents=True, exist_ok=True)
 
     # for station_id in station_numbers:
     #     print(f'station {station_id}')
     #     Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, Above_curve_data_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', '2', station_id)
 
-    amp='200s'
-    indices = [100,101,102,103,104,105,106]
-    sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
+    # amp='200s'
+    # indices = [100,101,102,103,104,105,106]
+    # sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
 
-    for index in indices:
-        sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
-        print(f'number of sim is{len(sim_RCR)}')
-        pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_{index}.png')
-
-
-        sim_RCR = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
-        print(f'number of sim is{len(sim_RCR)}')
-        pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_noisefalse_{index}.png')
+    # for index in indices:
+    #     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
+    #     print(f'number of sim is{len(sim_RCR)}')
+    #     pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_{index}.png')
 
 
-        sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=False, amp=amp)
-        print(f'number of sim is{len(sim_RCR)}')
-        pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_filterfalse_{index}.png')
+    #     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
+    #     print(f'number of sim is{len(sim_RCR)}')
+    #     pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_noisefalse_{index}.png')
+
+
+    #     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=False, amp=amp)
+    #     print(f'number of sim is{len(sim_RCR)}')
+    #     pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_filterfalse_{index}.png')
+
+
+    exit()
+
     
 
         

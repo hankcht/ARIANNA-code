@@ -50,7 +50,7 @@ def loadTemplate(type='RCR', amp='200s'):
     print(f'{type} {amp} not implemented')
     quit()
 
-def plotSimSNRChi(templates_RCR, noiseRMS, amp, type):
+def SimSNRChi(templates_RCR, noiseRMS, amp, type):
 
     path = '../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'
     
@@ -113,7 +113,7 @@ def plotSimSNRChi(templates_RCR, noiseRMS, amp, type):
     else:
         cmap = 'PiYG'
 
-    # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+    
 
     return RCR_sim, sim_Chi, sim_SNRs, sim_weights, simulation_date
 
@@ -190,9 +190,18 @@ if __name__ == "__main__":
     else:
         cmap = 'PiYG'
 
-    templates_RCR = loadTemplate(type='RCR', amp=amp_type)
-    RCR_sim, sim_chi, sim_SNRs, sim_weights, simulation_date = plotSimSNRChi(templates_RCR, noiseRMS, amp=amp_type, type = RorB)
-    sim_chi = np.array(sim_chi)
+    # templates_RCR = loadTemplate(type='RCR', amp=amp_type)
+    # RCR_sim, sim_chi, sim_SNRs, sim_weights, simulation_date = SimSNRChi(templates_RCR, noiseRMS, amp=amp_type, type = RorB)
+    # sim_chi = np.array(sim_chi)
+
+    series = 200
+    
+    templates_2016 = loadMultipleTemplates(series, date='2016')
+    templates_RCR = loadMultipleTemplates(series) 
+    noiseRMS = 22.53 * units.mV
+    from A0_Utilities import loadMultipleTemplates, siminfo_forplotting
+    sim, sim_Chi, sim_SNRs, sim_weights, simulation_date = siminfo_forplotting('RCR', '200s', '5.28.25', templates_2016, templates_RCR, noiseRMS)
+    sim_chi = np.array(sim_Chi)
 
     curve_x = np.linspace(3, 150, len(sim_chi)) #sim_chi same length as sim_SNRs 
 
@@ -461,7 +470,7 @@ if __name__ == "__main__":
 
     # --- load data ---
     data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
-    plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/plots/ChiSNR'
+    plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/'
     os.makedirs(plot_output_folder, exist_ok=True)  
 
     parameters = ['RCR', '2016'] # to plot both Chi2016 and ChiRCR  
@@ -480,8 +489,12 @@ if __name__ == "__main__":
         Above_curve_data = list(filter(lambda p: p[1] >= get_curve_y(curve_x, curve_y, p[0]), zip(All_SNRs, All_Chi, range(len(All_SNRs)))))
         Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = list(zip(*Above_curve_data)) 
         plot_BL_curve(Above_curve_data_x)
-        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve")
-        saveabovecurve_info(All_Traces, All_UNIX, param)
+
+        plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+
+
+        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve", if_sim='_withSim')
+        # saveabovecurve_info(All_Traces, All_UNIX, param)
 
     # --- Now I want data above the BL curve we defined above ---
     # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x

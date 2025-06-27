@@ -185,7 +185,7 @@ def main():
 
     ic(f"\nProcessing complete for Station {station_id}, Date {date_str}.")
 
-def plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_folder, extraname=""):
+def plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_folder, extraname="", if_sim=''):
     # --- Plot of all events in Chi-SNR space ---
     plt.hist2d(All_SNRs, All_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
     plt.colorbar()
@@ -198,8 +198,8 @@ def plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id
     plt.tick_params(axis='x', which='minor', bottom=True)
     plt.grid(visible=True, which='both', axis='both') 
     plt.title(f'Station {station_id} - SNR vs. Chi (Events: {len(All_SNRs):,})')
-    print(f'Saving {plot_folder}/{extraname}_Stn{station_id}_SNR-Chi{param}_All.png')
-    plt.savefig(f'{plot_folder}/{extraname}_Stn{station_id}_SNR-Chi{param}_All.png')
+    print(f'Saving {plot_folder}/{extraname}_Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
+    plt.savefig(f'{plot_folder}/{extraname}_Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
     plt.close()
 
     return

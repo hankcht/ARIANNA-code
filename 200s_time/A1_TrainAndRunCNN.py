@@ -24,43 +24,6 @@ from matplotlib import pyplot as plt
 matplotlib.use('Agg')
 from A0_Utilities import getMaxChi, getMaxSNR, load_sim_rcr, load_data, pT
 
-def save_best_result(best_result, algorithm=''):
-    """
-    Input type of algorithm for saving
-    1) Saves result into numpy array
-    2) Creates histogram and shows best setting
-    
-    """
-    hparam = best_result['window_size']
-    hparam_arr = np.array([hparam])
-    
-    try:
-        best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}best_windowsize.npy')
-    except FileNotFoundError as e:
-        print(e)
-        best_hparam = np.array([])  
-
-    best_hparam = np.concatenate((best_hparam, hparam_arr))
-
-    print('Saving best hyperparameter setting')
-    np.save(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}best_windowsize.npy', best_hparam)
-
-    from collections import Counter
-
-    count = Counter(best_result)
-    most_common_element, most_common_count = count.most_common(1)[0]
-    print(f'best setting: {most_common_element}')
-    bins = np.linspace(1,60,60)
-    plt.hist(best_result, bins)
-    plt.xlabel('Window size')
-    plt.ylabel('count')
-    plt.text(most_common_element, most_common_count, f'Best: {most_common_element}', ha='center', va='bottom', fontsize=10, color='red')
-    print(f'saving fig for {algorithm}')
-    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}best_windowsize.png')
-    plt.clf()
-
-    print(best_hparam)
-    print(len(best_hparam))
 
 def Train_CNN():
     x = np.vstack((training_RCR, training_Backlobe))
@@ -82,45 +45,6 @@ def Train_CNN():
     # callback automatically saves when loss increases over a number of patience cycles
     callbacks_list = [keras.callbacks.EarlyStopping(monitor='val_loss', patience=2)]
 
-    # # SHERPA###################################################
-    # parameters = [sherpa.Discrete('window_size', [1,30])] # range of window sizes to test
-    # alg = sherpa.algorithms.RandomSearch(max_num_trials=100) # 100 trials
-
-    # study = sherpa.Study(parameters=parameters,
-    #                     algorithm=alg,
-    #                     lower_is_better=True,
-    #                     disable_dashboard=True,
-    #                     output_dir='/pub/tangch3/ARIANNA/DeepLearning/sherpa_output')
-
-
-    # for trial in study:
-    #     model = Sequential()
-    #     # change window size to capture the 100 Mhz difference in Backlobe (shadowing effect, we have integer frequencies amplified)
-    #     # window size default is 10, on 256 floats 
-    #     # model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
-    #     model.add(Conv2D(20, (4, trial.parameters['window_size']), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
-    #     model.add(Conv2D(10, (1, trial.parameters['window_size']), activation='relu')) # (1,20)
-    #     model.add(Dropout(0.5))
-    #     model.add(Flatten())
-    #     # model.add(Dense(64, activation='relu'))
-    #     model.add(Dense(1, activation='sigmoid'))
-    #     model.compile(optimizer='Adam',
-    #                     loss='binary_crossentropy',
-    #                     metrics=['accuracy'])
-
-    #     # validation_split is the fraction of training data used as validation data
-    #     # history = model.fit(x, y, validation_split=0.2, epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=1, callbacks=callbacks_list)
-    #     history = model.fit(x, y, validation_split=0.2, epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=1, callbacks=[study.keras_callback(trial, objective_name='val_loss')])
-    #     study.finalize(trial)
-
-    # best_result = study.get_best_result()
-    # print(best_result)
-
-    # algorithm = 'RS'
-    # save_best_result(best_result, algorithm)
-
-    # exit()
-    ###############################################
     model = Sequential()
     # change window size to capture the 100 Mhz difference in Backlobe (shadowing effect, we have integer frequencies amplified)
     # window size default is 10, on 256 floats 

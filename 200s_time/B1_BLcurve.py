@@ -196,10 +196,11 @@ if __name__ == "__main__":
 
     series = 200
     
+    from A0_Utilities import loadMultipleTemplates, siminfo_forplotting
     templates_2016 = loadMultipleTemplates(series, date='2016')
     templates_RCR = loadMultipleTemplates(series) 
     noiseRMS = 22.53 * units.mV
-    from A0_Utilities import loadMultipleTemplates, siminfo_forplotting
+   
     sim, sim_Chi, sim_SNRs, sim_weights, simulation_date = siminfo_forplotting('RCR', '200s', '5.28.25', templates_2016, templates_RCR, noiseRMS)
     sim_chi = np.array(sim_Chi)
 

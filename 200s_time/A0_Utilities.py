@@ -462,12 +462,53 @@ if __name__ == "__main__":
     #     print(f'number of sim is{len(sim_RCR)}')
     #     pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_filterfalse_{index}.png')
 
-    path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/200s/5.28.25'
-    weights = np.load(f'{path}/SimParams_SimRCR_200s_NoiseTrue_forcedFalse_4363events_part0.npy')
+    # path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/200s/5.28.25'
+    # weights = np.load(f'{path}/SimParams_SimRCR_200s_NoiseTrue_forcedFalse_4363events_part0.npy')
 
-    weights = np.array(weights)
-    print(weights)
-    print(weights.shape)
+    # weights = np.array(weights)
+    # print(weights)
+    # print(weights.shape)
+
+    station_id = 14
+    data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
+    All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
+    
+    model = keras.models.load_model(f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi_2025-06-20_15-14_RCR_Backlobe_model_2Layer.h5')
+    network_output = model.predict(All_Traces)
+
+    plt.figure(figsize=(10, 6))
+    plt.hist(network_output, bins=50, range=(0, 1), edgecolor='black', alpha=0.7)
+    plt.title(f'Distribution of Network Output for Station {station_id}')
+    plt.xlabel('Network Output (Probability)')
+    plt.ylabel('Number of Events')
+    plt.grid(axis='y', alpha=0.75)
+    plt.axvline(x=0.9, color='red', linestyle='--', label='Threshold = 0.9')
+    plt.legend()
+    plt.show()
+
+    # You might want to save this plot
+    plot_output_dir = '/pub/tangch3/ARIANNA/DeepLearning/'
+    os.makedirs(plot_output_dir, exist_ok=True)
+    plt.savefig(os.path.join(plot_output_dir, f'network_output_distribution_stn{station_id}.png'))
+    plt.clf() # Clear the current figure
+
+    threshold = 0.9
+    high_output_indices = np.where(network_output > threshold)[0]
+    events_above_threshold_traces = All_Traces[high_output_indices]
+
+    print(f"\nTotal events: {len(network_output)}")
+    print(f"Events with network output > {threshold}: {len(high_output_indices)}")
+    print(f"Shape of traces for events above threshold: {events_above_threshold_traces.shape}")
+
+    plot_output_directory = '/pub/tangch3/ARIANNA/DeepLearning/potential_RCR_plots/'
+    os.makedirs(plot_output_directory, exist_ok=True)
+
+    for event_data, original_index in zip(events_above_threshold_traces, high_output_indices):
+        plot_filename = os.path.join(plot_output_directory, f'potential_RCR_event_original_idx_{original_index}.png')
+        pT(event_data, f'Potential RCR (Original Event Index: {original_index})', plot_filename)
+        print(f"Plotting and saving event with original index {original_index} to {plot_filename}")
+
+
 
 
 

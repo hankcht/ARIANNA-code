@@ -491,10 +491,34 @@ if __name__ == "__main__":
         Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = list(zip(*Above_curve_data)) 
         plot_BL_curve(Above_curve_data_x)
 
-        plt.scatter(sim_SNRs, sim_Chi2016, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+        if param == '2016':
+            sim_Chi = sim_Chi2016
+        elif param == 'RCR':
+            sim_Chi = sim_ChiRCR
+        def plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_folder, extraname="", if_sim=''):
+            # --- Plot of all events in Chi-SNR space ---
+            plt.hist2d(All_SNRs, All_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+            plt.colorbar()
+            plt.xlim((3, 100))
+            plt.ylim((0, 1))
+            plt.xlabel('SNR')
+            plt.ylabel('Avg Chi Highest Parallel Channels')
+            # plt.legend()
+            plt.xscale('log')
+            plt.tick_params(axis='x', which='minor', bottom=True)
+            plt.grid(visible=True, which='both', axis='both') 
+            plt.title(f'Station {station_id} - SNR vs. Chi (Events: {len(All_SNRs):,})')
+            print(f'Saving {plot_folder}/{extraname}_Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
+            plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+            plt.savefig(f'{plot_folder}/{extraname}_Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
+            plt.close()
 
+            return
 
-        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve", if_sim='_withSim')
+        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve", if_sim=f'_withSim{len(sim_Chi2016)}')
+        
+        
+
         # saveabovecurve_info(All_Traces, All_UNIX, param)
 
     # --- Now I want data above the BL curve we defined above ---

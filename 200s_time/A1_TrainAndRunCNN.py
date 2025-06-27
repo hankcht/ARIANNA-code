@@ -110,7 +110,7 @@ if __name__ == "__main__":
         station_id = [13,15,18]
                                                                                                 
     sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
-    model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/{amp}_time/new_chi/'                                  
+    model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/{amp}_time/new_chi'                                  
     loss_accuracy_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Loss_Accuracy' 
     network_output_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Network_Output'   
 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     print('------> Training is Done!')
 
     # Now we run our trained model on the remaining (non-trained) events
-    model = keras.models.load_model(f'{model_path}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
+    model = keras.models.load_model(f'{model_path}/{timestamp}_RCR_Backlobe_model_2Layer.h5')
 
     # Now we can test run our trained model on the non trained events (or just all events)
     # non_trained_RCR = sim_RCR[RCR_non_training_indices,:]

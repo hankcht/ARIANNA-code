@@ -491,7 +491,7 @@ if __name__ == "__main__":
         Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = list(zip(*Above_curve_data)) 
         plot_BL_curve(Above_curve_data_x)
 
-        plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+        plt.scatter(sim_SNRs, sim_Chi2016, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
 
 
         plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve", if_sim='_withSim')

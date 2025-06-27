@@ -298,7 +298,7 @@ def siminfo_forplotting(type, amp, simulation_date, templates_2016, templates_RC
     else:
         cmap = 'PiYG'
 
-    plt.scatter(sim_SNRs, sim_Chi2016, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+    # plt.scatter(sim_SNRs, sim_Chi2016, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
 
     return sim, sim_Chi2016, sim_ChiRCR, sim_SNRs, sim_weights, simulation_date
 

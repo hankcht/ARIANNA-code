@@ -465,8 +465,9 @@ if __name__ == "__main__":
     path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/200s/5.28.25'
     weights = np.load(f'{path}/SimParams_SimRCR_200s_NoiseTrue_forcedFalse_4363events_part0.npy')
 
+    weights = np.array(weights)
     print(weights)
-    print(len(weights))
+    print(weights.shape)
 
 
 

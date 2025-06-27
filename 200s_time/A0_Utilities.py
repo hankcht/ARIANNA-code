@@ -463,10 +463,12 @@ if __name__ == "__main__":
     #     pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_filterfalse_{index}.png')
 
     path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/200s/5.28.25'
-    weights = np.load(f'{path}/SimWeights_SimRCR_200s_NoiseTrue_forcedFalse_4363events_part0.npy')
+    weights = np.load(f'{path}/SimParams_SimRCR_200s_NoiseTrue_forcedFalse_4363events_part0.npy')
 
     print(weights)
     print(len(weights))
+
+
 
     
 

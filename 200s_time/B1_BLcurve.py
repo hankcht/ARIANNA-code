@@ -13,7 +13,7 @@ from NuRadioReco.utilities.io_utilities import read_pickle
 
 import templateCrossCorr as txc
 from A0_Utilities import getMaxChi, getMaxSNR, load_data
-from B3_simpleCutForDL import plot_new_chi_data
+
 
 # curve is a list of tuples (x, y) with x sorted 
 # be sure that all x values of blobs are in the curve 

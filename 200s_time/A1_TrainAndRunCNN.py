@@ -157,7 +157,7 @@ if __name__ == "__main__":
     # Now Train
     model = Train_CNN(training_RCR, training_Backlobe, model_path, loss_accuracy_plot_path, timestamp, amp)  
 
-    model.save(f'{model_path}{timestamp}_RCR_Backlobe_model_2Layer.h5') # currently saving in h5
+    model.save(f'{model_path}/{timestamp}_RCR_Backlobe_model_2Layer.h5') # currently saving in h5
     print('------> Training is Done!')
 
     # Now we run our trained model on the remaining (non-trained) events

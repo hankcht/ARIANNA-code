@@ -24,23 +24,19 @@ from matplotlib import pyplot as plt
 matplotlib.use('Agg')
 from A0_Utilities import getMaxChi, getMaxSNR, load_sim_rcr, load_data, pT
 
-
-def Train_CNN():
-    x = np.vstack((training_RCR, training_Backlobe))
-    n_samples = x.shape[2]
-    n_channels = x.shape[1]
-    x = np.expand_dims(x, axis=-1)
+def Train_CNN(training_RCR, training_Backlobe, model_path, loss_accuracy_plot_path, timestamp, amp, batch_size=32, epochs=20):
+    x = np.vstack((training_RCR, training_Backlobe)) # (num_RCR_events + num_BL_events, 4, 256)
+    n_samples = x.shape[2] # 256
+    n_channels = x.shape[1] # 4
+    x = np.expand_dims(x, axis=-1) # (num of events, 4, 256, 1)
 
     # y is output array (Zeros are BL, Ones for RCR)    
-    y = np.vstack((np.ones((training_RCR.shape[0], 1)), np.zeros((training_Backlobe.shape[0], 1)))) 
+    y = np.vstack((np.ones((training_RCR.shape[0], 1)), np.zeros((training_Backlobe.shape[0], 1)))) # (num_RCR_events + num_BL_events, 1)
     s = np.arange(x.shape[0])
     np.random.shuffle(s)
     x = x[s]
     y = y[s]
     print(x.shape, y.shape)
-    
-    BATCH_SIZE = 32
-    EPOCHS = 20 
 
     # callback automatically saves when loss increases over a number of patience cycles
     callbacks_list = [keras.callbacks.EarlyStopping(monitor='val_loss', patience=2)]
@@ -48,8 +44,8 @@ def Train_CNN():
     model = Sequential()
     # change window size to capture the 100 Mhz difference in Backlobe (shadowing effect, we have integer frequencies amplified)
     # window size default is 10, on 256 floats 
-    model.add(Conv2D(8, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
-    model.add(Conv2D(16, (1, 10), activation='relu'))
+    model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
+    model.add(Conv2D(10, (1, 10), activation='relu'))
     # model.add(Conv2D(32, (1, 10), activation='relu'))
     model.add(Dropout(0.5))
     model.add(Flatten())
@@ -59,7 +55,7 @@ def Train_CNN():
                     metrics=['accuracy'])
 
     # validation_split is the fraction of training data used as validation data
-    history = model.fit(x, y, validation_split=0.2, epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=1, callbacks=callbacks_list)
+    history = model.fit(x, y, validation_split=0.25, epochs=epochs, batch_size=batch_size, verbose=1, callbacks=callbacks_list)
 
     print(f'Model path: {model_path}')
 
@@ -73,20 +69,20 @@ def Train_CNN():
     plt.plot(history.history['val_loss'], label='Validation Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
+    plt.title('Training vs Validation Loss')
     plt.legend()
-    plt.title(f'sim RCR vs data BL loss plot')
-    plt.savefig(f'{loss_plot_path}_loss_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
+    plt.savefig(f'{loss_accuracy_plot_path}/{timestamp}_loss_plot_RCR_Backlobe_model_2Layer_{amp}.png')
     plt.clf()
 
-    # Plot the training and validation accuracy
+    # Plot training and validation accuracy
     plt.figure(figsize=(6, 4))
     plt.plot(history.history['accuracy'], label='Training Accuracy')
     plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
+    plt.title('Training vs Validation Accuracy')
     plt.legend()
-    plt.title(f'sim RCR vs data BL accuracy plot')
-    plt.savefig(f'{accuracy_plot_path}_accuracy_plot_{timestamp}_RCR_Backlobe_model_2Layer.png')
+    plt.savefig(f'{loss_accuracy_plot_path}/{timestamp}_accuracy_plot_RCR_Backlobe_model_2Layer_{amp}.png')
     plt.clf()
 
     model.summary()
@@ -98,34 +94,31 @@ def Train_CNN():
 
     return model
 
-# Set parameters
-amp = '200s' 
-output_cut_value = 0.95 # Change this depending on chosen cut, we get our passed events from this  # Originally 0.95
-TrainCut = 50 # Number of events to use for training, change accordingly if we do not have enough events
-
-
-if amp == '200s':
-    noiseRMS = 22.53 * units.mV
-    station_id = [14,17,19,30]
-elif amp == '100s':
-    noiseRMS = 20 * units.mV
-    station_id = [13,15,18]
-
-# path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'                                                                                                     #Set which amplifier to run on
-sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
-
-model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/{amp}_time/new_chi'                                  
-accuracy_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/accuracy/{amp}_time/new_chi/' 
-loss_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/loss/{amp}_time/new_chi/'         
-
-current_datetime = datetime.now() # Get the current date and time
-timestamp = current_datetime.strftime("%Y-%m-%d_%H-%M") # Format the datetime object as a string with seconds
-
 if __name__ == "__main__":  
 
+    # --- Set parameters ---
+    amp = '200s' 
+    output_cut_value = 0.6 # Change this depending on chosen cut, we get our passed events from this  # Originally 0.95
+    TrainCut = 995 # Number of events to use for training, change accordingly if we do not have enough events
+
+
+    if amp == '200s':
+        noiseRMS = 22.53 * units.mV
+        station_id = [14,17,19,30]
+    elif amp == '100s':
+        noiseRMS = 20 * units.mV 
+        station_id = [13,15,18]
+                                                                                                
+    sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
+    model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/{amp}_time/new_chi/'                                  
+    loss_accuracy_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Loss_Accuracy' 
+    network_output_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Network_Output'   
+
+    current_datetime = datetime.now() # Get the current date and time
+    timestamp = current_datetime.strftime("%Y-%m-%d_%H-%M") # Format the datetime object as a string with seconds
+
     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
-    print(f'number of sim is{len(sim_RCR)}')
-    # since we load traces depending on stn, we need to make data_Backlobe a full list
+    # since we load traces depending on station, we need to make data_Backlobe a full list
     data_Backlobe = []
     data_Backlobe_chi2016 = []
     data_Backlobe_UNIX = [] 
@@ -135,20 +128,19 @@ if __name__ == "__main__":
         data_Backlobe_chi2016.extend(chi2016)
         data_Backlobe_UNIX.extend(unix)
 
-    # data_Backlobe_chi2016 = np.array(data_Backlobe_chi2016)
+    sim_RCR = np.array(sim_RCR) 
+    data_Backlobe = np.array(data_Backlobe)
+    data_Backlobe_chi2016 = np.array(data_Backlobe_chi2016)
+    data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
+
+
     # indices = np.where(data_Backlobe_chi2016 > 0.8)[0]
     # print(indices)
 
     # for index in indices: 
     #     pT(data_Backlobe[index], 'test plot data BL', f'/pub/tangch3/ARIANNA/DeepLearning/test_plot_data_BL/test_new_data_BL_{amp}_{index}.png')
 
-    # exit()
 
-
-    data_Backlobe = np.array(data_Backlobe)
-    sim_RCR = np.array(sim_RCR) #
-
-    data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
     print(f'RCR shape: {sim_RCR.shape} Backlobe shape: {data_Backlobe.shape}')
 
     # take a random selection because events are ordered based off CR simulated, so avoids overrepresenting particular Cosmic Rays
@@ -163,36 +155,22 @@ if __name__ == "__main__":
     print(f'Non-training RCR count {len(RCR_non_training_indices)} Non-training Backlobe count {len(BL_non_training_indices)}')
 
     # Now Train
-    model = Train_CNN()  
+    model = Train_CNN(training_RCR, training_Backlobe, model_path, loss_accuracy_plot_path, timestamp, amp)  
 
-    model.save(f'{model_path}_{timestamp}_RCR_Backlobe_model_2Layer.h5') # currently saving in h5
-    model = keras.models.load_model(f'{model_path}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
-
-
+    model.save(f'{model_path}{timestamp}_RCR_Backlobe_model_2Layer.h5') # currently saving in h5
     print('------> Training is Done!')
 
-
-
-
     # Now we run our trained model on the remaining (non-trained) events
-
-    ##################################
-    # Here I can make a list of good models by the title/time they were created
-
-    ##################################
+    model = keras.models.load_model(f'{model_path}_{timestamp}_RCR_Backlobe_model_2Layer.h5')
 
     # Now we can test run our trained model on the non trained events (or just all events)
-    non_trained_RCR = sim_RCR[RCR_non_training_indices,:]
-    non_trained_Backlobe =  data_Backlobe[BL_non_training_indices,:]
-    non_trained_Backlobe_UNIX = data_Backlobe_UNIX[BL_non_training_indices] 
+    # non_trained_RCR = sim_RCR[RCR_non_training_indices,:]
+    # non_trained_Backlobe =  data_Backlobe[BL_non_training_indices,:]
+    # non_trained_Backlobe_UNIX = data_Backlobe_UNIX[BL_non_training_indices] 
 
     # prob_RCR = model.predict(non_trained_RCR) # Network output of RCR
     # prob_Backlobe = model.predict(non_trained_Backlobe) # Network output of Backlobe
-    # print(len(prob_Backlobe))
 
-    print(f'output cut value: {output_cut_value}')
-
-    sim_RCR = np.array(sim_RCR)
     prob_RCR = model.predict(sim_RCR)
     prob_Backlobe = model.predict(data_Backlobe)
 
@@ -212,33 +190,36 @@ if __name__ == "__main__":
 
     # Set up for Network Output histogram
     dense_val = False
-    fig, ax = plt.subplots(figsize=(8, 6))  
-    hist_values, bin_edges, _ = ax.hist(prob_Backlobe, bins=20, range=(0,1), histtype='step', color='blue', linestyle='solid', label=f'Backlobe {len(prob_Backlobe)}', density=dense_val)
-    ax.hist(prob_RCR, bins=20, range=(0,1), histtype='step', color='red', linestyle='solid', label=f'RCR {len(prob_RCR)}', density=dense_val)
+    plt.figure(figsize=(8, 6))
+    plt.hist(prob_Backlobe, bins=20, range=(0,1), histtype='step', color='blue', linestyle='solid', label=f'Backlobe {len(prob_Backlobe)}', density=dense_val)
+    plt.hist(prob_RCR, bins=20, range=(0,1), histtype='step', color='red', linestyle='solid', label=f'RCR {len(prob_RCR)}', density=dense_val)
 
-    ax.set_xlabel('Network Output', fontsize=18)
-    ax.set_ylabel('Number of Events', fontsize=18)
-    ax.set_yscale('log')
-    ax.set_title(f'{amp}_time RCR-Backlobe network output')
-    ax.set_xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
-    ax.tick_params(axis='x', labelsize=18)
-    ax.tick_params(axis='y', labelsize=18)
-    ax.set_ylim(0, max(10 ** (np.ceil(np.log10(hist_values)))))
-    ax.tick_params(axis='both', which='major', labelsize=12)
-    fig.subplots_adjust(left=0.2, right=0.85, bottom=0.2, top=0.8)
-    ax.legend(loc='upper left', fontsize=8)
-    fig.text(0.375, 0.75, f'RCR efficiency: {RCR_efficiency}%', fontsize=12)
-    fig.text(0.375, 0.7, f'Backlobe efficiency: {Backlobe_efficiency}%', fontsize=12)
-    fig.text(0.375, 0.65, f'TrainCut: {TrainCut}', fontsize=12)
-    ax.axvline(x=output_cut_value, color='y', label='cut')
-    ax.text(0.05, -0.12, 'BL', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=ax.transAxes, color='blue')
-    ax.text(0.96, -0.12, 'RCR', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=ax.transAxes, color='red')
+    plt.xlabel('Network Output', fontsize=18)
+    plt.ylabel('Number of Events', fontsize=18)
+    plt.yscale('log')
+    plt.title(f'{amp}_time RCR-Backlobe network output')
+    plt.xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0], fontsize=18)
+    plt.yticks(fontsize=18)
+
+    hist_values, bin_edges, _ = plt.hist(prob_Backlobe, bins=20, range=(0,1), histtype='step')
+    plt.ylim(0, max(10 ** (np.ceil(np.log10(hist_values)))))
+    plt.tick_params(axis='both', which='major', labelsize=12)
+    plt.legend(loc='upper left', fontsize=8)
+
+    plt.text(0.375, 0.75, f'RCR efficiency: {RCR_efficiency}%', fontsize=12, transform=plt.gcf().transFigure)
+    plt.text(0.375, 0.7, f'Backlobe efficiency: {Backlobe_efficiency}%', fontsize=12, transform=plt.gcf().transFigure)
+    plt.text(0.375, 0.65, f'TrainCut: {TrainCut}', fontsize=12, transform=plt.gcf().transFigure)
+
+    plt.axvline(x=output_cut_value, color='y', label='cut')
+    plt.text(0.05, -0.12, 'BL', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes, color='blue')
+    plt.text(0.96, -0.12, 'RCR', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes, color='red')
+
+    plt.subplots_adjust(left=0.2, right=0.85, bottom=0.2, top=0.8)
+
     print(f'saving /pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/new_chi/{timestamp}_histogram.png')
-    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/new_chi/{timestamp}_histogram.png')
+    plt.savefig(f'{network_output_plot_path}/{timestamp}_{amp}_histogram.png')
     print(f'------> {amp} Done!')
 
-    # print(prob_Backlobe)
-    # print(prob_RCR)
 
     # # We can get get the network output, Chi, and SNR of certain events that we want to look at
     

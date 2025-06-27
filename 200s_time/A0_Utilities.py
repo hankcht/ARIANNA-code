@@ -174,7 +174,7 @@ def load_data(type, amp_type, station_id):
         return Circled_data_SNR, Circled_data_Chi, Circled_data_Traces, Circled_data_UNIX
     
     if type == 'new_chi_above_curve':
-        print(f'using {type}')        
+        print(f'loading {type} data')        
         Above_curve_data_SNR = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/Stn{station_id}_SNR_above.npy')
         Above_curve_data_Chi2016 = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/Stn{station_id}_Chi2016_above.npy')
         Above_curve_data_ChiRCR = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/Stn{station_id}_ChiRCR_above.npy')

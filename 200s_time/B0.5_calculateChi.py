@@ -73,10 +73,10 @@ if __name__ == "__main__":
         chi_2016.append(getMaxAllChi(traces, 2*units.GHz, templates_2016, 2*units.GHz))
 
     
-    print(chi_2016)
+    print(chi_2016[1000:1100])
     print(len(chi_2016))
     check_chi_2016 = np.load('/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station14/station14_all_Chi2016.npy')
-    print(check_chi_2016)
+    print(check_chi_2016[1000:1100])
     print(len(check_chi_2016))
 
 

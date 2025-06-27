@@ -283,12 +283,14 @@ def siminfo_forplotting(type, amp, simulation_date, templates_2016, templates_RC
 
     sim_weights = np.array(sim_weights)
     sim_SNRs = np.array(sim_SNRs)
-    sim_Chi = np.array(sim_Chi)
+    sim_Chi2016 = np.array(sim_Chi2016)
+    sim_ChiRCR = np.array(sim_ChiRCR)
 
     sort_order = sim_weights.argsort()
     sim = sim[sort_order]
     sim_SNRs = sim_SNRs[sort_order]
-    sim_Chi = sim_Chi[sort_order]
+    sim_ChiRCR = sim_ChiRCR[sort_order]
+    sim_Chi2016 = sim_Chi2016[sort_order]
     sim_weights = sim_weights[sort_order]
 
     if type == 'RCR':
@@ -296,9 +298,9 @@ def siminfo_forplotting(type, amp, simulation_date, templates_2016, templates_RC
     else:
         cmap = 'PiYG'
 
-    plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+    plt.scatter(sim_SNRs, sim_Chi2016, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
 
-    return sim, sim_Chi, sim_SNRs, sim_weights, simulation_date
+    return sim, sim_Chi2016, sim_ChiRCR, sim_SNRs, sim_weights, simulation_date
 
 def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_channel=[]):
     # Sampling rate should be in GHz

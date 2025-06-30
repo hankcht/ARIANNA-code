@@ -474,7 +474,7 @@ if __name__ == "__main__":
     for id in station_id:
         # data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
         # All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
-        All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('AboveCurve_data', amp_type, station_id)
+        All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('AboveCurve_data', amp_type, id)
         
         All_Traces = np.array(All_Traces)
         network_output = RunTrainedModel(All_Traces, '/pub/tangch3/ARIANNA/DeepLearning/models/')
@@ -483,7 +483,7 @@ if __name__ == "__main__":
 
         plt.figure(figsize=(10, 6))
         plt.hist(network_output, bins=50, range=(0, 1), edgecolor='black', alpha=0.7)
-        plt.title(f'Distribution of Network Output for Station {station_id}')
+        plt.title(f'Distribution of Network Output for Station {id}')
         plt.xlabel('Network Output (Probability)')
         plt.ylabel('Number of Events')
         plt.grid(axis='y', alpha=0.75)
@@ -494,7 +494,7 @@ if __name__ == "__main__":
         # You might want to save this plot
         plot_output_dir = '/pub/tangch3/ARIANNA/DeepLearning/'
         os.makedirs(plot_output_dir, exist_ok=True)
-        plt.savefig(os.path.join(plot_output_dir, f'old_mod_6.30_network_output_distribution_stn{station_id}.png'))
+        plt.savefig(os.path.join(plot_output_dir, f'old_mod_6.30_network_output_distribution_stn{id}.png'))
         plt.clf() # Clear the current figure
 
         threshold = 0.9

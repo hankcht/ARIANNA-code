@@ -486,6 +486,7 @@ if __name__ == "__main__":
         plt.title(f'Distribution of Network Output for Station {id}')
         plt.xlabel('Network Output (Probability)')
         plt.ylabel('Number of Events')
+        plt.yscale('log')
         plt.grid(axis='y', alpha=0.75)
         plt.axvline(x=0.9, color='red', linestyle='--', label='Threshold = 0.9')
         plt.legend()

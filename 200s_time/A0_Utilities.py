@@ -475,6 +475,7 @@ if __name__ == "__main__":
     # All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
     All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('AboveCurve_data', amp_type, station_id)
     
+    All_Traces = np.array(All_Traces)
     model = keras.models.load_model(f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi_2025-06-20_16-06_RCR_Backlobe_model_2Layer.h5')
     network_output = model.predict(All_Traces)
 

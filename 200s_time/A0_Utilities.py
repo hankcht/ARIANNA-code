@@ -496,7 +496,7 @@ if __name__ == "__main__":
         # You might want to save this plot
         plot_output_dir = '/pub/tangch3/ARIANNA/DeepLearning/'
         os.makedirs(plot_output_dir, exist_ok=True)
-        plt.savefig(os.path.join(plot_output_dir, f'old_mod_on_new_6.30_network_output_distribution_stn{id}.png'))
+        plt.savefig(os.path.join(plot_output_dir, f'new_mod_on_old_6.30_network_output_distribution_stn{id}.png'))
         plt.clf() # Clear the current figure
 
         threshold = 0.9

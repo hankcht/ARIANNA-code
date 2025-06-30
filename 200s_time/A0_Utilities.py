@@ -474,7 +474,7 @@ if __name__ == "__main__":
     for id in station_id:
         # data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
         # All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
-        All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('AboveCurve_data', amp_type, id)
+        All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('new_chi_above_curve', amp_type, id)
         
         All_Traces = np.array(All_Traces)
         network_output = RunTrainedModel(All_Traces, '/pub/tangch3/ARIANNA/DeepLearning/models/')

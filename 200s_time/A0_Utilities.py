@@ -469,7 +469,7 @@ if __name__ == "__main__":
     # print(weights)
     # print(weights.shape)
 
-    station_id = 14
+    station_id = 17
     amp_type = '200s'
     # data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
     # All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
@@ -488,12 +488,12 @@ if __name__ == "__main__":
     plt.grid(axis='y', alpha=0.75)
     plt.axvline(x=0.9, color='red', linestyle='--', label='Threshold = 0.9')
     plt.legend()
-    plt.show()
+    plt.show() 
 
     # You might want to save this plot
     plot_output_dir = '/pub/tangch3/ARIANNA/DeepLearning/'
     os.makedirs(plot_output_dir, exist_ok=True)
-    plt.savefig(os.path.join(plot_output_dir, f'6.30_network_output_distribution_stn{station_id}.png'))
+    plt.savefig(os.path.join(plot_output_dir, f'old_mod_6.30_network_output_distribution_stn{station_id}.png'))
     plt.clf() # Clear the current figure
 
     threshold = 0.9

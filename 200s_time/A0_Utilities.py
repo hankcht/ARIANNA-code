@@ -258,7 +258,7 @@ def siminfo_forplotting(type, amp, simulation_date, templates_2016, templates_RC
             weights = np.load(f'{path}/SimWeights_SimRCR_200s_NoiseTrue_forcedFalse_4363events_part0.npy')
         elif amp == '100s':
             sim = np.load(f'{path}/SimRCR_100s_NoiseTrue_forcedFalse_4668events_FilterTrue_part0.npy')
-            weigths = np.load(f'{path}/SimWeights_SimRCR_100s_NoiseTrue_forcedFalse_4668events_part0.npy')
+            weights = np.load(f'{path}/SimWeights_SimRCR_100s_NoiseTrue_forcedFalse_4668events_part0.npy')
 
     elif type == 'Backlobe':
         # not yet developed 
@@ -469,15 +469,16 @@ if __name__ == "__main__":
     # print(weights)
     # print(weights.shape)
 
-    station_id = 17
+    station_id = 14
     amp_type = '200s'
     # data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
     # All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
     All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('AboveCurve_data', amp_type, station_id)
     
     All_Traces = np.array(All_Traces)
-    model = keras.models.load_model(f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi_2025-06-20_16-06_RCR_Backlobe_model_2Layer.h5')
-    network_output = model.predict(All_Traces)
+    network_output = RunTrainedModel(All_Traces, '/pub/tangch3/ARIANNA/DeepLearning/models/')
+    # model = keras.models.load_model(f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi_2025-06-20_16-06_RCR_Backlobe_model_2Layer.h5')
+    # network_output = model.predict(All_Traces)
 
     plt.figure(figsize=(10, 6))
     plt.hist(network_output, bins=50, range=(0, 1), edgecolor='black', alpha=0.7)

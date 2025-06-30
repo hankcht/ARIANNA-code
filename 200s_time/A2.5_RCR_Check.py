@@ -4,20 +4,10 @@ import numpy as np
 from NuRadioReco.utilities import units
 import datetime
 import matplotlib.pyplot as plt
-from A0_Utilities import RunTrainedModel, load_data, pT, load_sim
+from A0_Utilities import RunTrainedModel, load_data, pT, load_sim, loadSingleTemplate
 from A2_RealRunCNN import plot_data_histogram
 from A1_TrainAndRunCNN import output_cut_value
 
-def loadSingleTemplate(series):
-    # Series should be 200 or 100
-    # Loads the first version of a template made for an average energy/zenith
-    templates_RCR = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/reflectedCR_template_{series}series.pkl'
-    templates_RCR = read_pickle(templates_RCR)
-    for key in templates_RCR:
-        temp = templates_RCR[key]
-    templates_RCR = temp
-
-    return templates_RCR
 
 def oldloadMultipleTemplates(series, date='9.16.24', addSingle=False):
     # Dates - 9.16.24 (noise included), 10.1.24 (no noise)

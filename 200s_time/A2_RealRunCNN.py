@@ -149,13 +149,6 @@ if __name__ == '__main__':
         plot_data_histogram(plot_folder, prob_station, number_passed_events)
 
 
-
-
-
-
-
-
-
 # Old, Unused stuff
 selected_events_dict = {
 'stn14selectedevents' : [3, 6, 13, 15, 18, 19, 21, 22, 24, 28, 35, 39, 40, 49],

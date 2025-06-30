@@ -209,8 +209,8 @@ if __name__ == "__main__":
     # define BL curves
     def find_curve_13(curve_x) -> list:
         curve_y = []
-        x1, y1 = 4.5, 0.5
-        x2, y2 = 9, 0.66
+        x1, y1 = 4.75, 0.5
+        x2, y2 = 25, 0.8
         x3, y3 = 20, 0.8
         x4, y4 = 40, 0.75
 
@@ -227,20 +227,20 @@ if __name__ == "__main__":
                 C = y1 - m * log_x1
                 y = m * np.log10(x) + C
                 curve_y.append(y)           
-            elif x2 < x <= x3:
-                m = (y3 - y2) / (log_x3 - log_x2)
-                C = y2 - m * log_x2
-                y = m * np.log10(x) + C
-                curve_y.append(y)
+            # elif x2 < x <= x3:
+            #     m = (y3 - y2) / (log_x3 - log_x2)
+            #     C = y2 - m * log_x2
+            #     y = m * np.log10(x) + C
+            #     curve_y.append(y)
             else:
-                curve_y.append(y3) 
+                curve_y.append(y2) 
 
         return curve_y
 
     def find_curve_14(curve_x):
         curve_y = []
         x1, y1 = 4.5, 0.5
-        x2, y2 = 23, 0.8
+        x2, y2 = 20, 0.7
         x3, y3 = 20, 0.675
         x4, y4 = 40, 0.625
 
@@ -275,8 +275,8 @@ if __name__ == "__main__":
     def find_curve_15(curve_x):
         curve_y = []
         x1, y1 = 5, 0.5
-        x2, y2 = 10, 0.685
-        x3, y3 = 20, 0.78
+        x2, y2 = 10, 0.65
+        x3, y3 = 20, 0.7
         x4, y4 = 40, 0.84
 
         log_x1 = np.log10(x1)
@@ -310,9 +310,44 @@ if __name__ == "__main__":
     def find_curve_17(curve_x):
         curve_y = []
         x1, y1 = 4, 0.5
-        x2, y2 = 4.5, 0.6
-        x3, y3 = 10, 0.75
+        x2, y2 = 10, 0.75
+        x3, y3 = 23, 0.8
         x4, y4 = 23, 0.8
+
+        log_x1 = np.log10(x1)
+        log_x2 = np.log10(x2)
+        log_x3 = np.log10(x3)
+        log_x4 = np.log10(x4)
+
+        for x in curve_x:
+            if x <= x1:
+                curve_y.append(y1)
+            elif x1 < x <= x2:
+                m = (y2 - y1) / (log_x2 - log_x1)
+                C = y1 - m * log_x1
+                y = m * np.log10(x) + C
+                curve_y.append(y)
+            elif x2 < x <= x3:
+                m = (y3 - y2) / (log_x3 - log_x2)
+                C = y2 - m * log_x2
+                y = m * np.log10(x) + C
+                curve_y.append(y)
+            # elif x3 < x <= x4:
+            #     m = (y4 - y3) / (log_x4 - log_x3)
+            #     C = y3 - m * log_x3
+            #     y = m * np.log10(x) + C
+            #     curve_y.append(y)
+            else:
+                curve_y.append(y4) 
+
+        return curve_y
+
+    def find_curve_18(curve_x):
+        curve_y = []
+        x1, y1 = 4, 0.5
+        x2, y2 = 5, 0.6
+        x3, y3 = 20, 0.7
+        x4, y4 = 30, 0.8
 
         log_x1 = np.log10(x1)
         log_x2 = np.log10(x2)
@@ -342,37 +377,9 @@ if __name__ == "__main__":
 
         return curve_y
 
-    def find_curve_18(curve_x):
-        curve_y = []
-        x1, y1 = 5, 0.6
-        x2, y2 = 30, 0.8
-        x3, y3 = 40, 0.63
-
-        log_x1 = np.log10(x1)
-        log_x2 = np.log10(x2)
-        log_x3 = np.log10(x3)
-
-        for x in curve_x:
-            if x <= x1:
-                curve_y.append(y1)
-            elif x1 < x <= x2:
-                m = (y2 - y1) / (log_x2 - log_x1)
-                C = y1 - m * log_x1
-                y = m * np.log10(x) + C
-                curve_y.append(y)
-            # elif x2 < x <= x3:
-            #     m = (y3 - y2) / (log_x3 - log_x2)
-            #     C = y2 - m * log_x2
-            #     y = m * np.log10(x) + C
-            #     curve_y.append(y)
-            else:
-                curve_y.append(y2) 
-
-        return curve_y
-
     def find_curve_19(curve_x):
         curve_y = []
-        x1, y1 = 4.7, 0.5
+        x1, y1 = 4, 0.4
         x2, y2 = 10, 0.65
         x3, y3 = 16, 0.7
         x4, y4 = 20, 0.77
@@ -406,9 +413,9 @@ if __name__ == "__main__":
 
     def find_curve_30(curve_x):
         curve_y = []
-        x1, y1 = 4.5, 0.53
+        x1, y1 = 4, 0.4
         x2, y2 = 10, 0.72
-        x3, y3 = 20, 0.8
+        x3, y3 = 17, 0.78
 
         log_x1 = np.log10(x1)
         log_x2 = np.log10(x2)
@@ -508,14 +515,14 @@ if __name__ == "__main__":
             plt.tick_params(axis='x', which='minor', bottom=True)
             plt.grid(visible=True, which='both', axis='both') 
             plt.title(f'Station {station_id} - SNR vs. Chi (Events: {len(All_SNRs):,})')
-            print(f'Saving {plot_folder}/{extraname}_Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
-            plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
-            plt.savefig(f'{plot_folder}/{extraname}_Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
+            print(f'Saving {plot_folder}/{extraname}Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
+            # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+            plt.savefig(f'{plot_folder}/{extraname}Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
             plt.close()
 
             return
 
-        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve", if_sim=f'_withSim{len(sim_Chi2016)}')
+        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_") #, if_sim=f'_withSim{len(sim_Chi2016)}'
         
         
 

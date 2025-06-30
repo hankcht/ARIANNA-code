@@ -522,7 +522,7 @@ if __name__ == "__main__":
 
             return
 
-        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_") #, if_sim=f'_withSim{len(sim_Chi2016)}'
+        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="new_withCurve_") #, if_sim=f'_withSim{len(sim_Chi2016)}'
         
         
 

@@ -470,8 +470,10 @@ if __name__ == "__main__":
     # print(weights.shape)
 
     station_id = 14
-    data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
-    All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
+    amp_type = '200s'
+    # data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
+    # All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
+    All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('All_data', amp_type, station_id)
     
     model = keras.models.load_model(f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi_2025-06-20_16-06_RCR_Backlobe_model_2Layer.h5')
     network_output = model.predict(All_Traces)
@@ -489,7 +491,7 @@ if __name__ == "__main__":
     # You might want to save this plot
     plot_output_dir = '/pub/tangch3/ARIANNA/DeepLearning/'
     os.makedirs(plot_output_dir, exist_ok=True)
-    plt.savefig(os.path.join(plot_output_dir, f'network_output_distribution_stn{station_id}.png'))
+    plt.savefig(os.path.join(plot_output_dir, f'6.30_network_output_distribution_stn{station_id}.png'))
     plt.clf() # Clear the current figure
 
     threshold = 0.9
@@ -504,7 +506,7 @@ if __name__ == "__main__":
     os.makedirs(plot_output_directory, exist_ok=True)
 
     for event_data, original_index in zip(events_above_threshold_traces, high_output_indices):
-        plot_filename = os.path.join(plot_output_directory, f'potential_RCR_event_original_idx_{original_index}.png')
+        plot_filename = os.path.join(plot_output_directory, f'6.30_potential_RCR_event_original_idx_{original_index}.png')
         pT(event_data, f'Potential RCR (Original Event Index: {original_index})', plot_filename)
         print(f"Plotting and saving event with original index {original_index} to {plot_filename}")
 

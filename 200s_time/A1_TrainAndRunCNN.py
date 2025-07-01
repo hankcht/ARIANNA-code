@@ -205,15 +205,12 @@ if __name__ == "__main__":
     plt.ylim(0, max(10 ** (np.ceil(np.log10(hist_values)))))
     plt.tick_params(axis='both', which='major', labelsize=12)
     plt.legend(loc='upper left', fontsize=8)
-
     plt.text(0.375, 0.75, f'RCR efficiency: {RCR_efficiency}%', fontsize=12, transform=plt.gcf().transFigure)
     plt.text(0.375, 0.7, f'Backlobe efficiency: {Backlobe_efficiency}%', fontsize=12, transform=plt.gcf().transFigure)
     plt.text(0.375, 0.65, f'TrainCut: {TrainCut}', fontsize=12, transform=plt.gcf().transFigure)
-
     plt.axvline(x=output_cut_value, color='y', label='cut')
     plt.text(0.05, -0.12, 'BL', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes, color='blue')
     plt.text(0.96, -0.12, 'RCR', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes, color='red')
-
     plt.subplots_adjust(left=0.2, right=0.85, bottom=0.2, top=0.8)
 
     print(f'saving /pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/new_chi/{timestamp}_histogram.png')

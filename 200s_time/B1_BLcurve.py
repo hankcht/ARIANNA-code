@@ -462,7 +462,7 @@ if __name__ == "__main__":
         np.save(f'{above_curve_folder}/Stn{station_id}_Chi{param}_above.npy', Above_curve_data_y)
 
         above_curve_data_Traces = [All_data_Traces[i] for i in Above_curve_data_index]
-        np.save(f'{above_curve_folder}/Stn{station_id}_Traces_above.npy', above_curve_data_Traces)
+        np.save(f'{above_curve_folder}/Stn{station_id}_Traces{param}_above.npy', above_curve_data_Traces)
 
         above_curve_data_UNIX = [All_data_UNIX[i] for i in Above_curve_data_index]
         np.save(f'{above_curve_folder}/Stn{station_id}_UNIX_above.npy', above_curve_data_UNIX)

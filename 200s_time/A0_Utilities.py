@@ -629,11 +629,11 @@ if __name__ == "__main__":
     sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
     indices = np.where((sim_Chi2016 > 0.4) & (sim_Chi2016 < 0.42) & 
                    (sim_SNRs > 4) & (sim_SNRs < 5))
-    plot_sim = sim[indices]
+    # plot_sim = sim[indices]
 
     for i, index in enumerate(indices):
-        print(f'number of sim is{len(plot_sim)}')
-        pT(plot_sim[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/plot_new_sim_{amp}_{index}.png')
+        print(f'number of sim is{len(sim)}')
+        pT(sim[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/plot_new_sim_{amp}_{index}.png')
 
         if i > 10:
             break

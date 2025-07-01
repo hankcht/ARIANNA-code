@@ -480,7 +480,7 @@ if __name__ == "__main__":
         All_Traces = np.array(All_Traces)
 
         num_total_events = All_Traces.shape[0]
-        selected_indices = np.random.choice(num_total_events, 1000, replace=False)
+        selected_indices = np.random.choice(num_total_events, 200, replace=False)
         random_1000_events = All_Traces[selected_indices]
 
         # network_output = RunTrainedModel(All_Traces, '/pub/tangch3/ARIANNA/DeepLearning/models/')

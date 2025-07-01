@@ -457,7 +457,7 @@ if __name__ == "__main__":
     }
 
     def saveabovecurve_info(All_data_Traces, All_data_UNIX, param):
-        above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi'
+        above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/5000evt'
         np.save(f'{above_curve_folder}/Stn{station_id}_SNR_above.npy', Above_curve_data_x)
         np.save(f'{above_curve_folder}/Stn{station_id}_Chi{param}_above.npy', Above_curve_data_y)
 
@@ -532,10 +532,10 @@ if __name__ == "__main__":
         
         
 
-        # saveabovecurve_info(All_Traces, All_UNIX, param)
+        saveabovecurve_info(All_Traces, All_UNIX, param)
 
-    # --- Now I want data above the BL curve we defined above ---
-    # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x
+    # # --- Now I want data above the BL curve we defined above ---
+    # # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x
     # Above_curve_sim = list(filter(lambda p: p[1] >= get_curve_y(curve_x, curve_y, p[0]), zip(sim_SNRs, sim_chi, sim_weights)))
     # Above_curve_sim_x, Above_curve_sim_y, Above_curve_weights = list(zip(*Above_curve_sim))
 

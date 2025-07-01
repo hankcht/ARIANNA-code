@@ -398,11 +398,11 @@ if __name__ == "__main__":
         for x in curve_x:
             if x <= x1:
                 curve_y.append(y1)
-            # elif x1 < x <= x2:
-            #     m = (y2 - y1) / (log_x2 - log_x1)
-            #     C = y1 - m * log_x1
+            elif x1 < x <= x2:
+                m = (y2 - y1) / (log_x2 - log_x1)
+                C = y1 - m * log_x1
                 y = m * np.log10(x) + C
-            #     curve_y.append(y)
+                curve_y.append(y)
             elif x2 < x <= x3:
                 m = (y3 - y2) / (log_x3 - log_x2)
                 C = y2 - m * log_x2

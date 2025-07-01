@@ -628,9 +628,10 @@ if __name__ == "__main__":
     amp='200s'
     sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
     indices = np.where((sim_Chi2016 > 0.4) & (sim_Chi2016 < 0.42) & 
-                   (sim_SNRs > 4) & (sim_SNRs < 5))
+                   (sim_SNRs > 4) & (sim_SNRs < 5))[0]
     # plot_sim = sim[indices]
 
+    sim = np.array(sim)
     for i, index in enumerate(indices):
         print(f'number of sim is{len(sim)}')
         pT(sim[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/plot_new_sim_{amp}_{index}.png')

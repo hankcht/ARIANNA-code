@@ -373,13 +373,13 @@ if __name__ == "__main__":
                 C = y2 - m * log_x2
                 y = m * np.log10(x) + C
                 curve_y.append(y)
-            elif x3 < x <= x4:
-                m = (y4 - y3) / (log_x4 - log_x3)
-                C = y3 - m * log_x3
-                y = m * np.log10(x) + C
-                curve_y.append(y)
+            # elif x3 < x <= x4:
+            #     m = (y4 - y3) / (log_x4 - log_x3)
+            #     C = y3 - m * log_x3
+            #     y = m * np.log10(x) + C
+            #     curve_y.append(y)
             else:
-                curve_y.append(y4) 
+                curve_y.append(y3) 
 
         return curve_y
 

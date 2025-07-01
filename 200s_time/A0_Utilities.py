@@ -472,8 +472,12 @@ if __name__ == "__main__":
     station_id = [14,17,19,30]
     amp_type = '200s'
     for id in station_id:
-        # data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
-        # All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
+        path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'                                                                                                     #Set which amplifier to run on
+        RCR_path = f'simulatedRCRs/{amp_type}_2.9.24/'
+        backlobe_path = f'simulatedBacklobes/{amp_type}_2.9.24/'
+        rcr, sim_Backlobe = load_sim(path, RCR_path, backlobe_path, amp_type)
+
+
         All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('AboveCurve_data', amp_type, id)
         # Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, All_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', amp_type, id)
         
@@ -486,9 +490,11 @@ if __name__ == "__main__":
         # network_output = RunTrainedModel(random_1000_events, '/pub/tangch3/ARIANNA/DeepLearning/models/')
         model = keras.models.load_model(f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi_2025-06-20_16-06_RCR_Backlobe_model_2Layer.h5')
         network_output = model.predict(random_1000_events)
+        prob_RCR = model.predict(rcr)
 
         plt.figure(figsize=(10, 6))
         plt.hist(network_output, bins=50, range=(0, 1), edgecolor='black', alpha=0.7)
+        plt.hist(prob_RCR, bins=20, range=(0,1), histtype='step', color='red', linestyle='solid', label=f'RCR {len(prob_RCR)}', density=False)
         plt.title(f'Distribution of Network Output for Station {id} {len(network_output)} events')
         plt.xlabel('Network Output (Probability)')
         plt.ylabel('Number of Events')
@@ -497,8 +503,6 @@ if __name__ == "__main__":
         plt.axvline(x=0.9, color='red', linestyle='--', label='Threshold = 0.9')
         plt.legend()
         plt.show() 
-
-        # You might want to save this plot
         plot_output_dir = '/pub/tangch3/ARIANNA/DeepLearning/'
         os.makedirs(plot_output_dir, exist_ok=True)
         plt.savefig(os.path.join(plot_output_dir, f'new_mod_on_old_7.1_network_output_distribution_stn{id}.png'))

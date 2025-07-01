@@ -439,30 +439,6 @@ def deleting():
 
 if __name__ == "__main__":
 
-
-    # for station_id in station_numbers:
-    #     print(f'station {station_id}')
-    #     Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, Above_curve_data_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', '2', station_id)
-
-    # amp='200s'
-    # indices = [100,101,102,103,104,105,106]
-    # sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
-
-    # for index in indices:
-    #     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
-    #     print(f'number of sim is{len(sim_RCR)}')
-    #     pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_{index}.png')
-
-
-    #     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
-    #     print(f'number of sim is{len(sim_RCR)}')
-    #     pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_noisefalse_{index}.png')
-
-
-    #     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=False, amp=amp)
-    #     print(f'number of sim is{len(sim_RCR)}')
-    #     pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_filterfalse_{index}.png')
-
     # path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/200s/5.28.25'
     # weights = np.load(f'{path}/SimParams_SimRCR_200s_NoiseTrue_forcedFalse_4363events_part0.npy')
 
@@ -473,31 +449,31 @@ if __name__ == "__main__":
     '''test model on different events'''
     station_id = [14,17,19,30]
     amp_type = '200s'
-    for id in station_id:
-        '''load old rcr'''
-        # path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'                                                                                                     #Set which amplifier to run on
-        # RCR_path = f'simulatedRCRs/{amp_type}_2.9.24/'
-        # backlobe_path = f'simulatedBacklobes/{amp_type}_2.9.24/'
-        # rcr, sim_Backlobe = load_sim(path, RCR_path, backlobe_path, amp_type)
-        '''load new rcr'''
-        sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp_type}/5.28.25/'
-        sim_rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp_type)
+    # for id in station_id:
+    #     '''load old rcr'''
+    #     # path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'                                                                                                     #Set which amplifier to run on
+    #     # RCR_path = f'simulatedRCRs/{amp_type}_2.9.24/'
+    #     # backlobe_path = f'simulatedBacklobes/{amp_type}_2.9.24/'
+    #     # rcr, sim_Backlobe = load_sim(path, RCR_path, backlobe_path, amp_type)
+    #     '''load new rcr'''
+    #     sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp_type}/5.28.25/'
+    #     sim_rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp_type)
 
-        '''load old above curve'''
-        # All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('AboveCurve_data', amp_type, id)
-        '''load new above curve'''
-        Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, All_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', amp_type, id)
+    #     '''load old above curve'''
+    #     # All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('AboveCurve_data', amp_type, id)
+    #     '''load new above curve'''
+    #     Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, All_Traces, Above_curve_data_UNIX = load_data('new_chi_above_curve', amp_type, id)
         
-        '''select 200 events for each station'''
-        All_Traces = np.array(All_Traces)
-        num_total_events = All_Traces.shape[0]
-        selected_indices = np.random.choice(num_total_events, 200, replace=False)
-        random_200_events = All_Traces[selected_indices]
+    #     '''select 200 events for each station'''
+    #     All_Traces = np.array(All_Traces)
+    #     num_total_events = All_Traces.shape[0]
+    #     selected_indices = np.random.choice(num_total_events, 200, replace=False)
+    #     random_200_events = All_Traces[selected_indices]
 
-        '''predict with old model'''
-        network_output = RunTrainedModel(random_200_events, '/pub/tangch3/ARIANNA/DeepLearning/models/')
-        prob_RCR = RunTrainedModel(sim_rcr, '/pub/tangch3/ARIANNA/DeepLearning/models/')
-        '''predict with new model'''
+        # '''predict with old model'''
+        # network_output = RunTrainedModel(random_200_events, '/pub/tangch3/ARIANNA/DeepLearning/models/')
+        # prob_RCR = RunTrainedModel(sim_rcr, '/pub/tangch3/ARIANNA/DeepLearning/models/')
+        # '''predict with new model'''
         # model = keras.models.load_model(f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi_2025-06-20_16-06_RCR_Backlobe_model_2Layer.h5')
         # network_output = model.predict(random_1000_events)
         # prob_RCR = model.predict(rcr)
@@ -518,24 +494,24 @@ if __name__ == "__main__":
         # plt.savefig(os.path.join(plot_output_dir, f'old_mod_on_new_7.1_network_output_distribution_stn{id}.png'))
         # plt.clf() # Clear the current figure
 
+        # '''plot RCR like events'''
+        # threshold = 0.9
+        # high_output_indices = np.where(network_output > threshold)[0]
+        # events_above_threshold_traces = All_Traces[high_output_indices]
 
-        threshold = 0.9
-        high_output_indices = np.where(network_output > threshold)[0]
-        events_above_threshold_traces = All_Traces[high_output_indices]
+        # print(f"\nTotal events: {len(network_output)}")
+        # print(f"Events with network output > {threshold}: {len(high_output_indices)}")
+        # print(f"Shape of traces for events above threshold: {events_above_threshold_traces.shape}")
 
-        print(f"\nTotal events: {len(network_output)}")
-        print(f"Events with network output > {threshold}: {len(high_output_indices)}")
-        print(f"Shape of traces for events above threshold: {events_above_threshold_traces.shape}")
+        # plot_output_directory = '/pub/tangch3/ARIANNA/DeepLearning/potential_RCR_plots/'
+        # os.makedirs(plot_output_directory, exist_ok=True)
 
-        plot_output_directory = '/pub/tangch3/ARIANNA/DeepLearning/potential_RCR_plots/'
-        os.makedirs(plot_output_directory, exist_ok=True)
+        # for event_data, original_index in zip(events_above_threshold_traces, high_output_indices):
+        #     plot_filename = os.path.join(plot_output_directory, f'6.30_potential_RCR_event_original_idx_{original_index}.png')
+        #     pT(event_data, f'Potential RCR (Original Event Index: {original_index})', plot_filename)
+        #     print(f"Plotting and saving event with original index {original_index} to {plot_filename}")
 
-        for event_data, original_index in zip(events_above_threshold_traces, high_output_indices):
-            plot_filename = os.path.join(plot_output_directory, f'6.30_potential_RCR_event_original_idx_{original_index}.png')
-            pT(event_data, f'Potential RCR (Original Event Index: {original_index})', plot_filename)
-            print(f"Plotting and saving event with original index {original_index} to {plot_filename}")
-
-    '''train new CNN with 5000 evt'''
+    # '''train new CNN with 5000 evt'''
     # from A1_TrainAndRunCNN import Train_CNN
     # amp_type = '200s'
     # if amp_type == '200s':
@@ -630,10 +606,10 @@ if __name__ == "__main__":
 
 
     '''plot SNR values for 5.28.25 simulated RCRs'''
-    # templates_2016 = loadMultipleTemplates(200, date='2016')
-    # templates_RCR = loadMultipleTemplates(200) 
-    # noiseRMS = 22.53 * units.mV
-    # sim, sim_Chi2016, sim_ChiRCR, sim_SNRs, sim_weights, simulation_date = siminfo_forplotting('RCR', '200s', '5.28.25', templates_2016, templates_RCR, noiseRMS)
+    templates_2016 = loadMultipleTemplates(200, date='2016')
+    templates_RCR = loadMultipleTemplates(200) 
+    noiseRMS = 22.53 * units.mV
+    sim, sim_Chi2016, sim_ChiRCR, sim_SNRs, sim_weights, simulation_date = siminfo_forplotting('RCR', '200s', '5.28.25', templates_2016, templates_RCR, noiseRMS)
     
     # plt.figure(figsize=(10, 6))
     # plt.hist(sim_SNRs, bins=50, edgecolor='black', alpha=0.7)
@@ -648,6 +624,30 @@ if __name__ == "__main__":
     # plt.savefig(os.path.join(plot_output_dir, 'sim_SNRs_histogram.png'))
     # plt.clf()
     # print(f"Histogram of sim_SNRs saved to {os.path.join(plot_output_dir, 'sim_SNRs_histogram.png')}")
+
+    amp='200s'
+    sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
+    indices = np.where((sim_Chi2016 > 0.4) & (sim_Chi2016 < 0.42) & 
+                   (sim_SNRs > 4) & (sim_SNRs < 5))
+    plot_sim = sim[indices]
+
+    for i, index in enumerate(indices):
+        print(f'number of sim is{len(plot_sim)}')
+        pT(plot_sim[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/plot_new_sim_{amp}_{index}.png')
+
+        if i > 10:
+            break
+
+
+
+    #     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
+    #     print(f'number of sim is{len(sim_RCR)}')
+    #     pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_noisefalse_{index}.png')
+
+
+    #     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=False, amp=amp)
+    #     print(f'number of sim is{len(sim_RCR)}')
+    #     pT(sim_RCR[index], 'test plot new sim', f'/pub/tangch3/ARIANNA/DeepLearning/test_new_sim_{amp}_filterfalse_{index}.png')
 
 
 

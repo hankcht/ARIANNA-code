@@ -245,7 +245,7 @@ if __name__ == "__main__":
     def find_curve_14(curve_x):
         curve_y = []
         x1, y1 = 4.5, 0.5
-        x2, y2 = 20, 0.6
+        x2, y2 = 10, 0.6
         x3, y3 = 20, 0.675
         x4, y4 = 40, 0.625
 
@@ -280,7 +280,7 @@ if __name__ == "__main__":
     def find_curve_15(curve_x):
         curve_y = []
         x1, y1 = 5, 0.5
-        x2, y2 = 40, 0.84
+        x2, y2 = 13, 0.7
         x3, y3 = 40, 0.84
         x4, y4 = 40, 0.84
 
@@ -297,18 +297,18 @@ if __name__ == "__main__":
                 C = y1 - m * log_x1
                 y = m * np.log10(x) + C
                 curve_y.append(y)
-            # elif x2 < x <= x3:
-            #     m = (y3 - y2) / (log_x3 - log_x2)
-            #     C = y2 - m * log_x2
-            #     y = m * np.log10(x) + C
-            #     curve_y.append(y)
+            elif x2 < x <= x3:
+                m = (y3 - y2) / (log_x3 - log_x2)
+                C = y2 - m * log_x2
+                y = m * np.log10(x) + C
+                curve_y.append(y)
             # elif x3 < x <= x4:
             #     m = (y4 - y3) / (log_x4 - log_x3)
             #     C = y3 - m * log_x3
             #     y = m * np.log10(x) + C
             #     curve_y.append(y)
             else:
-                curve_y.append(y2)
+                curve_y.append(y3)
 
         return curve_y
 
@@ -420,7 +420,7 @@ if __name__ == "__main__":
     def find_curve_30(curve_x):
         curve_y = []
         x1, y1 = 4, 0.4
-        x2, y2 = 7, 0.66
+        x2, y2 = 7, 0.625
         x3, y3 = 17, 0.78
 
         log_x1 = np.log10(x1)

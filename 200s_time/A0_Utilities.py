@@ -535,9 +535,16 @@ if __name__ == "__main__":
     print(len(no_red_indices))
     print([(snr,chi) for snr, chi in zip(sim_SNRs[no_red_indices], sim_Chi2016[no_red_indices])])
 
+
+    SNRbins = np.logspace(0.477, 2, num=80)
+    maxCorrBins = np.arange(0, 1.0001, 0.01)
+
     plt.figure(figsize=(10, 8))
-    plt.hist2d(sim_SNRs, sim_Chi2016, bins=[50, 50], cmap='viridis') # bins can be a single int or [x_bins, y_bins]
+    plt.hist2d(sim_SNRs, sim_Chi2016, bins=[SNRbins, maxCorrBins], cmap='viridis') # bins can be a single int or [x_bins, y_bins]
     plt.colorbar(label=f'Number of Events {len(no_red_sim)}')
+    plt.xlim((3, 100))
+    plt.ylim((0, 1))
+    plt.xscale('log')
     plt.title('2D Histogram of SNR vs. Chi2016')
     plt.xlabel('SNR Value')
     plt.ylabel('Chi2016 Value')

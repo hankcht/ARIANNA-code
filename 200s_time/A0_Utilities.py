@@ -533,14 +533,14 @@ if __name__ == "__main__":
     no_red_sim = sim[no_red_indices]
 
     print(len(no_red_indices))
-    print([(snr,chi) for snr, chi in zip(sim_SNRs[no_red_indices], sim_Chi2016[no_red_indices])])
+    print([(snr,chi) for snr, chi in zip(sim_SNRs[no_red_indices], sim_ChiRCR[no_red_indices])])
 
 
     SNRbins = np.logspace(0.477, 2, num=80)
     maxCorrBins = np.arange(0, 1.0001, 0.01)
 
     plt.figure(figsize=(10, 8))
-    plt.hist2d(sim_SNRs, sim_Chi2016, bins=[SNRbins, maxCorrBins], cmap='viridis') # bins can be a single int or [x_bins, y_bins]
+    plt.hist2d(sim_SNRs, sim_ChiRCR, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm()) # bins can be a single int or [x_bins, y_bins]
     plt.colorbar(label=f'Number of Events {len(no_red_sim)}')
     plt.xlim((3, 100))
     plt.ylim((0, 1))
@@ -550,7 +550,7 @@ if __name__ == "__main__":
     plt.ylabel('Chi2016 Value')
     plt.grid(alpha=0.5)
     plt.tight_layout()
-    plt.savefig(os.path.join('/pub/tangch3/ARIANNA/DeepLearning', 'sim_SNRs_Chi2016_2dhistogram.png'))
+    plt.savefig(os.path.join('/pub/tangch3/ARIANNA/DeepLearning', 'sim_SNRs_ChiRCR_2dhistogram.png'))
     plt.clf()
 
     # '''load above curve'''

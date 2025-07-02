@@ -178,9 +178,9 @@ def Train_CNN():
     return model
 
 # Set parameters
-amp = '200s' 
+amp = '100s' 
 output_cut_value = 0.6 # Change this depending on chosen cut, we get our passed events from this  # Originally 0.95
-TrainCut = 5000 # Number of events to use for training, change accordingly if we do not have enough events
+TrainCut = 4000 # Number of events to use for training, change accordingly if we do not have enough events
 
 
 

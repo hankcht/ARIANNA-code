@@ -36,6 +36,7 @@ def getMaxChi(traces, sampling_rate, template_trace, template_sampling_rate, par
     return max(maxCorr)
 
 def getMaxAllChi(traces, sampling_rate, template_traces, template_sampling_rate, parallelChannels=[[0, 2], [1, 3]], exclude_match=None):
+    # get Maximum Chi across all RCR templates
 
     maxCorr = []
     for key in template_traces:

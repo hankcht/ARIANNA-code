@@ -558,7 +558,7 @@ if __name__ == "__main__":
     model.save(f'{model_path}/{timestamp}_RCR_Backlobe_model_2Layer.h5') # currently saving in h5
     print('------> Training is Done!')
 
-    timestamp = '2025-07-01_11-08'
+    # timestamp = '2025-07-01_11-08'
     model = keras.models.load_model(f'{model_path}/{timestamp}_RCR_Backlobe_model_2Layer.h5')
 
     prob_RCR = model.predict(training_RCR)

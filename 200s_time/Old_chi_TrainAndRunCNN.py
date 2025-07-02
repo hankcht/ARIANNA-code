@@ -227,6 +227,7 @@ if __name__ == "__main__":
         Backlobe = data_Backlobe # Using [2]
         print('using data Backlobe for training')
 
+    ic(len(Backlobe))
     Backlobe = np.array(Backlobe)
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
     print(f'RCR shape: {rcr.shape} Backlobe shape: {if_sim} {Backlobe.shape}')

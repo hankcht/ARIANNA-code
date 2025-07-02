@@ -440,94 +440,100 @@ def deleting():
 
 if __name__ == "__main__":
 
-    # path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/200s/5.28.25'
-    # weights = np.load(f'{path}/SimParams_SimRCR_200s_NoiseTrue_forcedFalse_4363events_part0.npy')
-
-    # weights = np.array(weights)
-    # print(weights)
-    # print(weights.shape)
-
     '''test model on different events'''
-    station_id = [14,17,19,30]
-    amp_type = '200s'
-    for id in station_id:
-        '''load old rcr'''
-        # path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'                                                                                                     #Set which amplifier to run on
-        # RCR_path = f'simulatedRCRs/{amp_type}_2.9.24/'
-        # backlobe_path = f'simulatedBacklobes/{amp_type}_2.9.24/'
-        # rcr, sim_Backlobe = load_sim(path, RCR_path, backlobe_path, amp_type)
-        '''load new rcr'''
-        sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp_type}/5.28.25/'
-        sim_rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp_type)
-
-        '''load old above curve'''
-        # All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('AboveCurve_data', amp_type, id)
-        '''load new above curve'''
-        Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, all_Traces2016, all_TracesRCR, Above_curve_data_UNIX = load_data('new_chi_above_curve', amp_type, id)
-        
-        '''select 200 events for each station'''
-        All_Traces = np.array(all_TracesRCR)
-        # num_total_events = All_Traces.shape[0]
-        # selected_indices = np.random.choice(num_total_events, 200, replace=False)
-        # random_200_events = All_Traces[selected_indices]
-
-        '''predict with old model'''
-        # network_output = RunTrainedModel(random_200_events, '/pub/tangch3/ARIANNA/DeepLearning/models/')
-        # prob_RCR = RunTrainedModel(sim_rcr, '/pub/tangch3/ARIANNA/DeepLearning/models/')
-        '''predict with new model'''
-        model = keras.models.load_model(f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi_2025-06-20_16-06_RCR_Backlobe_model_2Layer.h5')
-        network_output = model.predict(All_Traces)
-        prob_RCR = model.predict(sim_rcr)
-
-        plt.figure(figsize=(10, 6))
-        plt.hist(network_output, bins=50, range=(0, 1), edgecolor='black', alpha=0.7)
-        plt.hist(prob_RCR, bins=20, range=(0,1), histtype='step', color='red', linestyle='solid', label=f'RCR {len(prob_RCR)}', density=False)
-        plt.title(f'Distribution of Network Output for Station {id} {len(network_output)} events')
-        plt.xlabel('Network Output (Probability)')
-        plt.ylabel('Number of Events')
-        plt.yscale('log')
-        plt.grid(axis='y', alpha=0.75)
-        plt.axvline(x=0.9, color='red', linestyle='--', label='Threshold = 0.9')
-        plt.legend()
-        plt.show() 
-        plot_output_dir = '/pub/tangch3/ARIANNA/DeepLearning/'
-        os.makedirs(plot_output_dir, exist_ok=True)
-        plt.savefig(os.path.join(plot_output_dir, f'new_mod_on_RCRtemplate_network_output_distribution_stn{id}.png'))
-        plt.clf() # Clear the current figure
-
-        '''plot RCR like events'''
-        threshold = 0.9
-        high_output_indices = np.where(network_output > threshold)[0]
-        events_above_threshold_traces = All_Traces[high_output_indices]
-
-        print(f"\nTotal events: {len(network_output)}")
-        print(f"Events with network output > {threshold}: {len(high_output_indices)}")
-        print(f"Shape of traces for events above threshold: {events_above_threshold_traces.shape}")
-
-        plot_output_directory = '/pub/tangch3/ARIANNA/DeepLearning/potential_RCR_plots/'
-        os.makedirs(plot_output_directory, exist_ok=True)
-
-        for event_data, original_index in zip(events_above_threshold_traces, high_output_indices):
-            plot_filename = os.path.join(plot_output_directory, f'7.2_potential_RCR_event_original_idx_{original_index}.png')
-            pT(event_data, f'Potential RCR (Original Event Index: {original_index})', plot_filename)
-            print(f"Plotting and saving event with original index {original_index} to {plot_filename}")
-
-    # '''train new CNN with 5000 evt'''
-    # from A1_TrainAndRunCNN import Train_CNN
+    # station_id = [14,17,19,30]
     # amp_type = '200s'
-    # if amp_type == '200s':
-    #     noiseRMS = 22.53 * units.mV
-    #     station_id = [14,17,19,30]
-    # model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/{amp_type}_time/new_chi' 
-    # loss_accuracy_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Loss_Accuracy' 
-    # network_output_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Network_Output'   
-    # from datetime import datetime
-    # # current_datetime = datetime.now() # Get the current date and time
-    # # timestamp = current_datetime.strftime("%Y-%m-%d_%H-%M") # Format the datetime object as a string with seconds
+    # for id in station_id:
+    #     '''load old rcr'''
+    #     # path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'                                                                                                     #Set which amplifier to run on
+    #     # RCR_path = f'simulatedRCRs/{amp_type}_2.9.24/'
+    #     # backlobe_path = f'simulatedBacklobes/{amp_type}_2.9.24/'
+    #     # rcr, sim_Backlobe = load_sim(path, RCR_path, backlobe_path, amp_type)
+    #     '''load new rcr'''
+    #     sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp_type}/5.28.25/'
+    #     sim_rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp_type)
 
-    # '''load sim'''
-    # sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp_type}/5.28.25/'
-    # sim_rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp_type)
+    #     '''load old above curve'''
+    #     # All_data_SNR, All_data_Chi, All_Traces, All_data_UNIX = load_data('AboveCurve_data', amp_type, id)
+    #     '''load new above curve'''
+    #     Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, all_Traces2016, all_TracesRCR, Above_curve_data_UNIX = load_data('new_chi_above_curve', amp_type, id)
+        
+    #     '''select 200 events for each station'''
+    #     All_Traces = np.array(all_TracesRCR)
+    #     # num_total_events = All_Traces.shape[0]
+    #     # selected_indices = np.random.choice(num_total_events, 200, replace=False)
+    #     # random_200_events = All_Traces[selected_indices]
+
+    #     '''predict with old model'''
+    #     # network_output = RunTrainedModel(random_200_events, '/pub/tangch3/ARIANNA/DeepLearning/models/')
+    #     # prob_RCR = RunTrainedModel(sim_rcr, '/pub/tangch3/ARIANNA/DeepLearning/models/')
+    #     '''predict with new model'''
+    #     model = keras.models.load_model(f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi_2025-06-20_16-06_RCR_Backlobe_model_2Layer.h5')
+    #     network_output = model.predict(All_Traces)
+    #     prob_RCR = model.predict(sim_rcr)
+
+    #     plt.figure(figsize=(10, 6))
+    #     plt.hist(network_output, bins=50, range=(0, 1), edgecolor='black', alpha=0.7)
+    #     plt.hist(prob_RCR, bins=20, range=(0,1), histtype='step', color='red', linestyle='solid', label=f'RCR {len(prob_RCR)}', density=False)
+    #     plt.title(f'Distribution of Network Output for Station {id} {len(network_output)} events')
+    #     plt.xlabel('Network Output (Probability)')
+    #     plt.ylabel('Number of Events')
+    #     plt.yscale('log')
+    #     plt.grid(axis='y', alpha=0.75)
+    #     plt.axvline(x=0.9, color='red', linestyle='--', label='Threshold = 0.9')
+    #     plt.legend()
+    #     plt.show() 
+    #     plot_output_dir = '/pub/tangch3/ARIANNA/DeepLearning/'
+    #     os.makedirs(plot_output_dir, exist_ok=True)
+    #     plt.savefig(os.path.join(plot_output_dir, f'new_mod_on_RCRtemplate_network_output_distribution_stn{id}.png'))
+    #     plt.clf() # Clear the current figure
+
+    #     '''plot RCR like events'''
+    #     threshold = 0.9
+    #     high_output_indices = np.where(network_output > threshold)[0]
+    #     events_above_threshold_traces = All_Traces[high_output_indices]
+
+    #     print(f"\nTotal events: {len(network_output)}")
+    #     print(f"Events with network output > {threshold}: {len(high_output_indices)}")
+    #     print(f"Shape of traces for events above threshold: {events_above_threshold_traces.shape}")
+
+    #     plot_output_directory = '/pub/tangch3/ARIANNA/DeepLearning/potential_RCR_plots/'
+    #     os.makedirs(plot_output_directory, exist_ok=True)
+
+    #     for event_data, original_index in zip(events_above_threshold_traces, high_output_indices):
+    #         plot_filename = os.path.join(plot_output_directory, f'7.2_potential_RCR_event_original_idx_{original_index}.png')
+    #         pT(event_data, f'Potential RCR (Original Event Index: {original_index})', plot_filename)
+    #         print(f"Plotting and saving event with original index {original_index} to {plot_filename}")
+
+    ''''''
+
+    '''train new CNN with 5000 evt'''
+    from A1_TrainAndRunCNN import Train_CNN
+    amp_type = '200s'
+    if amp_type == '200s':
+        noiseRMS = 22.53 * units.mV
+        station_id = [14,17,19,30]
+    model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/{amp_type}_time/new_chi' 
+    loss_accuracy_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Loss_Accuracy' 
+    network_output_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Network_Output'   
+    from datetime import datetime
+    # current_datetime = datetime.now() # Get the current date and time
+    # timestamp = current_datetime.strftime("%Y-%m-%d_%H-%M") # Format the datetime object as a string with seconds
+
+    '''load sim'''
+    sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp_type}/5.28.25/'
+    sim_rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp_type)
+
+    templates_2016 = loadMultipleTemplates(200, date='2016')
+    templates_RCR = loadMultipleTemplates(200) 
+    noiseRMS = 22.53 * units.mV
+    sim, sim_Chi2016, sim_ChiRCR, sim_SNRs, sim_weights, simulation_date = siminfo_forplotting('RCR', '200s', '5.28.25', templates_2016, templates_RCR, noiseRMS)
+
+    no_red_indices = np.where(sim_ChiRCR > 0.55)[0]
+    no_red_sim = sim[no_red_indices]
+
+    print(len(no_red_indices))
+    print([(snr,chi) for snr, chi in zip(sim_SNRs[no_red_indices], sim_Chi2016[no_red_indices])])
 
     # '''load above curve'''
     # data_Backlobe = []
@@ -604,7 +610,7 @@ if __name__ == "__main__":
     # print(f'saving /pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Network_Output/{amp_type}_time/new_chi/{timestamp}_histogram.png')
     # plt.savefig(f'{network_output_plot_path}/{timestamp}_{amp_type}_histogram.png')
     # print(f'------> {amp_type} Done!')
-
+    ''''''
 
     '''plot SNR values for 5.28.25 simulated RCRs'''
     # templates_2016 = loadMultipleTemplates(200, date='2016')

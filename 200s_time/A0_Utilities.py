@@ -535,6 +535,17 @@ if __name__ == "__main__":
     print(len(no_red_indices))
     print([(snr,chi) for snr, chi in zip(sim_SNRs[no_red_indices], sim_Chi2016[no_red_indices])])
 
+    plt.figure(figsize=(10, 8))
+    plt.hist2d(sim_SNRs, sim_Chi2016, bins=[50, 50], cmap='viridis') # bins can be a single int or [x_bins, y_bins]
+    plt.colorbar(label=f'Number of Events {len(no_red_sim)}')
+    plt.title('2D Histogram of SNR vs. Chi2016')
+    plt.xlabel('SNR Value')
+    plt.ylabel('Chi2016 Value')
+    plt.grid(alpha=0.5)
+    plt.tight_layout()
+    plt.savefig(os.path.join('/pub/tangch3/ARIANNA/DeepLearning', 'sim_SNRs_Chi2016_2dhistogram.png'))
+    plt.clf()
+
     # '''load above curve'''
     # data_Backlobe = []
     # data_Backlobe_chi2016 = []

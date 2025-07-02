@@ -124,7 +124,7 @@ def Train_CNN():
     model = Sequential()
     # change window size to capture the 100 Mhz difference in Backlobe (shadowing effect, we have integer frequencies amplified)
     # window size default is 10, on 256 floats 
-    model.add(Conv2D(20, (4, 2), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
+    model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups = 1))
     model.add(Conv2D(10, (1, 10), activation='relu'))
     model.add(Dropout(0.5))
     model.add(Flatten())
@@ -246,7 +246,7 @@ if __name__ == "__main__":
     # Now Train
     model = Train_CNN()  
 
-
+ 
     # input the path and file you'd like to save the model as (in h5 format)
     if if_sim == 'sim_sim' or if_sim == 'sim_data':
         model.save(f'{model_path}{if_sim}_{timestamp}_RCR_Backlobe_model_2Layer.h5')

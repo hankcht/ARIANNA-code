@@ -495,22 +495,22 @@ if __name__ == "__main__":
         plt.savefig(os.path.join(plot_output_dir, f'new_mod_on_RCRtemplate_network_output_distribution_stn{id}.png'))
         plt.clf() # Clear the current figure
 
-        # '''plot RCR like events'''
-        # threshold = 0.9
-        # high_output_indices = np.where(network_output > threshold)[0]
-        # events_above_threshold_traces = All_Traces[high_output_indices]
+        '''plot RCR like events'''
+        threshold = 0.9
+        high_output_indices = np.where(network_output > threshold)[0]
+        events_above_threshold_traces = All_Traces[high_output_indices]
 
-        # print(f"\nTotal events: {len(network_output)}")
-        # print(f"Events with network output > {threshold}: {len(high_output_indices)}")
-        # print(f"Shape of traces for events above threshold: {events_above_threshold_traces.shape}")
+        print(f"\nTotal events: {len(network_output)}")
+        print(f"Events with network output > {threshold}: {len(high_output_indices)}")
+        print(f"Shape of traces for events above threshold: {events_above_threshold_traces.shape}")
 
-        # plot_output_directory = '/pub/tangch3/ARIANNA/DeepLearning/potential_RCR_plots/'
-        # os.makedirs(plot_output_directory, exist_ok=True)
+        plot_output_directory = '/pub/tangch3/ARIANNA/DeepLearning/potential_RCR_plots/'
+        os.makedirs(plot_output_directory, exist_ok=True)
 
-        # for event_data, original_index in zip(events_above_threshold_traces, high_output_indices):
-        #     plot_filename = os.path.join(plot_output_directory, f'6.30_potential_RCR_event_original_idx_{original_index}.png')
-        #     pT(event_data, f'Potential RCR (Original Event Index: {original_index})', plot_filename)
-        #     print(f"Plotting and saving event with original index {original_index} to {plot_filename}")
+        for event_data, original_index in zip(events_above_threshold_traces, high_output_indices):
+            plot_filename = os.path.join(plot_output_directory, f'7.2_potential_RCR_event_original_idx_{original_index}.png')
+            pT(event_data, f'Potential RCR (Original Event Index: {original_index})', plot_filename)
+            print(f"Plotting and saving event with original index {original_index} to {plot_filename}")
 
     # '''train new CNN with 5000 evt'''
     # from A1_TrainAndRunCNN import Train_CNN

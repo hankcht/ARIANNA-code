@@ -540,7 +540,7 @@ if __name__ == "__main__":
     maxCorrBins = np.arange(0, 1.0001, 0.01)
 
     plt.figure(figsize=(10, 8))
-    plt.hist2d(sim_SNRs, sim_ChiRCR, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm()) # bins can be a single int or [x_bins, y_bins]
+    plt.hist2d(sim_SNRs[no_red_indices], sim_ChiRCR[no_red_indices], bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm()) # bins can be a single int or [x_bins, y_bins]
     plt.colorbar(label=f'Number of Events {len(no_red_sim)}')
     plt.xlim((3, 100))
     plt.ylim((0, 1))

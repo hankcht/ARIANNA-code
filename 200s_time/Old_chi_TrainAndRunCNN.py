@@ -22,7 +22,7 @@ import templateCrossCorr as txc
 import matplotlib
 from matplotlib import pyplot as plt
 matplotlib.use('Agg')
-from A0_Utilities import getMaxChi, getMaxSNR, load_sim, load_data
+from A0_Utilities import getMaxChi, getMaxSNR, load_sim, load_data, load_sim_rcr
 
 def save_best_result(best_result, algorithm=''):
     """
@@ -204,7 +204,10 @@ timestamp = current_datetime.strftime("%Y-%m-%d_%H-%M") # Format the datetime ob
 
 if __name__ == "__main__":  
 
-    rcr, sim_Backlobe = load_sim(path, RCR_path, backlobe_path, amp)
+    # rcr, sim_Backlobe = load_sim(path, RCR_path, backlobe_path, amp)
+    sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
+    rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
+
     # since we load traces depending on stn, we need to make data_Backlobe a full list
     data_Backlobe = []
     data_Backlobe_UNIX = [] 
@@ -221,7 +224,7 @@ if __name__ == "__main__":
     if_sim = args.BLsimOrdata
 
     if if_sim == 'sim_data' or if_sim == 'sim_sim':
-        Backlobe = sim_Backlobe # Using [1]
+        # Backlobe = sim_Backlobe # Using [1]
         print(f'using sim Backlobe for training')
     elif if_sim == 'data_sim' or if_sim == 'data_data':
         Backlobe = data_Backlobe # Using [2]

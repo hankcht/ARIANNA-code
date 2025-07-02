@@ -537,8 +537,8 @@ if __name__ == "__main__":
     data_Backlobe_chi2016 = []
     data_Backlobe_UNIX = [] 
     for id in station_id:
-        snr, chi2016, chiRCR, traces, unix = load_data('new_chi_above_curve', amp_type, station_id=id)
-        data_Backlobe.extend(traces)
+        snr, chi2016, chiRCR, traces2016, tracesRCR, unix = load_data('new_chi_above_curve', amp_type, station_id=id)
+        data_Backlobe.extend(traces2016)
         data_Backlobe_chi2016.extend(chi2016)
         data_Backlobe_UNIX.extend(unix)
 

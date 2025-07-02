@@ -604,7 +604,7 @@ if __name__ == "__main__":
     plt.text(0.96, -0.12, 'RCR', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes, color='red')
     plt.subplots_adjust(left=0.2, right=0.85, bottom=0.2, top=0.8)
 
-    print(f'saving /pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Network_Output/new_chi/{timestamp}_histogram.png')
+    print(f'saving to {network_output_plot_path}/{timestamp}_{amp_type}_histogram.png')
     plt.savefig(f'{network_output_plot_path}/{timestamp}_{amp_type}_histogram.png')
     print(f'------> {amp_type} Done!')
     ''''''

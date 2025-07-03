@@ -664,9 +664,9 @@ if __name__ == "__main__":
     all_Backlobe = []
     all_Backlobe_UNIX = [] 
     for id in station_id:
-        # snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
-        unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
-        trace = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Traces.npy')
+        snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
+        # unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
+        # trace = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Traces.npy')
         all_Backlobe.extend(trace)
         all_Backlobe_UNIX.extend(unix)
 

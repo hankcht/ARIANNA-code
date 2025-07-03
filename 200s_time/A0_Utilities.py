@@ -663,14 +663,15 @@ if __name__ == "__main__":
     station_id = [13,15,18]
     all_Backlobe = []
     all_Backlobe_UNIX = [] 
-    # for id in station_id:
-    snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=18)
-    # all_Backlobe.extend(trace)
-    # all_Backlobe_UNIX.extend(unix)
+    for id in station_id:
+        # snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
+        unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
+        # all_Backlobe.extend(trace)
+        all_Backlobe_UNIX.extend(unix)
 
-
+    print(len(all_Backlobe_UNIX))
     from datetime import timezone, datetime
-    all_Backlobe_UNIX = np.array(unix)
+    all_Backlobe_UNIX = np.array(all_Backlobe_UNIX)
     target_unix_time = 1487272191 # Feb 16, 2017 at 19:09:51 UTC
     similarity_window_seconds = 5
 

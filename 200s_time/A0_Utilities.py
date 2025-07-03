@@ -659,8 +659,8 @@ if __name__ == "__main__":
 
 
     '''check specific Station 13, Feb 16, 2017 at 19:09:51 UTC evt'''
-    amp = '200s'
-    station_id = [14, 17, 19, 30]
+    amp = '100s'
+    station_id = [13,15,18]
     all_Backlobe = []
     all_Backlobe_UNIX = [] 
     for id in station_id:

@@ -223,7 +223,7 @@ if __name__ == "__main__":
         if unix == 1487272191:
             i += 1
             std_time = datetime.fromtimestamp(unix)
-            print(f'found {i} events with time {std_time.strftime('%Y-%m-%d %H:%M:%S %Z%z')}')
+            print(f"found {i} events with time {std_time.strftime('%Y-%m-%d %H:%M:%S %Z%z')}")
             print(f'index of event is {idx}')
             this_idx.append(idx)
 

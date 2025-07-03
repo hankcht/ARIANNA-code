@@ -737,6 +737,7 @@ if __name__ == "__main__":
 
     print(f'training with {len(data_Backlobe)} events')
 
+    MODELS_BASE_PATH = "/pub/tangch3/ARIANNA/DeepLearning/models/100s_time/"
     models = ["data_data_2025-07-02_16-25_RCR_Backlobe_model_2Layer.h5",
             "data_data_2025-07-02_16-27_RCR_Backlobe_model_2Layer.h5",
             "data_data_2025-07-02_16-28_RCR_Backlobe_model_2Layer.h5",
@@ -747,24 +748,27 @@ if __name__ == "__main__":
             "data_data_2025-07-02_18-42_RCR_Backlobe_model_2Layer.h5",
             "data_data_2025-07-02_18-44_RCR_Backlobe_model_2Layer.h5"
     ]
-    for trained_model_filepath in models: # Renamed to clearly indicate it's a full path
-        # Extract just the model name without the extension
-        # os.path.basename gets "data_data_2025-..." from the full path
-        # os.path.splitext separates the filename from its extension
-        model_name = os.path.splitext(os.path.basename(trained_model_filepath))[0]
+    for filename in models:
+        # Construct the full path to the model file
+        trained_model_filepath = os.path.join(MODELS_BASE_PATH, filename)
 
-        model = keras.models.load_model(trained_model_filepath)
+        # Extract just the model name without the extension for the PNG filename
+        model_name_for_png = os.path.splitext(filename)[0]
+
+        print(f"Attempting to load model from: {trained_model_filepath}")
+        model = keras.models.load_model(trained_model_filepath) # This will now use the full path
+        
         prob_Backlobe = model.predict(data_Backlobe)
         good_indices = np.where(prob_Backlobe > 0.9)[0]
-        print(f'Using model: {model_name}') # Print the model name for context
-        print(f'good indices are {good_indices}, number of events is {len(good_indices)}')
+        print(f'  Using model: {model_name_for_png}')
+        print(f'  Good indices are {good_indices}, number of events is {len(good_indices)}')
 
         for index in good_indices:
-            # Construct the new filename with the model_name
-            plot_filename = f'/pub/tangch3/ARIANNA/DeepLearning/plot_potential_RCR_{amp}_{model_name}_event_{index}.png'
+            # Construct the new plot filename with the clean model name
+            plot_filename = f'/pub/tangch3/ARIANNA/DeepLearning/plot_potential_RCR_{amp}_{model_name_for_png}_event_{index}.png'
             
             pT(data_Backlobe[index],
-            f'test plot potential RCR for {model_name}', # Optional: add to plot title too
+            f'test plot potential RCR for {model_name_for_png}',
             plot_filename)
             
 

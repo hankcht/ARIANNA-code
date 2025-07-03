@@ -737,6 +737,7 @@ if __name__ == "__main__":
 
     print(f'training with {len(data_Backlobe)} events')
 
+    data_Backlobe = np.array(data_Backlobe)
     MODELS_BASE_PATH = "/pub/tangch3/ARIANNA/DeepLearning/models/100s_time/"
     models = ["data_data_2025-07-02_16-25_RCR_Backlobe_model_2Layer.h5",
             "data_data_2025-07-02_16-27_RCR_Backlobe_model_2Layer.h5",

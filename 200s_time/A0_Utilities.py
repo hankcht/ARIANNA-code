@@ -664,7 +664,7 @@ if __name__ == "__main__":
     all_Backlobe = []
     all_Backlobe_UNIX = [] 
     # for id in station_id:
-    snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=13)
+    snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=18)
     # all_Backlobe.extend(trace)
     # all_Backlobe_UNIX.extend(unix)
 

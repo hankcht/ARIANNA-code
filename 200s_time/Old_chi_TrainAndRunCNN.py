@@ -216,19 +216,6 @@ if __name__ == "__main__":
         data_Backlobe.extend(trace)
         data_Backlobe_UNIX.extend(unix)
 
-    this_idx = []
-    i = 0
-    print(len(data_Backlobe_UNIX))
-    for idx, unix in enumerate(data_Backlobe_UNIX):
-        if unix == 1487272191:
-            i += 1
-            std_time = datetime.fromtimestamp(unix)
-            print(f"found {i} events with time {std_time.strftime('%Y-%m-%d %H:%M:%S %Z%z')}")
-            print(f'index of event is {idx}')
-            this_idx.append(idx)
-
-    print(this_idx)
-
 
     # With argparse, we can either use [1] sim BL, or [2] "BL data events" 
 

@@ -658,8 +658,61 @@ if __name__ == "__main__":
 
 
 
+    '''check specific Station 13, Feb 16, 2017 at 19:09:51 UTC evt'''
+    amp = '200s'
+    station_id = [13,15,18]
+    all_Backlobe = []
+    all_Backlobe_UNIX = [] 
+    for id in station_id:
+        snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
+        all_Backlobe.extend(trace)
+        all_Backlobe_UNIX.extend(unix)
 
-    
+
+    from datetime import timezone
+    all_Backlobe_UNIX = np.array(all_Backlobe_UNIX)
+    target_unix_time = 1487272191 # Feb 16, 2017 at 19:09:51 UTC
+    similarity_window_seconds = 5
+
+    exact_match_indices = []
+    exact_match_count = 0
+
+    print(f"\nSearching for EXACT matches to UNIX time: {target_unix_time}")
+    print(f"Total events in all_Backlobe_UNIX: {len(all_Backlobe_UNIX)}")
+
+    # Use all_Backlobe_UNIX consistently
+    for idx, unix_time in enumerate(all_Backlobe_UNIX):
+        if unix_time == target_unix_time:
+            exact_match_count += 1
+            # Use timezone.utc for precise conversion if Unix time is UTC
+            std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
+            print(f"  Exact match found: Event {exact_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+            exact_match_indices.append(idx)
+
+    print(f"\n--- Summary of Exact Matches ---")
+    print(f"Total exact matches found: {exact_match_count}")
+    print(f"Indices of exact matching events: {exact_match_indices}")
+
+
+    # --- Search for SIMILAR matches ---
+    similar_match_indices = []
+    similar_match_count = 0
+
+    print(f"\nSearching for SIMILAR matches (within +/- {similarity_window_seconds} seconds) to UNIX time: {target_unix_time}")
+
+    # Using all_Backlobe_UNIX for the search
+    for idx, unix_time in enumerate(all_Backlobe_UNIX):
+        # Check if the UNIX time falls within the defined window
+        if target_unix_time - similarity_window_seconds <= unix_time <= target_unix_time + similarity_window_seconds:
+            similar_match_count += 1
+            # Use timezone.utc for precise conversion if Unix time is UTC
+            std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
+            print(f"  Similar match found: Event {similar_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+            similar_match_indices.append(idx)
+
+    print(f"\n--- Summary of Similar Matches ---")
+    print(f"Total similar matches found: {similar_match_count}")
+    print(f"Indices of similar matching events: {similar_match_indices}")
 
         
 

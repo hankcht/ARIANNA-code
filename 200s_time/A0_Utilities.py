@@ -666,7 +666,8 @@ if __name__ == "__main__":
     for id in station_id:
         # snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
         unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
-        # all_Backlobe.extend(trace)
+        trace = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Traces.npy')
+        all_Backlobe.extend(trace)
         all_Backlobe_UNIX.extend(unix)
 
     print(len(all_Backlobe_UNIX))
@@ -694,26 +695,28 @@ if __name__ == "__main__":
     print(f"Total exact matches found: {exact_match_count}")
     print(f"Indices of exact matching events: {exact_match_indices}")
 
+    for index in exact_match_indices:
+        pT(all_Backlobe[index], 'test plot confirmed RCR', f'/pub/tangch3/ARIANNA/DeepLearning/test_plot_confirmed_RCR_{amp}_{index}.png')
 
-    # --- Search for SIMILAR matches ---
-    similar_match_indices = []
-    similar_match_count = 0
+    # # --- Search for SIMILAR matches ---
+    # similar_match_indices = []
+    # similar_match_count = 0
 
-    print(f"\nSearching for SIMILAR matches (within +/- {similarity_window_seconds} seconds) to UNIX time: {target_unix_time}")
+    # print(f"\nSearching for SIMILAR matches (within +/- {similarity_window_seconds} seconds) to UNIX time: {target_unix_time}")
 
-    # Using all_Backlobe_UNIX for the search
-    for idx, unix_time in enumerate(all_Backlobe_UNIX):
-        # Check if the UNIX time falls within the defined window
-        if target_unix_time - similarity_window_seconds <= unix_time <= target_unix_time + similarity_window_seconds:
-            similar_match_count += 1
-            # Use timezone.utc for precise conversion if Unix time is UTC
-            std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
-            print(f"  Similar match found: Event {similar_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
-            similar_match_indices.append(idx)
+    # # Using all_Backlobe_UNIX for the search
+    # for idx, unix_time in enumerate(all_Backlobe_UNIX):
+    #     # Check if the UNIX time falls within the defined window
+    #     if target_unix_time - similarity_window_seconds <= unix_time <= target_unix_time + similarity_window_seconds:
+    #         similar_match_count += 1
+    #         # Use timezone.utc for precise conversion if Unix time is UTC
+    #         std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
+    #         print(f"  Similar match found: Event {similar_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    #         similar_match_indices.append(idx)
 
-    print(f"\n--- Summary of Similar Matches ---")
-    print(f"Total similar matches found: {similar_match_count}")
-    print(f"Indices of similar matching events: {similar_match_indices}")
+    # print(f"\n--- Summary of Similar Matches ---")
+    # print(f"Total similar matches found: {similar_match_count}")
+    # print(f"Indices of similar matching events: {similar_match_indices}")
 
         
 

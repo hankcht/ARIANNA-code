@@ -117,7 +117,7 @@ if __name__ == "__main__":
     current_datetime = datetime.now() # Get the current date and time
     timestamp = current_datetime.strftime("%Y-%m-%d_%H-%M") # Format the datetime object as a string with seconds
 
-    sim_RCR = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
+    sim_RCR = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
     # since we load traces depending on station, we need to make data_Backlobe a full list
     data_Backlobe = []
     data_Backlobe_chi2016 = []

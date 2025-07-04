@@ -257,10 +257,10 @@ def siminfo_forplotting(type, amp, simulation_date, templates_2016, templates_RC
     if type == 'RCR':
         path += f'{amp}/{simulation_date}'
         if amp == '200s':
-            sim = np.load(f'{path}/SimRCR_200s_NoiseTrue_forcedFalse_4363events_FilterTrue_part0.npy')
+            sim = np.load(f'{path}/SimRCR_200s_NoiseFalse_forcedFalse_4344events_FilterTrue_part0.npy')
             weights = np.load(f'{path}/SimWeights_SimRCR_200s_NoiseTrue_forcedFalse_4363events_part0.npy')
         elif amp == '100s':
-            sim = np.load(f'{path}/SimRCR_100s_NoiseTrue_forcedFalse_4668events_FilterTrue_part0.npy')
+            sim = np.load(f'{path}/SimRCR_100s_NoiseFalse_forcedFalse_4826events_FilterTrue_part0.npy')
             weights = np.load(f'{path}/SimWeights_SimRCR_100s_NoiseTrue_forcedFalse_4668events_part0.npy')
 
     elif type == 'Backlobe':
@@ -481,18 +481,18 @@ if __name__ == "__main__":
     #     plt.ylabel('Number of Events')
     #     plt.yscale('log')
     #     plt.grid(axis='y', alpha=0.75)
-    #     plt.axvline(x=0.9, color='red', linestyle='--', label='Threshold = 0.9')
-    #     plt.legend()
-    #     plt.show() 
-    #     plot_output_dir = '/pub/tangch3/ARIANNA/DeepLearning/'
-    #     os.makedirs(plot_output_dir, exist_ok=True)
-    #     plt.savefig(os.path.join(plot_output_dir, f'new_mod_on_RCRtemplate_network_output_distribution_stn{id}.png'))
-    #     plt.clf() # Clear the current figure
+        # plt.axvline(x=0.9, color='red', linestyle='--', label='Threshold = 0.9')
+        # plt.legend()
+        # plt.show() 
+        # plot_output_dir = '/pub/tangch3/ARIANNA/DeepLearning/'
+        # os.makedirs(plot_output_dir, exist_ok=True)
+        # plt.savefig(os.path.join(plot_output_dir, f'new_mod_on_RCRtemplate_network_output_distribution_stn{id}.png'))
+        # plt.clf() # Clear the current figure
 
-    #     '''plot RCR like events'''
-    #     threshold = 0.9
-    #     high_output_indices = np.where(network_output > threshold)[0]
-    #     events_above_threshold_traces = All_Traces[high_output_indices]
+        # '''plot RCR like events'''
+        # threshold = 0.9
+        # high_output_indices = np.where(network_output > threshold)[0]
+        # events_above_threshold_traces = All_Traces[high_output_indices]
 
     #     print(f"\nTotal events: {len(network_output)}")
     #     print(f"Events with network output > {threshold}: {len(high_output_indices)}")
@@ -659,119 +659,70 @@ if __name__ == "__main__":
 
 
     '''check specific Station 13, Feb 16, 2017 at 19:09:51 UTC evt'''
-    amp = '100s'
-    station_id = [13,15,18]
-    all_Backlobe = []
-    all_Backlobe_UNIX = [] 
-    for id in station_id:
-        snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
-        # unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
-        # trace = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Traces.npy')
-        all_Backlobe.extend(trace)
-        all_Backlobe_UNIX.extend(unix)
-
-    print(len(all_Backlobe_UNIX))
-    from datetime import timezone, datetime
-    all_Backlobe_UNIX = np.array(all_Backlobe_UNIX)
-    target_unix_time = 1487272191 # Feb 16, 2017 at 19:09:51 UTC
-    similarity_window_seconds = 5
-
-    exact_match_indices = []
-    exact_match_count = 0
-
-    print(f"\nSearching for EXACT matches to UNIX time: {target_unix_time}")
-    print(f"Total events in all_Backlobe_UNIX: {len(all_Backlobe_UNIX)}")
-
-    # Use all_Backlobe_UNIX consistently
-    for idx, unix_time in enumerate(all_Backlobe_UNIX):
-        if unix_time == target_unix_time:
-            exact_match_count += 1
-            # Use timezone.utc for precise conversion if Unix time is UTC
-            std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
-            print(f"  Exact match found: Event {exact_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
-            exact_match_indices.append(idx)
-
-    print(f"\n--- Summary of Exact Matches ---")
-    print(f"Total exact matches found: {exact_match_count}")
-    print(f"Indices of exact matching events: {exact_match_indices}")
-
-    for index in exact_match_indices:
-        pT(all_Backlobe[index], 'test plot confirmed RCR', f'/pub/tangch3/ARIANNA/DeepLearning/test_plot_confirmed_RCR_{amp}_{index}.png')
-
-    # --- Search for SIMILAR matches ---
-    similar_match_indices = []
-    similar_match_count = 0
-
-    print(f"\nSearching for SIMILAR matches (within +/- {similarity_window_seconds} seconds) to UNIX time: {target_unix_time}")
-
-    # Using all_Backlobe_UNIX for the search
-    for idx, unix_time in enumerate(all_Backlobe_UNIX):
-        # Check if the UNIX time falls within the defined window
-        if target_unix_time - similarity_window_seconds <= unix_time <= target_unix_time + similarity_window_seconds:
-            similar_match_count += 1
-            # Use timezone.utc for precise conversion if Unix time is UTC
-            std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
-            print(f"  Similar match found: Event {similar_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
-            similar_match_indices.append(idx)
-
-    print(f"\n--- Summary of Similar Matches ---")
-    print(f"Total similar matches found: {similar_match_count}")
-    print(f"Indices of similar matching events: {similar_match_indices}")
-
     # amp = '100s'
-    # if amp == '200s':
-    #     noiseRMS = 22.53 * units.mV
-    #     station_id = [14,17,19,30]
-    # elif amp == '100s':
-    #     noiseRMS = 20 * units.mV
-    #     station_id = [13,15,18]
-
-    # data_Backlobe = []
-    # data_Backlobe_UNIX = [] 
+    # station_id = [13,15,18]
+    # all_Backlobe = []
+    # all_Backlobe_UNIX = [] 
     # for id in station_id:
-    #     snr, chi, trace, unix = load_data('AboveCurve_data', amp_type = amp, station_id=id) # still using old curve
+    #     snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
     #     # unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
     #     # trace = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Traces.npy')
-    #     data_Backlobe.extend(trace)
-    #     data_Backlobe_UNIX.extend(unix)
+    #     all_Backlobe.extend(trace)
+    #     all_Backlobe_UNIX.extend(unix)
 
-    # print(f'training with {len(data_Backlobe)} events')
+    # print(len(all_Backlobe_UNIX))
+    # from datetime import timezone, datetime
+    # all_Backlobe_UNIX = np.array(all_Backlobe_UNIX)
+    # target_unix_time = 1487272191 # Feb 16, 2017 at 19:09:51 UTC
+    # similarity_window_seconds = 5
 
-    # data_Backlobe = np.array(data_Backlobe)
-    # MODELS_BASE_PATH = "/pub/tangch3/ARIANNA/DeepLearning/models/100s_time/"
-    # models = ["data_data_2025-07-02_16-25_RCR_Backlobe_model_2Layer.h5",
-    #         "data_data_2025-07-02_16-27_RCR_Backlobe_model_2Layer.h5",
-    #         "data_data_2025-07-02_16-28_RCR_Backlobe_model_2Layer.h5",
-    #         "data_data_2025-07-02_16-29_RCR_Backlobe_model_2Layer.h5",
-    #         "data_data_2025-07-02_16-30_RCR_Backlobe_model_2Layer.h5",
-    #         "data_data_2025-07-02_16-32_RCR_Backlobe_model_2Layer.h5",
-    #         "data_data_2025-07-02_16-33_RCR_Backlobe_model_2Layer.h5",
-    #         "data_data_2025-07-02_18-42_RCR_Backlobe_model_2Layer.h5",
-    #         "data_data_2025-07-02_18-44_RCR_Backlobe_model_2Layer.h5"
-    # ]
-    # for filename in models:
-    #     # Construct the full path to the model file
-    #     trained_model_filepath = os.path.join(MODELS_BASE_PATH, filename)
+    # exact_match_indices = []
+    # exact_match_count = 0
 
-    #     # Extract just the model name without the extension for the PNG filename
-    #     model_name_for_png = os.path.splitext(filename)[0]
+    # print(f"\nSearching for EXACT matches to UNIX time: {target_unix_time}")
+    # print(f"Total events in all_Backlobe_UNIX: {len(all_Backlobe_UNIX)}")
 
-    #     print(f"Attempting to load model from: {trained_model_filepath}")
-    #     model = keras.models.load_model(trained_model_filepath) # This will now use the full path
-        
-    #     prob_Backlobe = model.predict(data_Backlobe)
-    #     good_indices = np.where(prob_Backlobe > 0.9)[0]
-    #     print(f'  Using model: {model_name_for_png}')
-    #     print(f'  Good indices are {good_indices}, number of events is {len(good_indices)}')
+    # # Use all_Backlobe_UNIX consistently
+    # for idx, unix_time in enumerate(all_Backlobe_UNIX):
+    #     if unix_time == target_unix_time:
+    #         exact_match_count += 1
+    #         # Use timezone.utc for precise conversion if Unix time is UTC
+    #         std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
+    #         print(f"  Exact match found: Event {exact_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    #         exact_match_indices.append(idx)
 
-    #     for index in good_indices:
-    #         # Construct the new plot filename with the clean model name
-    #         plot_filename = f'/pub/tangch3/ARIANNA/DeepLearning/plot_potential_RCR_{amp}_{model_name_for_png}_event_{index}.png'
-            
-    #         pT(data_Backlobe[index],
-    #         f'test plot potential RCR for {model_name_for_png}',
-    #         plot_filename)
-            
+    # print(f"\n--- Summary of Exact Matches ---")
+    # print(f"Total exact matches found: {exact_match_count}")
+    # print(f"Indices of exact matching events: {exact_match_indices}")
+
+    # for index in exact_match_indices:
+    #     pT(all_Backlobe[index], 'test plot confirmed RCR', f'/pub/tangch3/ARIANNA/DeepLearning/test_plot_confirmed_RCR_{amp}_{index}.png')
+
+    # # --- Search for SIMILAR matches ---
+    # similar_match_indices = []
+    # similar_match_count = 0
+
+    # print(f"\nSearching for SIMILAR matches (within +/- {similarity_window_seconds} seconds) to UNIX time: {target_unix_time}")
+
+    # # Using all_Backlobe_UNIX for the search
+    # for idx, unix_time in enumerate(all_Backlobe_UNIX):
+    #     # Check if the UNIX time falls within the defined window
+    #     if target_unix_time - similarity_window_seconds <= unix_time <= target_unix_time + similarity_window_seconds:
+    #         similar_match_count += 1
+    #         # Use timezone.utc for precise conversion if Unix time is UTC
+    #         std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
+    #         print(f"  Similar match found: Event {similar_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    #         similar_match_indices.append(idx)
+
+    # print(f"\n--- Summary of Similar Matches ---")
+    # print(f"Total similar matches found: {similar_match_count}")
+    # print(f"Indices of similar matching events: {similar_match_indices}")
+
+
+    amp_type = '200s'
+
+    sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp_type}/5.28.25/'
+    sim_rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp_type)
 
 
 

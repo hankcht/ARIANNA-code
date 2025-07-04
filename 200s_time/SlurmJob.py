@@ -53,11 +53,11 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     return
 
 
-multi_run = False
+multi_run = True
 
 if multi_run == True:
     # --- Run multiple stations ---
-    stations = [13,15,18,14,17,19,30]
+    stations = [14]
     for station_id in stations:
         if station_id in [14,17,19,30]:
             amp = '200s'   

@@ -487,7 +487,7 @@ if __name__ == "__main__":
     os.makedirs(plot_output_folder, exist_ok=True)  
 
     parameters = ['RCR', '2016'] # to plot both Chi2016 and ChiRCR  
-    SNRbins = np.logspace(0.477, 2, num=80)
+    SNRbins = np.logspace(np.log10(1), 2, num=80)
     maxCorrBins = np.arange(0, 1.0001, 0.01)
 
     All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')

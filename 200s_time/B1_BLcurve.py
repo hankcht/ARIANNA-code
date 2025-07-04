@@ -511,7 +511,7 @@ if __name__ == "__main__":
             # --- Plot of all events in Chi-SNR space ---
             plt.hist2d(All_SNRs, All_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
             plt.colorbar()
-            plt.xlim((3, 100))
+            plt.xlim((0, 100))
             plt.ylim((0, 1))
             plt.xlabel('SNR')
             plt.ylabel('Avg Chi Highest Parallel Channels')

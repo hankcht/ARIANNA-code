@@ -258,10 +258,10 @@ def siminfo_forplotting(type, amp, simulation_date, templates_2016, templates_RC
         path += f'{amp}/{simulation_date}'
         if amp == '200s':
             sim = np.load(f'{path}/SimRCR_200s_NoiseFalse_forcedFalse_4344events_FilterTrue_part0.npy')
-            weights = np.load(f'{path}/SimWeights_SimRCR_200s_NoiseTrue_forcedFalse_4363events_part0.npy')
+            weights = np.load(f'{path}/SimWeights_SimRCR_200s_NoiseFalse_forcedFalse_4344events_part0.npy')
         elif amp == '100s':
             sim = np.load(f'{path}/SimRCR_100s_NoiseFalse_forcedFalse_4826events_FilterTrue_part0.npy')
-            weights = np.load(f'{path}/SimWeights_SimRCR_100s_NoiseTrue_forcedFalse_4668events_part0.npy')
+            weights = np.load(f'{path}/SimWeights_SimRCR_100s_NoiseFalse_forcedFalse_4826events_part0.npy')
 
     elif type == 'Backlobe':
         # not yet developed 

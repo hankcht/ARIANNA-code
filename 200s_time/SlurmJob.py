@@ -57,7 +57,7 @@ multi_run = True
 
 if multi_run == True:
     # --- Run multiple stations ---
-    stations = [13]
+    stations = [13,14]
     for station_id in stations:
         if station_id in [14,17,19,30]:
             amp = '200s'   

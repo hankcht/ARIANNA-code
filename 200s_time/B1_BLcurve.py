@@ -194,14 +194,13 @@ if __name__ == "__main__":
     # RCR_sim, sim_chi, sim_SNRs, sim_weights, simulation_date = SimSNRChi(templates_RCR, noiseRMS, amp=amp_type, type = RorB)
     # sim_chi = np.array(sim_chi)
 
-    series = 200
     
     from A0_Utilities import loadMultipleTemplates, siminfo_forplotting
-    templates_2016 = loadMultipleTemplates(series, date='2016')
-    templates_RCR = loadMultipleTemplates(series) 
+    templates_2016 = loadMultipleTemplates(amp_type, date='2016')
+    templates_RCR = loadMultipleTemplates(amp_type) 
     noiseRMS = 22.53 * units.mV
    
-    sim, sim_Chi2016, sim_ChiRCR, sim_SNRs, sim_weights, simulation_date = siminfo_forplotting('RCR', '200s', '5.28.25', templates_2016, templates_RCR, noiseRMS)
+    sim, sim_Chi2016, sim_ChiRCR, sim_SNRs, sim_weights, simulation_date = siminfo_forplotting('RCR', amp_type, '5.28.25', templates_2016, templates_RCR, noiseRMS)
     sim_chi = np.array(sim_Chi2016)
 
     curve_x = np.linspace(3, 150, len(sim_chi)) #sim_chi same length as sim_SNRs 

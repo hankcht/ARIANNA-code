@@ -51,7 +51,7 @@ def getMaxAllChi(traces, sampling_rate, template_traces, template_sampling_rate,
 def loadSingleTemplate(series):
     # Series should be 200 or 100
     # Loads the first version of a template made for an average energy/zenith
-    templates_RCR = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/reflectedCR_template_{series}series.pkl' 
+    templates_RCR = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/reflectedCR_template_{series}eries.pkl' 
     templates_RCR = read_pickle(templates_RCR)
     for key in templates_RCR:
         temp = templates_RCR[key]
@@ -72,7 +72,7 @@ def loadMultipleTemplates(series, date='3.29.25', addSingle=False, bad=False):
         template_series_RCR_location = f'/pub/tangch3/ARIANNA/DeepLearning/RCR_templates/{date}/' 
         i = 0
         for filename in os.listdir(template_series_RCR_location):
-            if filename.startswith(f'{series}s'):
+            if filename.startswith(f'{series}'):
                 temp = np.load(os.path.join(template_series_RCR_location, filename))
                 template_series_RCR[i] = temp
                 i += 1

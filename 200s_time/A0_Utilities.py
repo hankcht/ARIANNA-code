@@ -94,7 +94,7 @@ def loadMultipleTemplates(series, date='3.29.25', addSingle=False, bad=False):
 
     return template_series_RCR
 
-def getMaxSNR(traces, noiseRMS=22.53 * units.mV):
+def getMaxSNR(traces, noiseRMS):
 
     SNRs = []
     for trace in traces:

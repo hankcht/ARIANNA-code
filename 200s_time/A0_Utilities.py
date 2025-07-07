@@ -460,9 +460,12 @@ def load_and_concatenate_data(station_id, parameter_name, base_directory="."):
 
             try:
                 data_part = np.load(file_path, allow_pickle=True)
-                all_data_parts.append(data_part)
-
                 actual_events = data_part.shape[0]
+
+                if actual_events != int(match.group(1)):
+                    print(f"    Warning: Filename event count {match.group(1)} does not match actual loaded events {actual_events}.")
+
+                all_data_parts.append(data_part)
                 total_events += actual_events
 
                 print(f"    Loaded successfully with {actual_events} events. Current total events: {total_events}")

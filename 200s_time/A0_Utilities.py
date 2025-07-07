@@ -498,7 +498,7 @@ if __name__ == "__main__":
             maxCorrBins = np.arange(0, 1.0001, 0.01)
             plt.hist2d(snr, chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
             plt.colorbar()
-            plt.xlim((1, 100))
+            plt.xlim((3, 100))
             plt.ylim((0, 1))
             plt.xlabel('SNR')
             plt.ylabel('Avg Chi Highest Parallel Channels')

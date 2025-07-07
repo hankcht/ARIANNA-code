@@ -489,7 +489,7 @@ def load_and_concatenate_data(station_id, parameter_name, base_directory="."):
 
 if __name__ == "__main__":
 
-    snr, num = load_and_concatenate_data(14, 'SNR', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
+    snr, num = load_and_concatenate_data(14, 'Chi2016', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
     print(num)
 
     '''test model on different events'''

@@ -507,9 +507,9 @@ if __name__ == "__main__":
             plt.tick_params(axis='x', which='minor', bottom=True)
             plt.grid(visible=True, which='both', axis='both') 
             plt.title(f'Station {station_id} - SNR vs. Chi (Events: {len(snr):,})')
-            print(f'Saving {plot_folder}/{extraname}Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
+            print(f'Saving {plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
             # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
-            plt.savefig(f'{plot_folder}/{extraname}Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
+            plt.savefig(f'{plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
             plt.close()
 
 

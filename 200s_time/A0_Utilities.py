@@ -496,43 +496,52 @@ if __name__ == "__main__":
     station_id = [14, 17, 19, 30, 13, 15, 18]
     parameters = ['ChiRCR', 'Chi2016']
     plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning'
-    extraname = '5_20'
+    extraname = 'quicktest'
     if_sim = ''
-    
-    # for id in station_id:
-    #     snr, num = load_520_data(id, 'SNR', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
-    #     for param in parameters:
-    #         chi, count = load_520_data(id, param, '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
+    station_data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
+    date_filter = '5.20.25'
 
-    #         SNRbins = np.logspace(0.477, 2, num=80)
-    #         maxCorrBins = np.arange(0, 1.0001, 0.01)
-    #         plt.hist2d(snr, chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
-    #         plt.colorbar()
-    #         plt.xlim((3, 100))
-    #         plt.ylim((0, 1))
-    #         plt.xlabel('SNR')
-    #         plt.ylabel('Avg Chi Highest Parallel Channels')
-    #         # plt.legend()
-    #         plt.xscale('log')
-    #         plt.tick_params(axis='x', which='minor', bottom=True)
-    #         plt.grid(visible=True, which='both', axis='both') 
-    #         plt.title(f'Station {id} - SNR vs. Chi (Events: {len(snr):,})')
-    #         print(f'Saving {plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
-    #         # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
-    #         plt.savefig(f'{plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
-    #         plt.close()
-
-    '''test load coincidence pickle'''
-    test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
-    print('loaded test')
-
-    with open("/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl", "rb") as f:
-        data = f.read()
 
     for id in station_id:
+        # snr, num = load_520_data(id, 'SNR', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
+        snr_files = sorted(glob.glob(os.path.join(station_data_folder, f'{date_filter}_Station{id}_SNR*')))
+        snr_list = [np.load(f) for f in snr_files] 
+        snr_raw = np.concatenate(snr_list, axis=0).squeeze()
         for param in parameters:
-            chi = load_coincidence_pkl(id, param) 
-            print(len(chi))
+            # chi, count = load_520_data(id, param, '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
+            chi_files = sorted(glob.glob(os.path.join(station_data_folder, f'{date_filter}_Station{id}_{param}*')))
+            chi_list = [np.load(f) for f in chi_files] 
+            chi_raw = np.concatenate(chi_list, axis=0).squeeze()
+
+            SNRbins = np.logspace(0.477, 2, num=80)
+            maxCorrBins = np.arange(0, 1.0001, 0.01)
+            plt.hist2d(snr_raw, chi_raw, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+            plt.colorbar()
+            plt.xlim((3, 100))
+            plt.ylim((0, 1))
+            plt.xlabel('SNR')
+            plt.ylabel('Avg Chi Highest Parallel Channels')
+            # plt.legend()
+            plt.xscale('log')
+            plt.tick_params(axis='x', which='minor', bottom=True)
+            plt.grid(visible=True, which='both', axis='both') 
+            plt.title(f'Station {id} - SNR vs. Chi (Events: {len(snr):,})')
+            print(f'Saving {plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
+            # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+            plt.savefig(f'{plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
+            plt.close()
+
+    '''test load coincidence pickle'''
+    # test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
+    # print('loaded test')
+
+    # with open("/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl", "rb") as f:
+    #     data = f.read()
+
+    # for id in station_id:
+    #     for param in parameters:
+    #         chi = load_coincidence_pkl(id, param) 
+    #         print(len(chi))
 
     '''test model on different events'''
     # station_id = [14,17,19,30]

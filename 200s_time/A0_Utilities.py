@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import glob
 import numpy as np
@@ -439,7 +440,77 @@ def deleting():
             os.remove(file)
             print(f'Deleted :{file}')
 
+def load_and_concatenate_data(station_id, parameter_name, base_directory="."):
+    """
+    Loads all .npy files for a given station ID and parameter name,
+    concatenates their data, and sums the total number of events.
+
+    Args:
+        station_id (int): The station number (e.g., 14).
+        parameter_name (str): The name of the parameter (e.g., 'Zen', 'Traces').
+        base_directory (str): The directory where the files are located.
+                               Defaults to the current directory.
+
+    Returns:
+        tuple: A tuple containing:
+            - concatenated_data (numpy.ndarray or None): The combined data,
+              or None if no files were found or loaded.
+            - total_events (int): The total number of events across all loaded files.
+    """
+
+    # Regex to capture the parameter name, file ID, event count, and part number.
+    # The '?' makes the 'PartX' optional in case some filenames don't have it.
+    file_pattern = re.compile(rf"5\.20\.25_Station{station_id}_{parameter_name}_fileID\d+_(?P<events>\d+)evts_Part\d+\.npy")
+
+    all_data_parts = []
+    total_events = 0
+    found_any_file = False
+
+    print(f"Searching for files: 5.20.25_Station{station_id}_{parameter_name}_*.npy in {base_directory}")
+
+    # Iterate through files in the specified directory
+    for filename in os.listdir(base_directory):
+        match = file_pattern.match(filename)
+        if match:
+            found_any_file = True
+            file_path = os.path.join(base_directory, filename)
+            events_in_file = int(match.group("events"))
+
+            print(f"  Found: {filename} with {events_in_file} events.")
+
+            try:
+                # Load the data from the current file
+                data_part = np.load(file_path, allow_pickle=True)
+                all_data_parts.append(data_part)
+                total_events += events_in_file
+                print(f"    Loaded successfully. Current total events: {total_events}")
+            except Exception as e:
+                print(f"    Error loading {filename}: {e}")
+
+    if not found_any_file:
+        print(f"No files found for Station {station_id} and Parameter '{parameter_name}'.")
+        return None, 0
+
+    if not all_data_parts:
+        print(f"No data loaded for Station {station_id} and Parameter '{parameter_name}'.")
+        return None, 0
+
+    # Concatenate all loaded data arrays
+    try:
+        concatenated_data = np.concatenate(all_data_parts, axis=0) # Assuming concatenation along axis 0
+        print(f"\nSuccessfully concatenated {len(all_data_parts)} files.")
+        print(f"Final concatenated data shape: {concatenated_data.shape}")
+        return concatenated_data, total_events
+    except ValueError as e:
+        print(f"Error concatenating data for Station {station_id}, Parameter '{parameter_name}': {e}")
+        print("This often happens if arrays have incompatible shapes for concatenation axis.")
+        return None, total_events
+
+
 if __name__ == "__main__":
+
+    snr, num = load_and_concatenate_data(14, 'SNR', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
+    print(num)
 
     '''test model on different events'''
     # station_id = [14,17,19,30]

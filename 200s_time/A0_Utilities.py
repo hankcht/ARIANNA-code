@@ -494,7 +494,7 @@ if __name__ == "__main__":
         for param in parameters:
             chi, count = load_and_concatenate_data(id, param, '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
 
-            SNRbins = np.logspace(np.log10(1), 2, num=80)
+            SNRbins = np.logspace(0.477, 2, num=80)
             maxCorrBins = np.arange(0, 1.0001, 0.01)
             plt.hist2d(snr, chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
             plt.colorbar()
@@ -506,7 +506,7 @@ if __name__ == "__main__":
             plt.xscale('log')
             plt.tick_params(axis='x', which='minor', bottom=True)
             plt.grid(visible=True, which='both', axis='both') 
-            plt.title(f'Station {station_id} - SNR vs. Chi (Events: {len(snr):,})')
+            plt.title(f'Station {id} - SNR vs. Chi (Events: {len(snr):,})')
             print(f'Saving {plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
             # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
             plt.savefig(f'{plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')

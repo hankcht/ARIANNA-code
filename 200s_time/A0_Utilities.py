@@ -440,7 +440,7 @@ def deleting():
             os.remove(file)
             print(f'Deleted :{file}')
 
-def load_and_concatenate_data(station_id, parameter_name, base_directory="."):
+def load_520_data(station_id, parameter_name, base_directory="."):
 
     file_pattern = re.compile(rf"5\.20\.25_Station{station_id}_{parameter_name}_fileID\d+_(\d+)evts_Part\d+\.npy")
 
@@ -455,14 +455,8 @@ def load_and_concatenate_data(station_id, parameter_name, base_directory="."):
         if match:
             found_any_file = True
             file_path = os.path.join(base_directory, filename)
-
-            print(f"  Found: {filename}")
-
             data_part = np.load(file_path, allow_pickle=True)
             actual_events = data_part.shape[0]
-
-            if actual_events != int(match.group(1)):
-                print(f"Warning: Filename event count {match.group(1)} does not match actual loaded events {actual_events}.")
 
             all_data_parts.append(data_part)
             total_events += actual_events
@@ -478,7 +472,23 @@ def load_and_concatenate_data(station_id, parameter_name, base_directory="."):
     print(f"Final data shape: {concatenated_data.shape}")
     return concatenated_data, total_events
 
+def load_coincidence_pkl(
+    station_id,
+    parameter_name,
+    pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
+) -> dict:
+    with open(pkl_path, "rb") as f:
+        coinc_dict = pickle.load(f)
 
+    result = {}
+    for event_id, event_data in coinc_dict.items():
+        stations_data = event_data.get("stations", {})
+
+        station_data = stations_data[station_id]
+        result[event_id] = station_data[parameter_name]
+
+    print(f"Loaded {len(result)} entries for parameter '{parameter_name}' from station {station_id}")
+    return result
 
 if __name__ == "__main__":
 
@@ -489,29 +499,33 @@ if __name__ == "__main__":
     extraname = '5_20'
     if_sim = ''
     
+    # for id in station_id:
+    #     snr, num = load_520_data(id, 'SNR', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
+    #     for param in parameters:
+    #         chi, count = load_520_data(id, param, '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
+
+    #         SNRbins = np.logspace(0.477, 2, num=80)
+    #         maxCorrBins = np.arange(0, 1.0001, 0.01)
+    #         plt.hist2d(snr, chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+    #         plt.colorbar()
+    #         plt.xlim((3, 100))
+    #         plt.ylim((0, 1))
+    #         plt.xlabel('SNR')
+    #         plt.ylabel('Avg Chi Highest Parallel Channels')
+    #         # plt.legend()
+    #         plt.xscale('log')
+    #         plt.tick_params(axis='x', which='minor', bottom=True)
+    #         plt.grid(visible=True, which='both', axis='both') 
+    #         plt.title(f'Station {id} - SNR vs. Chi (Events: {len(snr):,})')
+    #         print(f'Saving {plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
+    #         # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+    #         plt.savefig(f'{plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
+    #         plt.close()
+
     for id in station_id:
-        snr, num = load_and_concatenate_data(id, 'SNR', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
         for param in parameters:
-            chi, count = load_and_concatenate_data(id, param, '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
-
-            SNRbins = np.logspace(0.477, 2, num=80)
-            maxCorrBins = np.arange(0, 1.0001, 0.01)
-            plt.hist2d(snr, chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
-            plt.colorbar()
-            plt.xlim((3, 100))
-            plt.ylim((0, 1))
-            plt.xlabel('SNR')
-            plt.ylabel('Avg Chi Highest Parallel Channels')
-            # plt.legend()
-            plt.xscale('log')
-            plt.tick_params(axis='x', which='minor', bottom=True)
-            plt.grid(visible=True, which='both', axis='both') 
-            plt.title(f'Station {id} - SNR vs. Chi (Events: {len(snr):,})')
-            print(f'Saving {plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
-            # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
-            plt.savefig(f'{plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
-            plt.close()
-
+            chi = load_coincidence_pkl(id, param) 
+            print(len(chi))
 
     '''test model on different events'''
     # station_id = [14,17,19,30]

@@ -448,7 +448,7 @@ def load_and_concatenate_data(station_id, parameter_name, base_directory="."):
     total_events = 0
     found_any_file = False
 
-    print(f"Searching for files: 5.20.25_Station{station_id}_{parameter_name}_*.npy in {base_directory}")
+    print(f"Searching: 5.20.25_Station{station_id}_{parameter_name}_*.npy in {base_directory}")
 
     for filename in os.listdir(base_directory):
         match = file_pattern.match(filename)
@@ -458,42 +458,60 @@ def load_and_concatenate_data(station_id, parameter_name, base_directory="."):
 
             print(f"  Found: {filename}")
 
-            try:
-                data_part = np.load(file_path, allow_pickle=True)
-                actual_events = data_part.shape[0]
+            data_part = np.load(file_path, allow_pickle=True)
+            actual_events = data_part.shape[0]
 
-                if actual_events != int(match.group(1)):
-                    print(f"    Warning: Filename event count {match.group(1)} does not match actual loaded events {actual_events}.")
+            if actual_events != int(match.group(1)):
+                print(f"Warning: Filename event count {match.group(1)} does not match actual loaded events {actual_events}.")
 
-                all_data_parts.append(data_part)
-                total_events += actual_events
+            all_data_parts.append(data_part)
+            total_events += actual_events
 
-                print(f"    Loaded successfully with {actual_events} events. Current total events: {total_events}")
-            except Exception as e:
-                print(f"    Error loading {filename}: {e}")
+            print(f"Loaded successfully with {actual_events} events. Current total: {total_events}")
 
     if not found_any_file or not all_data_parts:
         print(f"No valid data loaded for Station {station_id} and Parameter '{parameter_name}'.")
         return None, 0
 
-    try:
-        concatenated_data = np.concatenate(all_data_parts, axis=0)
-        print(f"\nSuccessfully concatenated {len(all_data_parts)} files.")
-        print(f"Final concatenated data shape: {concatenated_data.shape}")
-        return concatenated_data, total_events
-    except ValueError as e:
-        print(f"Error concatenating data: {e}")
-        return None, total_events
+    concatenated_data = np.concatenate(all_data_parts, axis=0)
+    print(f"\nSuccessfully concatenated {len(all_data_parts)} files.")
+    print(f"Final data shape: {concatenated_data.shape}")
+    return concatenated_data, total_events
 
 
 
 if __name__ == "__main__":
 
-    snr, num = load_and_concatenate_data(14, 'Zen', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
-    print(num)
-    for s in snr:
-        if s != 0:
-            print(s)
+    '''load and plot SNR-ChiRCR/2016'''
+    station_id = [14, 17, 19, 30, 13, 15, 18]
+    parameters = ['ChiRCR', 'Chi2016']
+    plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning'
+    extraname = '5_20'
+    if_sim = ''
+    
+    for id in station_id:
+        snr, num = load_and_concatenate_data(id, 'SNR', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
+        for param in parameters:
+            chi, count = load_and_concatenate_data(id, param, '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
+
+            SNRbins = np.logspace(np.log10(1), 2, num=80)
+            maxCorrBins = np.arange(0, 1.0001, 0.01)
+            plt.hist2d(snr, chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+            plt.colorbar()
+            plt.xlim((1, 100))
+            plt.ylim((0, 1))
+            plt.xlabel('SNR')
+            plt.ylabel('Avg Chi Highest Parallel Channels')
+            # plt.legend()
+            plt.xscale('log')
+            plt.tick_params(axis='x', which='minor', bottom=True)
+            plt.grid(visible=True, which='both', axis='both') 
+            plt.title(f'Station {station_id} - SNR vs. Chi (Events: {len(snr):,})')
+            print(f'Saving {plot_folder}/{extraname}Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
+            # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+            plt.savefig(f'{plot_folder}/{extraname}Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
+            plt.close()
+
 
     '''test model on different events'''
     # station_id = [14,17,19,30]
@@ -773,10 +791,10 @@ if __name__ == "__main__":
     # print(f"Indices of similar matching events: {similar_match_indices}")
 
 
-    amp_type = '200s'
+    # amp_type = '200s'
 
-    sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp_type}/5.28.25/'
-    sim_rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp_type)
+    # sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp_type}/5.28.25/'
+    # sim_rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp_type)
 
 
 

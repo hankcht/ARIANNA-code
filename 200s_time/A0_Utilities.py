@@ -526,6 +526,9 @@ if __name__ == "__main__":
     test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
     print('loaded test')
 
+    with open("/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl", "rb") as f:
+        data = f.read()
+
     for id in station_id:
         for param in parameters:
             chi = load_coincidence_pkl(id, param) 

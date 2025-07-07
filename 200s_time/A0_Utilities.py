@@ -523,7 +523,7 @@ if __name__ == "__main__":
     #         plt.close()
 
     '''test load coincidence pickle'''
-    test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy')
+    test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
     print('loaded test')
 
     for id in station_id:

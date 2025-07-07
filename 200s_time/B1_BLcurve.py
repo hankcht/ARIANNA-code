@@ -198,7 +198,6 @@ if __name__ == "__main__":
     from A0_Utilities import loadMultipleTemplates, siminfo_forplotting
     templates_2016 = loadMultipleTemplates(amp_type, date='2016')
     templates_RCR = loadMultipleTemplates(amp_type) 
-    noiseRMS = 22.53 * units.mV
    
     sim, sim_Chi2016, sim_ChiRCR, sim_SNRs, sim_weights, simulation_date = siminfo_forplotting('RCR', amp_type, '5.28.25', templates_2016, templates_RCR, noiseRMS)
     sim_chi = np.array(sim_Chi2016)
@@ -511,7 +510,7 @@ if __name__ == "__main__":
             # --- Plot of all events in Chi-SNR space ---
             plt.hist2d(All_SNRs, All_Chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
             plt.colorbar()
-            plt.xlim((1, 100))
+            plt.xlim((3, 100))
             plt.ylim((0, 1))
             plt.xlabel('SNR')
             plt.ylabel('Avg Chi Highest Parallel Channels')

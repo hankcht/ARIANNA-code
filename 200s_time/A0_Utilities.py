@@ -751,12 +751,12 @@ if __name__ == "__main__":
     #     all_Backlobe.extend(trace)
     #     all_Backlobe_UNIX.extend(unix)
     # print(len(all_Backlobe_UNIX))
-    # all_Backlobe_UNIX = np.array(all_Backlobe_UNIX)
+    
 
     for id in station_id:
         unix = load_520_data(id, 'Times', station_data_folder)
         all_Backlobe_UNIX.extend(unix)
-
+    all_Backlobe_UNIX = np.array(all_Backlobe_UNIX)
 
     from datetime import timezone, datetime
 

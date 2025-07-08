@@ -456,11 +456,16 @@ if __name__ == "__main__":
 
     def saveabovecurve_info(All_data_Traces, All_data_UNIX, param):
         above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/5000evt'
+        if param == 'Chi2016':
+            param_name = '2016'
+        elif param == 'RCR':
+            param_name = 'RCR' 
+
         np.save(f'{above_curve_folder}/Stn{station_id}_SNR_above.npy', Above_curve_data_x)
-        np.save(f'{above_curve_folder}/Stn{station_id}_Chi{param}_above.npy', Above_curve_data_y)
+        np.save(f'{above_curve_folder}/Stn{station_id}_Chi{param_name}_above.npy', Above_curve_data_y)
 
         above_curve_data_Traces = [All_data_Traces[i] for i in Above_curve_data_index]
-        np.save(f'{above_curve_folder}/Stn{station_id}_Traces{param}_above.npy', above_curve_data_Traces)
+        np.save(f'{above_curve_folder}/Stn{station_id}_Traces{param_name}_above.npy', above_curve_data_Traces)
 
         above_curve_data_UNIX = [All_data_UNIX[i] for i in Above_curve_data_index]
         np.save(f'{above_curve_folder}/Stn{station_id}_UNIX_above.npy', above_curve_data_UNIX)

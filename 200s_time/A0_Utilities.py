@@ -440,37 +440,22 @@ def deleting():
             os.remove(file)
             print(f'Deleted :{file}')
 
-def load_520_data(station_id, parameter_name, base_directory="."):
+def load_520_data(station_id, param, data_folder, date_filter="5.20.25"):
+    '''
+    quick load function for 5/20 after nosie cut data with very specific filenames
+    param: Azi, Chi2016, ChiRCR, ChiBad, EventIDs, MaxAmplitude, SNR, Times, Traces, Zen
+    '''
+    pattern = os.path.join(data_folder, f"{date_filter}_Station{station_id}_{param}*")
+    matched_files = sorted(glob.glob(pattern))
 
-    file_pattern = re.compile(rf"5\.20\.25_Station{station_id}_{parameter_name}_fileID\d+_(\d+)evts_Part\d+\.npy")
+    data_list = [np.load(f, allow_pickle=True) for f in matched_files]
 
-    all_data_parts = []
-    total_events = 0
-    found_any_file = False
+    if not data_list:
+        print(f"No files found for Station {station_id}, Parameter '{param}'.")
+        return None
 
-    print(f"Searching: 5.20.25_Station{station_id}_{parameter_name}_*.npy in {base_directory}")
-
-    for filename in os.listdir(base_directory):
-        match = file_pattern.match(filename)
-        if match:
-            found_any_file = True
-            file_path = os.path.join(base_directory, filename)
-            data_part = np.load(file_path, allow_pickle=True)
-            actual_events = data_part.shape[0]
-
-            all_data_parts.append(data_part)
-            total_events += actual_events
-
-            print(f"Loaded successfully with {actual_events} events. Current total: {total_events}")
-
-    if not found_any_file or not all_data_parts:
-        print(f"No valid data loaded for Station {station_id} and Parameter '{parameter_name}'.")
-        return None, 0
-
-    concatenated_data = np.concatenate(all_data_parts, axis=0)
-    print(f"\nSuccessfully concatenated {len(all_data_parts)} files.")
-    print(f"Final data shape: {concatenated_data.shape}")
-    return concatenated_data, total_events
+    data = np.concatenate(data_list, axis=0).squeeze()
+    return data, len(data)
 
 def load_coincidence_pkl(
     station_id,
@@ -503,15 +488,9 @@ if __name__ == "__main__":
 
 
     for id in station_id:
-        snr, num = load_520_data(id, 'SNR', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
-        # snr_files = sorted(glob.glob(os.path.join(station_data_folder, f'{date_filter}_Station{id}_SNR*')))
-        # snr_list = [np.load(f) for f in snr_files] 
-        # snr = np.concatenate(snr_list, axis=0).squeeze()
+        snr, num = load_520_data(id, 'SNR', station_data_folder)
         for param in parameters:
-            chi, count = load_520_data(id, param, '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
-            # chi_files = sorted(glob.glob(os.path.join(station_data_folder, f'{date_filter}_Station{id}_{param}*')))
-            # chi_list = [np.load(f) for f in chi_files] 
-            # chi = np.concatenate(chi_list, axis=0).squeeze()
+            chi, count = load_520_data(id, param, station_data_folder)
 
             SNRbins = np.logspace(0.477, 2, num=80)
             maxCorrBins = np.arange(0, 1.0001, 0.01)
@@ -525,7 +504,7 @@ if __name__ == "__main__":
             plt.xscale('log')
             plt.tick_params(axis='x', which='minor', bottom=True)
             plt.grid(visible=True, which='both', axis='both') 
-            plt.title(f'Station {id} - SNR vs. Chi (Events: {len(snr):,})')
+            plt.title(f'Station {id} - SNR vs. Chi (Events: {num:,})')
             print(f'Saving {plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
             # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
             plt.savefig(f'{plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')

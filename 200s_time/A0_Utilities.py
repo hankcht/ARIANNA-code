@@ -755,7 +755,7 @@ if __name__ == "__main__":
 
     for id in station_id:
         unix = load_520_data(id, 'Times', station_data_folder)
-        all_Backlobe_UNIX.extend(unix)
+        all_Backlobe_UNIX.extend(unix.tolist())
     all_Backlobe_UNIX = np.array(all_Backlobe_UNIX)
 
     from datetime import timezone, datetime
@@ -767,7 +767,7 @@ if __name__ == "__main__":
     exact_match_count = 0
 
     print(f"\nSearching for EXACT matches to UNIX time: {target_unix_time}")
-    print(f"Total events in all_Backlobe_UNIX: {len(all_Backlobe_UNIX)}")
+    print(f"Total events in all_Backlobe_UNIX: {all_Backlobe_UNIX.shape}")
 
     # Use all_Backlobe_UNIX consistently
     for idx, unix_time in enumerate(all_Backlobe_UNIX):

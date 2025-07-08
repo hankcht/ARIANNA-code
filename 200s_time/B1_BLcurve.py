@@ -492,7 +492,8 @@ if __name__ == "__main__":
     # All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
     # All_UNIX = np.load(f'{data_directory}/station{station_id}_all_Times.npy')
     # All_SNRs = np.load(f'{data_directory}/station{station_id}_all_SNR.npy')
-    data = load_520_data(station_id, '', single_load=False)
+    data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
+    data = load_520_data(station_id, '', data_folder, single_load=False)
     All_SNRs = data['SNR']
 
     for param in parameters:

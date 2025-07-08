@@ -509,7 +509,7 @@ if __name__ == "__main__":
     chi2016s = load_520_data(13, 'Chi2016', station_data_folder)
     chi2016 = chi2016s[index]
     times = load_520_data(13, 'Times', station_data_folder)
-    thetime = times[index]
+    thetime = times[index[0][0]]
     from datetime import datetime, timezone
     utc_time = datetime.fromtimestamp(thetime, tz=timezone.utc)
     print("UTC time:", utc_time)

@@ -511,16 +511,16 @@ if __name__ == "__main__":
     #         plt.close()
 
     '''test load coincidence pickle'''
-    # test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
-    # print('loaded test')
+    test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
+    print('loaded test')
 
-    # with open("/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl", "rb") as f:
-    #     data = f.read()
+    with open("/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl", "rb") as f:
+        data = f.read()
 
-    # for id in station_id:
-    #     for param in parameters:
-    #         chi = load_coincidence_pkl(id, param) 
-    #         print(len(chi))
+    for id in station_id:
+        for param in parameters:
+            chi = load_coincidence_pkl(id, param) 
+            print(len(chi))
 
     '''test model on different events'''
     # station_id = [14,17,19,30]
@@ -740,73 +740,73 @@ if __name__ == "__main__":
 
 
     '''check specific Station 13, Feb 16, 2017 at 19:09:51 UTC evt'''
-    amp = '200s'
-    station_id = [14, 17, 19, 30]
-    all_Backlobe = []
-    all_Backlobe_UNIX = [] 
-    # for id in station_id:
-    #     snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
-    #     # unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
-    #     # trace = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Traces.npy')
-    #     all_Backlobe.extend(trace)
-    #     all_Backlobe_UNIX.extend(unix)
-    # print(len(all_Backlobe_UNIX))
+    # amp = '200s'
+    # station_id = [14, 17, 19, 30]
+    # all_Backlobe = []
+    # all_Backlobe_UNIX = [] 
+    # # for id in station_id:
+    # #     snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
+    # #     # unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
+    # #     # trace = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Traces.npy')
+    # #     all_Backlobe.extend(trace)
+    # #     all_Backlobe_UNIX.extend(unix)
+    # # print(len(all_Backlobe_UNIX))
     
 
-    for id in station_id:
-        unix, count = load_520_data(id, 'Times', station_data_folder)
-        trace, num = load_520_data(id, 'Traces', station_data_folder)
-        all_Backlobe_UNIX.extend(unix.tolist())
-        all_Backlobe.extend(trace.tolist())
-    all_Backlobe_UNIX = np.array(all_Backlobe_UNIX)
-    all_Backlobe = np.array(all_Backlobe)
+    # for id in station_id:
+    #     unix, count = load_520_data(id, 'Times', station_data_folder)
+    #     trace, num = load_520_data(id, 'Traces', station_data_folder)
+    #     all_Backlobe_UNIX.extend(unix.tolist())
+    #     all_Backlobe.extend(trace.tolist())
+    # all_Backlobe_UNIX = np.array(all_Backlobe_UNIX)
+    # all_Backlobe = np.array(all_Backlobe)
 
-    from datetime import timezone, datetime
+    # from datetime import timezone, datetime
 
-    target_unix_time = 1487272191 # Feb 16, 2017 at 19:09:51 UTC
-    similarity_window_seconds = 5
+    # target_unix_time = 1487272191 # Feb 16, 2017 at 19:09:51 UTC
+    # similarity_window_seconds = 5
 
-    exact_match_indices = []
-    exact_match_count = 0
+    # exact_match_indices = []
+    # exact_match_count = 0
 
-    print(f"\nSearching for EXACT matches to UNIX time: {target_unix_time}")
-    print(f"Total events in all_Backlobe_UNIX: {all_Backlobe_UNIX.shape}")
+    # print(f"\nSearching for EXACT matches to UNIX time: {target_unix_time}")
+    # print(f"Total events in all_Backlobe_UNIX: {all_Backlobe_UNIX.shape}")
 
-    # Use all_Backlobe_UNIX consistently
-    for idx, unix_time in enumerate(all_Backlobe_UNIX):
-        if unix_time == target_unix_time:
-            exact_match_count += 1
-            # Use timezone.utc for precise conversion if Unix time is UTC
-            std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
-            print(f"  Exact match found: Event {exact_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
-            exact_match_indices.append(idx)
+    # # Use all_Backlobe_UNIX consistently
+    # for idx, unix_time in enumerate(all_Backlobe_UNIX):
+    #     if unix_time == target_unix_time:
+    #         exact_match_count += 1
+    #         # Use timezone.utc for precise conversion if Unix time is UTC
+    #         std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
+    #         print(f"  Exact match found: Event {exact_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    #         exact_match_indices.append(idx)
 
-    print(f"\n--- Summary of Exact Matches ---")
-    print(f"Total exact matches found: {exact_match_count}")
-    print(f"Indices of exact matching events: {exact_match_indices}")
+    # print(f"\n--- Summary of Exact Matches ---")
+    # print(f"Total exact matches found: {exact_match_count}")
+    # print(f"Indices of exact matching events: {exact_match_indices}")
 
-    for index in exact_match_indices:
-        pT(all_Backlobe[index], 'test plot confirmed RCR', f'/pub/tangch3/ARIANNA/DeepLearning/78_test_plot_confirmed_RCR_{amp}_{index}.png')
+    # for index in exact_match_indices:
+    #     pT(all_Backlobe[index], 'test plot confirmed RCR', f'/pub/tangch3/ARIANNA/DeepLearning/78_test_plot_confirmed_RCR_{amp}_{index}.png')
 
-    # --- Search for SIMILAR matches ---
-    similar_match_indices = []
-    similar_match_count = 0
+    # # --- Search for SIMILAR matches ---
+    # similar_match_indices = []
+    # similar_match_count = 0
 
-    print(f"\nSearching for SIMILAR matches (within +/- {similarity_window_seconds} seconds) to UNIX time: {target_unix_time}")
+    # print(f"\nSearching for SIMILAR matches (within +/- {similarity_window_seconds} seconds) to UNIX time: {target_unix_time}")
 
-    # Using all_Backlobe_UNIX for the search
-    for idx, unix_time in enumerate(all_Backlobe_UNIX):
-        # Check if the UNIX time falls within the defined window
-        if target_unix_time - similarity_window_seconds <= unix_time <= target_unix_time + similarity_window_seconds:
-            similar_match_count += 1
-            # Use timezone.utc for precise conversion if Unix time is UTC
-            std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
-            print(f"  Similar match found: Event {similar_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
-            similar_match_indices.append(idx)
+    # # Using all_Backlobe_UNIX for the search
+    # for idx, unix_time in enumerate(all_Backlobe_UNIX):
+    #     # Check if the UNIX time falls within the defined window
+    #     if target_unix_time - similarity_window_seconds <= unix_time <= target_unix_time + similarity_window_seconds:
+    #         similar_match_count += 1
+    #         # Use timezone.utc for precise conversion if Unix time is UTC
+    #         std_time = datetime.fromtimestamp(unix_time, tz=timezone.utc)
+    #         print(f"  Similar match found: Event {similar_match_count} at index {idx} with time {std_time.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+    #         similar_match_indices.append(idx)
 
-    print(f"\n--- Summary of Similar Matches ---")
-    print(f"Total similar matches found: {similar_match_count}")
-    print(f"Indices of similar matching events: {similar_match_indices}")
+    # print(f"\n--- Summary of Similar Matches ---")
+    # print(f"Total similar matches found: {similar_match_count}")
+    # print(f"Indices of similar matching events: {similar_match_indices}")
 
 
     # amp_type = '200s'

@@ -495,25 +495,29 @@ if __name__ == "__main__":
     station_data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
     date_filter = '5.20.25'
 
+
     eventid = load_520_data(13, 'EventIDs', station_data_folder)
     for evtid in eventid:
         if evtid == 17121:
             print('found event 578')
 
     index = np.where(eventid == 17121)[0]
+    idx = index[0]  # extract the scalar index
     
     snrs = load_520_data(13, 'SNR', station_data_folder)
-    snr = snrs[index]
     chircrs = load_520_data(13, 'ChiRCR', station_data_folder)
-    chircr = chircrs[index]
     chi2016s = load_520_data(13, 'Chi2016', station_data_folder)
-    chi2016 = chi2016s[index]
     times = load_520_data(13, 'Times', station_data_folder)
-    thetime = times[index[0][0]]
+
+    snr = snrs[idx]
+    chircr = chircrs[idx]
+    chi2016 = chi2016s[idx]
+    thetime = times[idx]
+
     from datetime import datetime, timezone
     utc_time = datetime.fromtimestamp(thetime, tz=timezone.utc)
-    print("UTC time:", utc_time)
 
+    print("UTC time:", utc_time)
     print(snr, chircr, chi2016, thetime)
 
     '''test load coincidence pickle'''

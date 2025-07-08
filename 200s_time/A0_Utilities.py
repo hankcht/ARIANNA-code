@@ -440,7 +440,7 @@ def deleting():
             os.remove(file)
             print(f'Deleted :{file}')
 
-def load_520_data(station_id, param, data_folder, date_filter="5.20.25"):
+def load_520_data(station_id, param, data_folder, date_filter="5.20.25") -> tuple:
     '''
     quick load function for 5/20 after nosie cut data with very specific filenames
     param: Azi, Chi2016, ChiRCR, ChiBad, EventIDs, MaxAmplitude, SNR, Times, Traces, Zen
@@ -754,7 +754,7 @@ if __name__ == "__main__":
     
 
     for id in station_id:
-        unix = load_520_data(id, 'Times', station_data_folder)
+        unix, count = load_520_data(id, 'Times', station_data_folder)
         all_Backlobe_UNIX.extend(unix.tolist())
     all_Backlobe_UNIX = np.array(all_Backlobe_UNIX)
 

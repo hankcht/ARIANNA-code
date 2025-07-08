@@ -458,7 +458,7 @@ if __name__ == "__main__":
         above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/5000evt'
         if param == 'Chi2016':
             param_name = '2016'
-        elif param == 'RCR':
+        elif param == 'ChiRCR':
             param_name = 'RCR' 
         else:
             return

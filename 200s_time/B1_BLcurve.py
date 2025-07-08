@@ -492,10 +492,13 @@ if __name__ == "__main__":
     # All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
     # All_UNIX = np.load(f'{data_directory}/station{station_id}_all_Times.npy')
     # All_SNRs = np.load(f'{data_directory}/station{station_id}_all_SNR.npy')
+    data = load_520_data(station_id, '', single_load=False)
+    All_SNRs = data['SNR']
+
     for param in parameters:
         # All_Chi = np.load(f'{data_directory}/station{station_id}_all_Chi{param}.npy')
-        
 
+        All_Chi = data[param]
         ic(f'number of all data is {len(All_SNRs)} and {len(All_Chi)}')
 
 
@@ -521,13 +524,12 @@ if __name__ == "__main__":
             plt.grid(visible=True, which='both', axis='both') 
             plt.title(f'Station {station_id} - SNR vs. Chi (Events: {len(All_SNRs):,})')
             print(f'Saving {plot_folder}/{extraname}Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
-            plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
+            # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
             plt.savefig(f'{plot_folder}/{extraname}Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
             plt.close()
-
             return
 
-        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="new_withCurve_", if_sim=f'_withSim{len(sim_Chi2016)}')
+        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
         
         # saveabovecurve_info(All_Traces, All_UNIX, param)
 

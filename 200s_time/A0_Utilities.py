@@ -440,23 +440,45 @@ def deleting():
             os.remove(file)
             print(f'Deleted :{file}')
 
-def load_520_data(station_id, param, data_folder, date_filter="5.20.25"):
+def load_520_data(station_id, param, data_folder, date_filter="5.20.25", single_load = True):
     '''
     quick load function for 5/20 after nosie cut data with very specific filenames
     from: '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
     param: Azi, Chi2016, ChiRCR, ChiBad, EventIDs, MaxAmplitude, SNR, Times, Traces, Zen
     '''
-    pattern = os.path.join(data_folder, f"{date_filter}_Station{station_id}_{param}*")
-    matched_files = sorted(glob.glob(pattern))
+    if single_load:
+        pattern = os.path.join(data_folder, f"{date_filter}_Station{station_id}_{param}*")
+        matched_files = sorted(glob.glob(pattern))
 
-    data_list = [np.load(f, allow_pickle=True) for f in matched_files]
+        data_list = [np.load(f, allow_pickle=True) for f in matched_files]
 
-    if not data_list:
-        print(f"No files found for Station {station_id}, Parameter '{param}'.")
-        return None
+        if not data_list:
+            print(f"No files found for Station {station_id}, Parameter '{param}'")
+            return None
 
-    data = np.concatenate(data_list, axis=0).squeeze()
-    return data
+        data = np.concatenate(data_list, axis=0).squeeze()
+        return data
+    else:
+        SNR_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_SNR*")))
+        Chi2016_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_Chi2016*")))
+        ChiRCR_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_ChiRCR*")))
+        Times_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_Times*")))
+        Traces_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_Traces*")))
+
+        SNR_list = [np.load(f, allow_pickle=True) for f in SNR_files]
+        Chi2016_list = [np.load(f, allow_pickle=True) for f in Chi2016_files]
+        ChiRCR_list = [np.load(f, allow_pickle=True) for f in ChiRCR_files]
+        Times_list = [np.load(f, allow_pickle=True) for f in Times_files]
+        Traces_list = [np.load(f, allow_pickle=True) for f in Traces_files]
+
+        SNRs = np.concatenate(SNR_list, axis=0).squeeze()
+        Chi2016 = np.concatenate(Chi2016_list, axis=0).squeeze()
+        ChiRCR = np.concatenate(ChiRCR_list, axis=0).squeeze()
+        Times = np.concatenate(Times_list, axis=0).squeeze()
+        Traces = np.concatenate(Traces_list, axis=0).squeeze()
+
+        return {'SNR': SNRs, 'Chi2016': Chi2016, 'ChiRCR': ChiRCR, 'Times': Times, 'Traces': Traces}
+    
 
 def load_coincidence_pkl(
     station_id,
@@ -773,42 +795,42 @@ if __name__ == "__main__":
 
 
     '''check specific Station 13, Feb 16, 2017 at 19:09:51 UTC evt'''
-    amp = '200s'
-    station_id = [13, 17]
-    all_Backlobe = []
-    all_Backlobe_UNIX = [] 
-    all_Backlobe_SNR = []
-    all_Backlobe_Chi2016 = []
-    for id in station_id:
-        # snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
-        unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
-        trace = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Traces.npy')
-        snr = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_SNR.npy')
-        chi2016 = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Chi2016.npy')
-        all_Backlobe.extend(trace)
-        all_Backlobe_UNIX.extend(unix)
-        all_Backlobe_SNR.extend(snr)
-        all_Backlobe_Chi2016.extend(chi2016)
-    print(len(all_Backlobe_UNIX))
+    # amp = '200s'
+    # station_id = [13, 17]
+    # all_Backlobe = []
+    # all_Backlobe_UNIX = [] 
+    # all_Backlobe_SNR = []
+    # all_Backlobe_Chi2016 = []
+    # for id in station_id:
+    #     # snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
+    #     unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
+    #     trace = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Traces.npy')
+    #     snr = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_SNR.npy')
+    #     chi2016 = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Chi2016.npy')
+    #     all_Backlobe.extend(trace)
+    #     all_Backlobe_UNIX.extend(unix)
+    #     all_Backlobe_SNR.extend(snr)
+    #     all_Backlobe_Chi2016.extend(chi2016)
+    # print(len(all_Backlobe_UNIX))
     
 
-    from datetime import datetime, timezone
-    target_unix = 1487300991
+    # from datetime import datetime, timezone
+    # target_unix = 1487300991
 
-    if target_unix in all_Backlobe_UNIX:
-        idx = all_Backlobe_UNIX.index(target_unix)
-        trace = all_Backlobe[idx]
-        snr = all_Backlobe_SNR[idx]
-        chi = all_Backlobe_Chi2016[idx]
-        thetime = all_Backlobe_UNIX[idx]
-        utc_time = datetime.fromtimestamp(thetime, tz=timezone.utc)
+    # if target_unix in all_Backlobe_UNIX:
+    #     idx = all_Backlobe_UNIX.index(target_unix)
+    #     trace = all_Backlobe[idx]
+    #     snr = all_Backlobe_SNR[idx]
+    #     chi = all_Backlobe_Chi2016[idx]
+    #     thetime = all_Backlobe_UNIX[idx]
+    #     utc_time = datetime.fromtimestamp(thetime, tz=timezone.utc)
 
-        print(f"\n✅ Event found at index {idx}")
-        print(f"  UTC Time:    {utc_time}")
-        print(f"  UNIX Time:   {thetime}")
-        print(f"  SNR:         {snr}")
-        print(f"  Chi2016:     {chi}")
-        print(f"  Trace shape: {trace.shape}")
+    #     print(f"\n Event found at index {idx}")
+    #     print(f"  UTC Time:    {utc_time}")
+    #     print(f"  UNIX Time:   {thetime}")
+    #     print(f"  SNR:         {snr}")
+    #     print(f"  Chi2016:     {chi}")
+    #     print(f"  Trace shape: {trace.shape}")
 
     
 

@@ -460,16 +460,37 @@ def load_520_data(station_id, param, data_folder, date_filter="5.20.25") -> tupl
 def load_coincidence_pkl(
     station_id,
     parameter_name,
-    pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
+    pkl_path="/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
 ) -> dict:
+
     with open(pkl_path, "rb") as f:
         coinc_dict = pickle.load(f)
+
+    # Pick a sample event_id
+    sample_event_id = list(coinc_dict.keys())[0]
+    print(f"Sample event ID: {sample_event_id}")
+
+    event_data = coinc_dict[sample_event_id]
+
+    # Top-level keys in event_data
+    print("Top-level keys in event_data:", list(event_data.keys()))
+
+    # Keys under "stations"
+    stations_data = event_data.get("stations", {})
+    print("Stations available in this event:", list(stations_data.keys()))
 
     result = {}
     for event_id, event_data in coinc_dict.items():
         stations_data = event_data.get("stations", {})
 
+        if station_id not in stations_data:
+            continue  # skip events that don't include this station
+
         station_data = stations_data[station_id]
+
+        if parameter_name not in station_data:
+            continue  # skip if parameter is missing
+
         result[event_id] = station_data[parameter_name]
 
     print(f"Loaded {len(result)} entries for parameter '{parameter_name}' from station {station_id}")
@@ -477,7 +498,6 @@ def load_coincidence_pkl(
 
 if __name__ == "__main__":
 
-    '''load and plot SNR-ChiRCR/2016'''
     station_id = [14, 17, 19, 30, 13, 15, 18]
     parameters = ['ChiRCR', 'Chi2016']
     plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning'
@@ -487,6 +507,16 @@ if __name__ == "__main__":
     date_filter = '5.20.25'
 
 
+    '''test load coincidence pickle'''
+    test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
+    print('loaded test')
+
+    for id in station_id:
+        for param in parameters:
+            chi = load_coincidence_pkl(id, param) 
+            print(len(chi))
+
+    '''load and plot SNR-ChiRCR/2016'''
     # for id in station_id:
     #     snr, num = load_520_data(id, 'SNR', station_data_folder)
     #     for param in parameters:
@@ -509,18 +539,6 @@ if __name__ == "__main__":
     #         # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
     #         plt.savefig(f'{plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
     #         plt.close()
-
-    '''test load coincidence pickle'''
-    test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
-    print('loaded test')
-
-    with open("/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl", "rb") as f:
-        data = f.read()
-
-    for id in station_id:
-        for param in parameters:
-            chi = load_coincidence_pkl(id, param) 
-            print(len(chi))
 
     '''test model on different events'''
     # station_id = [14,17,19,30]

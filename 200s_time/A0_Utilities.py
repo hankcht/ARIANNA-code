@@ -500,7 +500,7 @@ if __name__ == "__main__":
         if evtid == 17121:
             print('found event 578')
 
-    index = eventid.index(17121)
+    index = np.where(eventid == 17121)[0]
     
     snrs = load_520_data(13, 'SNR', station_data_folder)
     snr = snrs[index]

@@ -518,15 +518,14 @@ if __name__ == "__main__":
     date_filter = '5.20.25'
 
     '''find event 578'''
-    eventid = load_520_data(13, 'EventIDs', station_data_folder)
-    for evtid in eventid:
-        if evtid == 17121:
-            print('found event 578')
+    # eventid = load_520_data(13, 'EventIDs', station_data_folder)
+    # for evtid in eventid:
+    #     if evtid == 17121:
+    #         print('found event 578')
 
 
-
-    index = np.where(eventid == 17121)[0]
-    idx = index[0]  # extract the scalar index
+    # index = np.where(eventid == 17121)[0]
+    # idx = index[0] 
     
     # snrs = load_520_data(13, 'SNR', station_data_folder)
     # chircrs = load_520_data(13, 'ChiRCR', station_data_folder)

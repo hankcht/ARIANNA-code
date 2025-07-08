@@ -495,6 +495,8 @@ if __name__ == "__main__":
     data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
     data = load_520_data(station_id, '', data_folder, single_load=False)
     All_SNRs = data['SNR']
+    All_Traces = data['Traces']
+    All_UNIX = data['Times']
 
     for param in parameters:
         # All_Chi = np.load(f'{data_directory}/station{station_id}_all_Chi{param}.npy')
@@ -530,9 +532,9 @@ if __name__ == "__main__":
             plt.close()
             return
 
-        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
+        # plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
         
-        # saveabovecurve_info(All_Traces, All_UNIX, param)
+        saveabovecurve_info(All_Traces, All_UNIX, param)
 
     # # --- Now I want data above the BL curve we defined above ---
     # # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x

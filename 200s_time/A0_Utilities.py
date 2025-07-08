@@ -510,6 +510,10 @@ if __name__ == "__main__":
     chi2016 = chi2016s[index]
     times = load_520_data(13, 'Times', station_data_folder)
     thetime = times[index]
+    from datetime import datetime
+    utc_time = datetime.datetime.utcfromtimestamp(thetime)
+    print("UTC time:", utc_time)
+
     print(snr, chircr, chi2016, thetime)
 
     '''test load coincidence pickle'''

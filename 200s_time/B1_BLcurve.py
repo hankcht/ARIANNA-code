@@ -481,7 +481,7 @@ if __name__ == "__main__":
         plt.figtext(0.48, 0.8, f'Above Cut: {len(Above_curve_data_x)} events')
 
     # --- load data ---
-    data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
+    # data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
     plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning'
     os.makedirs(plot_output_folder, exist_ok=True)  
 
@@ -489,11 +489,12 @@ if __name__ == "__main__":
     SNRbins = np.logspace(0.477, 2, num=80)
     maxCorrBins = np.arange(0, 1.0001, 0.01)
 
-    All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
-    All_UNIX = np.load(f'{data_directory}/station{station_id}_all_Times.npy')
-    All_SNRs = np.load(f'{data_directory}/station{station_id}_all_SNR.npy')
+    # All_Traces = np.load(f'{data_directory}/station{station_id}_all_Traces.npy')
+    # All_UNIX = np.load(f'{data_directory}/station{station_id}_all_Times.npy')
+    # All_SNRs = np.load(f'{data_directory}/station{station_id}_all_SNR.npy')
     for param in parameters:
-        All_Chi = np.load(f'{data_directory}/station{station_id}_all_Chi{param}.npy')
+        # All_Chi = np.load(f'{data_directory}/station{station_id}_all_Chi{param}.npy')
+        
 
         ic(f'number of all data is {len(All_SNRs)} and {len(All_Chi)}')
 

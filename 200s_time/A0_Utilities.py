@@ -495,30 +495,32 @@ if __name__ == "__main__":
     station_data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
     date_filter = '5.20.25'
 
-
+    '''find event 578'''
     eventid = load_520_data(13, 'EventIDs', station_data_folder)
     for evtid in eventid:
         if evtid == 17121:
             print('found event 578')
 
+
+
     index = np.where(eventid == 17121)[0]
     idx = index[0]  # extract the scalar index
     
-    snrs = load_520_data(13, 'SNR', station_data_folder)
-    chircrs = load_520_data(13, 'ChiRCR', station_data_folder)
-    chi2016s = load_520_data(13, 'Chi2016', station_data_folder)
-    times = load_520_data(13, 'Times', station_data_folder)
+    # snrs = load_520_data(13, 'SNR', station_data_folder)
+    # chircrs = load_520_data(13, 'ChiRCR', station_data_folder)
+    # chi2016s = load_520_data(13, 'Chi2016', station_data_folder)
+    # times = load_520_data(13, 'Times', station_data_folder)
 
-    snr = snrs[idx]
-    chircr = chircrs[idx]
-    chi2016 = chi2016s[idx]
-    thetime = times[idx]
+    # snr = snrs[idx]
+    # chircr = chircrs[idx]
+    # chi2016 = chi2016s[idx]
+    # thetime = times[idx]
 
-    from datetime import datetime, timezone
-    utc_time = datetime.fromtimestamp(thetime, tz=timezone.utc)
+    # from datetime import datetime, timezone
+    # utc_time = datetime.fromtimestamp(thetime, tz=timezone.utc)
 
-    print("UTC time:", utc_time)
-    print(snr, chircr, chi2016, thetime)
+    # print("UTC time:", utc_time)
+    # print(snr, chircr, chi2016, thetime)
 
     '''test load coincidence pickle'''
     # test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
@@ -771,17 +773,43 @@ if __name__ == "__main__":
 
 
     '''check specific Station 13, Feb 16, 2017 at 19:09:51 UTC evt'''
-    # amp = '200s'
-    # station_id = [14, 17, 19, 30]
-    # all_Backlobe = []
-    # all_Backlobe_UNIX = [] 
-    # # for id in station_id:
-    # #     snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
-    # #     # unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
-    # #     # trace = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Traces.npy')
-    # #     all_Backlobe.extend(trace)
-    # #     all_Backlobe_UNIX.extend(unix)
-    # # print(len(all_Backlobe_UNIX))
+    amp = '200s'
+    station_id = [13, 17]
+    all_Backlobe = []
+    all_Backlobe_UNIX = [] 
+    all_Backlobe_SNR = []
+    all_Backlobe_Chi2016 = []
+    for id in station_id:
+        # snr, chi, trace, unix = load_data('All_data', amp_type = amp, station_id=id)
+        unix = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Times.npy')
+        trace = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Traces.npy')
+        snr = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_SNR.npy')
+        chi2016 = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{id}/station{id}_all_Chi2016.npy')
+        all_Backlobe.extend(trace)
+        all_Backlobe_UNIX.extend(unix)
+        all_Backlobe_SNR.extend(snr)
+        all_Backlobe_Chi2016.extend(chi2016)
+    print(len(all_Backlobe_UNIX))
+    
+
+    from datetime import datetime, timezone
+    target_unix = 1487300991
+
+    if target_unix in all_Backlobe_UNIX:
+        idx = all_Backlobe_UNIX.index(target_unix)
+        trace = all_Backlobe[idx]
+        snr = all_Backlobe_SNR[idx]
+        chi = all_Backlobe_Chi2016[idx]
+        thetime = all_Backlobe_UNIX[idx]
+        utc_time = datetime.fromtimestamp(thetime, tz=timezone.utc)
+
+        print(f"\n✅ Event found at index {idx}")
+        print(f"  UTC Time:    {utc_time}")
+        print(f"  UNIX Time:   {thetime}")
+        print(f"  SNR:         {snr}")
+        print(f"  Chi2016:     {chi}")
+        print(f"  Trace shape: {trace.shape}")
+
     
 
     # for id in station_id:
@@ -844,8 +872,6 @@ if __name__ == "__main__":
 
     # sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp_type}/5.28.25/'
     # sim_rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp_type)
-
-
 
 
         

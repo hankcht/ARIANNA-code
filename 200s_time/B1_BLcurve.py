@@ -195,7 +195,7 @@ if __name__ == "__main__":
     # sim_chi = np.array(sim_chi)
 
     
-    from A0_Utilities import loadMultipleTemplates, siminfo_forplotting
+    from A0_Utilities import loadMultipleTemplates, siminfo_forplotting, load_520_data
     templates_2016 = loadMultipleTemplates(amp_type, date='2016')
     templates_RCR = loadMultipleTemplates(amp_type) 
    

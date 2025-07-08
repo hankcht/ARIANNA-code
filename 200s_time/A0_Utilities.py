@@ -440,9 +440,10 @@ def deleting():
             os.remove(file)
             print(f'Deleted :{file}')
 
-def load_520_data(station_id, param, data_folder, date_filter="5.20.25") -> tuple:
+def load_520_data(station_id, param, data_folder, date_filter="5.20.25"):
     '''
     quick load function for 5/20 after nosie cut data with very specific filenames
+    from: '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
     param: Azi, Chi2016, ChiRCR, ChiBad, EventIDs, MaxAmplitude, SNR, Times, Traces, Zen
     '''
     pattern = os.path.join(data_folder, f"{date_filter}_Station{station_id}_{param}*")
@@ -455,7 +456,7 @@ def load_520_data(station_id, param, data_folder, date_filter="5.20.25") -> tupl
         return None
 
     data = np.concatenate(data_list, axis=0).squeeze()
-    return data, len(data)
+    return data
 
 def load_coincidence_pkl(
     station_id,
@@ -465,19 +466,7 @@ def load_coincidence_pkl(
 
     with open(pkl_path, "rb") as f:
         coinc_dict = pickle.load(f)
-
-    # Pick a sample event_id
-    sample_event_id = list(coinc_dict.keys())[0]
-    print(f"Sample event ID: {sample_event_id}")
-
-    event_data = coinc_dict[sample_event_id]
-
-    # Top-level keys in event_data
-    print("Top-level keys in event_data:", list(event_data.keys()))
-
-    # Keys under "stations"
-    stations_data = event_data.get("stations", {})
-    print("Stations available in this event:", list(stations_data.keys()))
+        
 
     result = {}
     for event_id, event_data in coinc_dict.items():
@@ -506,21 +495,37 @@ if __name__ == "__main__":
     station_data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
     date_filter = '5.20.25'
 
+    eventid = load_520_data(13, 'EventIDs', station_data_folder)
+    for evtid in eventid:
+        if evtid == 17121:
+            print('found event 578')
+
+    index = eventid.index(17121)
+    
+    snrs = load_520_data(13, 'SNR', station_data_folder)
+    snr = snrs[index]
+    chircrs = load_520_data(13, 'ChiRCR', station_data_folder)
+    chircr = chircrs[index]
+    chi2016s = load_520_data(13, 'Chi2016', station_data_folder)
+    chi2016 = chi2016s[index]
+    times = load_520_data(13, 'Times', station_data_folder)
+    thetime = times[index]
+    print(snr, chircr, chi2016, thetime)
 
     '''test load coincidence pickle'''
-    test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
-    print('loaded test')
+    # test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
+    # print('loaded test')
 
-    for id in station_id:
-        for param in parameters:
-            chi = load_coincidence_pkl(id, param) 
-            print(len(chi))
+    # for id in station_id:
+    #     for param in parameters:
+    #         chi = load_coincidence_pkl(id, param) 
+    #         print(len(chi))
 
     '''load and plot SNR-ChiRCR/2016'''
     # for id in station_id:
-    #     snr, num = load_520_data(id, 'SNR', station_data_folder)
+    #     snr = load_520_data(id, 'SNR', station_data_folder)
     #     for param in parameters:
-    #         chi, count = load_520_data(id, param, station_data_folder)
+    #         chi = load_520_data(id, param, station_data_folder)
 
     #         SNRbins = np.logspace(0.477, 2, num=80)
     #         maxCorrBins = np.arange(0, 1.0001, 0.01)

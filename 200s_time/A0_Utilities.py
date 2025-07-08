@@ -503,19 +503,19 @@ if __name__ == "__main__":
 
 
     for id in station_id:
-        # snr, num = load_520_data(id, 'SNR', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
-        snr_files = sorted(glob.glob(os.path.join(station_data_folder, f'{date_filter}_Station{id}_SNR*')))
-        snr_list = [np.load(f) for f in snr_files] 
-        snr_raw = np.concatenate(snr_list, axis=0).squeeze()
+        snr, num = load_520_data(id, 'SNR', '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
+        # snr_files = sorted(glob.glob(os.path.join(station_data_folder, f'{date_filter}_Station{id}_SNR*')))
+        # snr_list = [np.load(f) for f in snr_files] 
+        # snr = np.concatenate(snr_list, axis=0).squeeze()
         for param in parameters:
-            # chi, count = load_520_data(id, param, '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
-            chi_files = sorted(glob.glob(os.path.join(station_data_folder, f'{date_filter}_Station{id}_{param}*')))
-            chi_list = [np.load(f) for f in chi_files] 
-            chi_raw = np.concatenate(chi_list, axis=0).squeeze()
+            chi, count = load_520_data(id, param, '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/')
+            # chi_files = sorted(glob.glob(os.path.join(station_data_folder, f'{date_filter}_Station{id}_{param}*')))
+            # chi_list = [np.load(f) for f in chi_files] 
+            # chi = np.concatenate(chi_list, axis=0).squeeze()
 
             SNRbins = np.logspace(0.477, 2, num=80)
             maxCorrBins = np.arange(0, 1.0001, 0.01)
-            plt.hist2d(snr_raw, chi_raw, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+            plt.hist2d(snr, chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
             plt.colorbar()
             plt.xlim((3, 100))
             plt.ylim((0, 1))
@@ -525,7 +525,7 @@ if __name__ == "__main__":
             plt.xscale('log')
             plt.tick_params(axis='x', which='minor', bottom=True)
             plt.grid(visible=True, which='both', axis='both') 
-            plt.title(f'Station {id} - SNR vs. Chi (Events: {len(snr_raw):,})')
+            plt.title(f'Station {id} - SNR vs. Chi (Events: {len(snr):,})')
             print(f'Saving {plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')
             # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
             plt.savefig(f'{plot_folder}/{extraname}Stn{id}_SNR-Chi{param}_All{if_sim}.png')

@@ -755,8 +755,11 @@ if __name__ == "__main__":
 
     for id in station_id:
         unix, count = load_520_data(id, 'Times', station_data_folder)
+        trace, num = load_520_data(id, 'Traces', station_data_folder)
         all_Backlobe_UNIX.extend(unix.tolist())
+        all_Backlobe.extend(trace.tolist())
     all_Backlobe_UNIX = np.array(all_Backlobe_UNIX)
+    all_Backlobe = np.array(all_Backlobe)
 
     from datetime import timezone, datetime
 

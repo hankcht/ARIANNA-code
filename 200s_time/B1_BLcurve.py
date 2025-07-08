@@ -460,6 +460,8 @@ if __name__ == "__main__":
             param_name = '2016'
         elif param == 'RCR':
             param_name = 'RCR' 
+        else:
+            return
 
         np.save(f'{above_curve_folder}/Stn{station_id}_SNR_above.npy', Above_curve_data_x)
         np.save(f'{above_curve_folder}/Stn{station_id}_Chi{param_name}_above.npy', Above_curve_data_y)

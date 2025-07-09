@@ -526,16 +526,10 @@ if __name__ == "__main__":
     # Check the type of data
     print("Type of object loaded:", type(data))
 
-    # If it's a dictionary, list the keys
-    if isinstance(data, dict):
-        print("Keys:")
-        for key in data.keys():
-            print(key)
-    else:
-        print("Not a dictionary; inspect attributes or structure:")
-        # Try printing or inspecting the object
-        print(dir(data))
-
+    check = data[578]
+    print("Keys:")
+    for key in check.keys():
+        print(key)
 
     '''find event 578'''
     # eventid = load_520_data(13, 'EventIDs', station_data_folder)

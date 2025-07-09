@@ -534,7 +534,7 @@ if __name__ == "__main__":
     print(event.shape)
 
     model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi'
-    model = keras.models.load_model(f'{model_path}/2025-07-09_11-35_RCR_Backlobe_model_2Layer.h5')
+    model = keras.models.load_model(f'{model_path}/2025-07-09_11-25_RCR_Backlobe_model_2Layer.h5')
     no = model.predict(event)
     print(no)
 

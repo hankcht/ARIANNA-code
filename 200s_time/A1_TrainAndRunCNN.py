@@ -133,14 +133,6 @@ if __name__ == "__main__":
     data_Backlobe_chi2016 = np.array(data_Backlobe_chi2016)
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
 
-
-    # indices = np.where(data_Backlobe_chi2016 > 0.8)[0]
-    # print(indices)
-
-    # for index in indices: 
-    #     pT(data_Backlobe[index], 'test plot data BL', f'/pub/tangch3/ARIANNA/DeepLearning/test_plot_data_BL/test_new_data_BL_{amp}_{index}.png')
-
-
     print(f'RCR shape: {sim_RCR.shape} Backlobe shape: {data_Backlobe.shape}')
 
     # take a random selection because events are ordered based off CR simulated, so avoids overrepresenting particular Cosmic Rays
@@ -161,7 +153,7 @@ if __name__ == "__main__":
     print('------> Training is Done!')
 
     # Now we run our trained model on the remaining (non-trained) events
-    model = keras.models.load_model(f'{model_path}/{timestamp}_RCR_Backlobe_model_2Layer.h5')
+    model = keras.models.load_model(f'{model_path}/2025-07-09_11-10_RCR_Backlobe_model_2Layer.h5')
 
     # Now we can test run our trained model on the non trained events (or just all events)
     # non_trained_RCR = sim_RCR[RCR_non_training_indices,:]
@@ -173,6 +165,13 @@ if __name__ == "__main__":
 
     prob_RCR = model.predict(sim_RCR)
     prob_Backlobe = model.predict(data_Backlobe)
+
+    indices = np.where(prob_Backlobe > 0.6)[0]
+    print(indices)
+
+    for index in indices: 
+        pT(data_Backlobe[index], 'test plot data BL', f'/pub/tangch3/ARIANNA/DeepLearning/test_plot_data_BL/79test_new_data_BL_{amp}_{index}.png')
+
 
     # Finding not weighted RCR efficiency (percentage of RCR events that would pass the cut) 
     sim_RCR_output = prob_RCR

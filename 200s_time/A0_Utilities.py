@@ -517,6 +517,26 @@ if __name__ == "__main__":
     station_data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
     date_filter = '5.20.25'
 
+    file_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
+
+    # Open and load the pickle file
+    with open(file_path, 'rb') as f:
+        data = pickle.load(f)
+
+    # Check the type of data
+    print("Type of object loaded:", type(data))
+
+    # If it's a dictionary, list the keys
+    if isinstance(data, dict):
+        print("Keys:")
+        for key in data.keys():
+            print(key)
+    else:
+        print("Not a dictionary; inspect attributes or structure:")
+        # Try printing or inspecting the object
+        print(dir(data))
+
+
     '''find event 578'''
     # eventid = load_520_data(13, 'EventIDs', station_data_folder)
     # for evtid in eventid:

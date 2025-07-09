@@ -537,7 +537,8 @@ if __name__ == "__main__":
     model = keras.models.load_model(f'{model_path}/2025-07-09_11-25_RCR_Backlobe_model_2Layer.h5')
     no = model.predict(event)
     print(no)
-    print(f'event id is {coinc_data['event_ids']}')
+    event_id = coinc_data['event_ids']
+    print(f'event id is {event_id}')
 
     '''find event 578'''
     # eventid = load_520_data(13, 'EventIDs', station_data_folder)

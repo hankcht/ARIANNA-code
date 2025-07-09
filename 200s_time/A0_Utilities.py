@@ -528,7 +528,7 @@ if __name__ == "__main__":
     file_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
 
     id = 578
-    argument = 13
+    argument = 'stations'
     param = ''
     coinc_data = load_coincidence_pkl(id, argument, param)
     print(coinc_data)

@@ -524,6 +524,8 @@ if __name__ == "__main__":
 
     file_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
 
+    amp = '200s'
+
     data =[]
     for id in station_id:
         snr, chi2016, chiRCR, traces2016, tracesRCR, unix = load_data('new_chi_above_curve', amp_type = amp, station_id=id)
@@ -547,7 +549,7 @@ if __name__ == "__main__":
     print(f'event id is {event_id}')
     prob_Backlobe = model.predict(data)
 
-    amp = '200s'
+
     network_output_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Network_Output'
 
     dense_val = False

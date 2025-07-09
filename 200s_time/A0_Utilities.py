@@ -483,7 +483,7 @@ def load_520_data(station_id, param, data_folder, date_filter="5.20.25", single_
 
 def load_coincidence_pkl(master_id, argument, station_id,
     pkl_path="/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
-) -> int | float | dict:
+) :
     '''
     Parameters:
         master_id (int): number to access corect master event
@@ -502,7 +502,7 @@ def load_coincidence_pkl(master_id, argument, station_id,
             if isinstance(sub_value, dict) and station_id in sub_value:
                 return sub_value[station_id] # is a dictionary
             elif station_id == "":
-                return sub_value
+                return sub_value # is an int for number of coincidences or float for UNIX timestemp
             else:
                 raise KeyError(f"Parameter '{station_id}' not found under '{argument}'")
         else:

@@ -531,6 +531,8 @@ if __name__ == "__main__":
     for key in check.keys():
         print(key)
 
+    print(data[578]['numCoincidences'], data[578]['datetime'], data[578]['stations'])
+
     '''find event 578'''
     # eventid = load_520_data(13, 'EventIDs', station_data_folder)
     # for evtid in eventid:

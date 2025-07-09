@@ -526,9 +526,9 @@ if __name__ == "__main__":
 
     master_id = 578
     argument = 'stations'
-    for id in station_id:
-        coinc_data = load_coincidence_pkl(master_id, argument, id)
-        print(coinc_data)
+    
+    coinc_data = load_coincidence_pkl(master_id, argument, 13)
+    print(coinc_data)
 
 
     '''find event 578'''

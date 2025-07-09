@@ -524,6 +524,12 @@ if __name__ == "__main__":
 
     file_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
 
+    data =[]
+    for id in station_id:
+        snr, chi2016, chiRCR, traces2016, tracesRCR, unix = load_data('new_chi_above_curve', amp_type = amp, station_id=id)
+        data.extend(tracesRCR)
+
+    data = np.array(data)
     master_id = 578
     argument = 'stations'
     
@@ -539,6 +545,38 @@ if __name__ == "__main__":
     print(no)
     event_id = coinc_data['event_ids']
     print(f'event id is {event_id}')
+    prob_Backlobe = model.predict(data)
+
+    amp = '200s'
+    network_output_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Network_Output'
+
+    dense_val = False
+    plt.figure(figsize=(8, 6))
+    plt.hist(prob_Backlobe, bins=20, range=(0,1), histtype='step', color='blue', linestyle='solid', label=f'Backlobe {len(prob_Backlobe)}', density=dense_val)
+
+    plt.xlabel('Network Output', fontsize=18)
+    plt.ylabel('Number of Events', fontsize=18)
+    plt.yscale('log')
+    plt.title(f'{amp}_time RCR-Backlobe network output')
+    plt.xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0], fontsize=18)
+    plt.yticks(fontsize=18)
+
+    hist_values, bin_edges, _ = plt.hist(prob_Backlobe, bins=20, range=(0,1), histtype='step')
+    plt.ylim(0, max(10 ** (np.ceil(np.log10(hist_values)))))
+    plt.tick_params(axis='both', which='major', labelsize=12)
+    plt.legend(loc='upper left', fontsize=8)
+    # plt.text(0.375, 0.75, f'RCR efficiency: {RCR_efficiency}%', fontsize=12, transform=plt.gcf().transFigure)
+    # plt.text(0.375, 0.7, f'Backlobe efficiency: {Backlobe_efficiency}%', fontsize=12, transform=plt.gcf().transFigure)
+    # plt.text(0.375, 0.65, f'TrainCut: {TrainCut}', fontsize=12, transform=plt.gcf().transFigure)
+    # plt.axvline(x=output_cut_value, color='y', label='cut')
+    plt.text(0.05, -0.12, 'BL', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes, color='blue')
+    plt.text(0.96, -0.12, 'RCR', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes, color='red')
+    plt.subplots_adjust(left=0.2, right=0.85, bottom=0.2, top=0.8)
+
+    print(f'saving /pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/new_chi/test_histogram.png')
+    plt.savefig(f'{network_output_plot_path}/test_{amp}_histogram.png')
+
+
 
     '''find event 578'''
     # eventid = load_520_data(13, 'EventIDs', station_data_folder)

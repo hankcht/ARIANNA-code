@@ -481,33 +481,30 @@ def load_520_data(station_id, param, data_folder, date_filter="5.20.25", single_
     
 
 
-def load_coincidence_pkl(id, argument, param,
+def load_coincidence_pkl(master_id, argument, station_id,
     pkl_path="/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
-) -> dict:
+) -> int | float | dict:
     '''
     Parameters:
-        id (any): Event ID key to search in the top-level dict.
-        argument (str): Key under the event (e.g., 'numCoincidences', 'datetime', or 'stations').
-        param (str): Sub-key if `argument` is a dict (e.g., 'indices', 'event_ids', etc.).
-        pkl_path (str): Path to the pickle file.
-
-    Returns:
-        dict or any: The extracted value or an error if not found.
+        master_id (int): number to access corect master event
+        argument (str): Key under the event ('numCoincidences', 'datetime', or 'stations').
+        station_id (str): access event information depending on station number
+            is a dict {'indices', 'event_ids', 'Traces', 'SNR', 'ChiRCR', 'Chi2016', 'ChiBad', 'Zen', 'Azi', 'Times', 'PolAngle', 'PolAngleErr', 'ExpectedPolAngle'}
     '''
     with open(pkl_path, "rb") as f:
         coinc_dict = pickle.load(f)
 
     try:
-        value = coinc_dict[id]
+        value = coinc_dict[master_id]
         if isinstance(value, dict) and argument in value:
             sub_value = value[argument]
             # If 'argument' is 'stations' and we're looking deeper
-            if isinstance(sub_value, dict) and param in sub_value:
-                return sub_value[param]
-            elif param == "":
+            if isinstance(sub_value, dict) and station_id in sub_value:
+                return sub_value[station_id] # is a dictionary
+            elif station_id == "":
                 return sub_value
             else:
-                raise KeyError(f"Parameter '{param}' not found under '{argument}'")
+                raise KeyError(f"Parameter '{station_id}' not found under '{argument}'")
         else:
             raise KeyError(f"Argument '{argument}' not found in event ID '{id}'")
     except KeyError as e:
@@ -527,11 +524,11 @@ if __name__ == "__main__":
 
     file_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
 
-    id = 578
+    master_id = 578
     argument = 'stations'
-    param = ''
-    coinc_data = load_coincidence_pkl(id, argument, param)
-    print(coinc_data)
+    for id in station_id:
+        coinc_data = load_coincidence_pkl(master_id, argument, id)
+        print(coinc_data)
 
 
     '''find event 578'''

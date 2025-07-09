@@ -528,8 +528,15 @@ if __name__ == "__main__":
     argument = 'stations'
     
     coinc_data = load_coincidence_pkl(master_id, argument, 13)
-    print(coinc_data)
+    event = coinc_data['Traces']
+    print(isinstance(event, list))  
+    event = np.array(event)
+    print(event.shape)
 
+    model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi'
+    model = keras.models.load_model(f'{model_path}/2025-07-09_11-10_RCR_Backlobe_model_2Layer.h5')
+    no = model.predict()
+    print(no)
 
     '''find event 578'''
     # eventid = load_520_data(13, 'EventIDs', station_data_folder)

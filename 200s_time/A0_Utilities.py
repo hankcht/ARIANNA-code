@@ -480,32 +480,40 @@ def load_520_data(station_id, param, data_folder, date_filter="5.20.25", single_
         return {'SNR': SNRs, 'Chi2016': Chi2016, 'ChiRCR': ChiRCR, 'Times': Times, 'Traces': Traces}
     
 
-def load_coincidence_pkl(
-    station_id,
-    parameter_name,
+
+def load_coincidence_pkl(id, argument, param,
     pkl_path="/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
 ) -> dict:
+    '''
+    Parameters:
+        id (any): Event ID key to search in the top-level dict.
+        argument (str): Key under the event (e.g., 'numCoincidences', 'datetime', or 'stations').
+        param (str): Sub-key if `argument` is a dict (e.g., 'indices', 'event_ids', etc.).
+        pkl_path (str): Path to the pickle file.
 
+    Returns:
+        dict or any: The extracted value or an error if not found.
+    '''
     with open(pkl_path, "rb") as f:
         coinc_dict = pickle.load(f)
-        
 
-    result = {}
-    for event_id, event_data in coinc_dict.items():
-        stations_data = event_data.get("stations", {})
+    try:
+        value = coinc_dict[id]
+        if isinstance(value, dict) and argument in value:
+            sub_value = value[argument]
+            # If 'argument' is 'stations' and we're looking deeper
+            if isinstance(sub_value, dict) and param in sub_value:
+                return sub_value[param]
+            elif param == "":
+                return sub_value
+            else:
+                raise KeyError(f"Parameter '{param}' not found under '{argument}'")
+        else:
+            raise KeyError(f"Argument '{argument}' not found in event ID '{id}'")
+    except KeyError as e:
+        print(f"KeyError: {e}")
+        return {}
 
-        if station_id not in stations_data:
-            continue  # skip events that don't include this station
-
-        station_data = stations_data[station_id]
-
-        if parameter_name not in station_data:
-            continue  # skip if parameter is missing
-
-        result[event_id] = station_data[parameter_name]
-
-    print(f"Loaded {len(result)} entries for parameter '{parameter_name}' from station {station_id}")
-    return result
 
 if __name__ == "__main__":
 
@@ -519,19 +527,12 @@ if __name__ == "__main__":
 
     file_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
 
-    # Open and load the pickle file
-    with open(file_path, 'rb') as f:
-        data = pickle.load(f)
+    id = 578
+    argument = 13
+    param = ''
+    coinc_data = load_coincidence_pkl(id, argument, param)
+    print(coinc_data)
 
-    # Check the type of data
-    print("Type of object loaded:", type(data))
-
-    check = data[578]
-    print("Keys:")
-    for key in check.keys():
-        print(key)
-
-    print(data[578]['numCoincidences'], data[578]['datetime'], data[578]['stations'])
 
     '''find event 578'''
     # eventid = load_520_data(13, 'EventIDs', station_data_folder)

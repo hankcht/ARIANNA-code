@@ -120,6 +120,7 @@ if __name__ == "__main__":
     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
     # since we load traces depending on station, we need to make data_Backlobe a full list
     data_Backlobe = []
+    data_Backlobe_TraesRCR = []
     data_Backlobe_chi2016 = []
     data_Backlobe_UNIX = [] 
     for id in station_id:
@@ -127,6 +128,7 @@ if __name__ == "__main__":
         data_Backlobe.extend(traces2016)
         data_Backlobe_chi2016.extend(chi2016)
         data_Backlobe_UNIX.extend(unix)
+        data_Backlobe_TraesRCR.extend(tracesRCR)
 
     sim_RCR = np.array(sim_RCR) 
     data_Backlobe = np.array(data_Backlobe)
@@ -164,7 +166,8 @@ if __name__ == "__main__":
     # prob_Backlobe = model.predict(non_trained_Backlobe) # Network output of Backlobe
 
     prob_RCR = model.predict(sim_RCR)
-    prob_Backlobe = model.predict(data_Backlobe)
+    # prob_Backlobe = model.predict(data_Backlobe)
+    prob_Backlobe = model.predict(data_Backlobe_TraesRCR)
 
     indices = np.where(prob_Backlobe > 0.6)[0]
     print(indices)

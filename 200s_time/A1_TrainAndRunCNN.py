@@ -24,7 +24,7 @@ from matplotlib import pyplot as plt
 matplotlib.use('Agg')
 from A0_Utilities import getMaxChi, getMaxSNR, load_sim_rcr, load_data, pT
 
-def Train_CNN(training_RCR, training_Backlobe, model_path, loss_accuracy_plot_path, timestamp, amp, batch_size=32, epochs=20):
+def Train_CNN(training_RCR, training_Backlobe, model_path, loss_accuracy_plot_path, timestamp, amp, batch_size=32, epochs=100):
     x = np.vstack((training_RCR, training_Backlobe)) # (num_RCR_events + num_BL_events, 4, 256)
     n_samples = x.shape[2] # 256
     n_channels = x.shape[1] # 4

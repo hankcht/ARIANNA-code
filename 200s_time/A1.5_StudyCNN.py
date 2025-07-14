@@ -391,55 +391,58 @@ if __name__ == "__main__":
     data_Backlobe_UNIX = [] 
     data_chi = []
     for id in station_id: # since we load traces depending on stn, we need to make data_Backlobe a full list
-        snr, chi, trace, unix = load_data('AboveCurve_data', amp_type = amp, station_id=id)
-        data_Backlobe.extend(trace)
+        # snr, chi, trace, unix = load_data('AboveCurve_data', amp_type = amp, station_id=id)
+        snr, Chi2016, ChiRCR, Traces2016, TracesRCR, unix = load_data('new_chi_above_curve', amp_type = amp, station_id=id)
+        data_Backlobe.extend(Traces2016)
         data_Backlobe_UNIX.extend(unix)
-        data_chi.extend(chi)
+        data_chi.extend(Chi2016)
 
 
     data_Backlobe = np.array(data_Backlobe)
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
     data_chi = np.array(data_chi)
-    model = keras.models.load_model('/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/data_data_2025-06-02_09-45_RCR_BL_model_2Layer_two_ws_stdy.h5')
-    rcr = np.array(rcr)
-    data_Backlobe = np.array(data_Backlobe)
-    prob_RCR = model.predict(rcr)
-    prob_Backlobe = model.predict(data_Backlobe)
+    # model = keras.models.load_model('/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/data_data_2025-06-02_09-45_RCR_BL_model_2Layer_two_ws_stdy.h5')
+    # rcr = np.array(rcr)
+    # data_Backlobe = np.array(data_Backlobe)
+    # prob_RCR = model.predict(rcr)
+    # prob_Backlobe = model.predict(data_Backlobe)
 
-    RCR_like_indices = np.where(prob_Backlobe > 0.2)[0]
-    print(f'RCR-like events indices {RCR_like_indices}') # use this later to get station
-    RCR_like_BL = len(RCR_like_indices)
-    assert RCR_like_BL == 5
+    # RCR_like_indices = np.where(prob_Backlobe > 0.2)[0]
+    # print(f'RCR-like events indices {RCR_like_indices}') # use this later to get station
+    # RCR_like_BL = len(RCR_like_indices)
+    # assert RCR_like_BL == 5
 
 
-    print(f'Plotting {RCR_like_BL} misidentified Backlobe event traces using pT function.')
+    # print(f'Plotting {RCR_like_BL} misidentified Backlobe event traces using pT function.')
 
-    traces_to_plot = data_Backlobe[RCR_like_indices]
-    unix_times_to_plot = data_Backlobe_UNIX[RCR_like_indices]
-    RCR_like_network_output = prob_Backlobe[RCR_like_indices] 
-    RCR_like_chi = data_chi[RCR_like_indices]
+    # traces_to_plot = data_Backlobe[RCR_like_indices]
+    # unix_times_to_plot = data_Backlobe_UNIX[RCR_like_indices]
+    # RCR_like_network_output = prob_Backlobe[RCR_like_indices] 
+    # RCR_like_chi = data_chi[RCR_like_indices]
 
-    save_dir = f'/pub/tangch3/ARIANNA/DeepLearning/plots/RCR_like_BL/{amp}_time/RCR_like_Traces/'
-    os.makedirs(save_dir, exist_ok=True) 
+    # save_dir = f'/pub/tangch3/ARIANNA/DeepLearning/plots/RCR_like_BL/{amp}_time/RCR_like_Traces/'
+    # os.makedirs(save_dir, exist_ok=True) 
 
-    for i, trace in enumerate(traces_to_plot):
-        unix_timestamp = unix_times_to_plot[i]
-        RCR_like_no = RCR_like_network_output[i].item()
-        RCR_like_no = round(RCR_like_no, 2)
-        RCR_like_chi_val = RCR_like_chi[i]
+    # for i, trace in enumerate(traces_to_plot):
+    #     unix_timestamp = unix_times_to_plot[i]
+    #     RCR_like_no = RCR_like_network_output[i].item()
+    #     RCR_like_no = round(RCR_like_no, 2)
+    #     RCR_like_chi_val = RCR_like_chi[i]
         
-        dt_object = datetime.fromtimestamp(unix_timestamp)
-        formatted_time_for_filename = dt_object.strftime('%Y%m%d_%H%M%S')
+    #     dt_object = datetime.fromtimestamp(unix_timestamp)
+    #     formatted_time_for_filename = dt_object.strftime('%Y%m%d_%H%M%S')
 
-        original_event_index = RCR_like_indices[i]
-        plot_filename = os.path.join(save_dir, f'data_data_{timestamp}_pot_RCR_event_{original_event_index}_{formatted_time_for_filename}_netout{RCR_like_no}_chi{RCR_like_chi_val}.png')
+    #     original_event_index = RCR_like_indices[i]
+    #     plot_filename = os.path.join(save_dir, f'data_data_{timestamp}_pot_RCR_event_{original_event_index}_{formatted_time_for_filename}_netout{RCR_like_no}_chi{RCR_like_chi_val}.png')
         
-        plot_title = f'pot_RCR Trace (Event {original_event_index})\nTime: {dt_object.strftime("%Y-%m-%d %H:%M:%S")}'
+    #     plot_title = f'pot_RCR Trace (Event {original_event_index})\nTime: {dt_object.strftime("%Y-%m-%d %H:%M:%S")}'
 
-        pT(traces=trace, title=plot_title, saveLoc=plot_filename)
+    #     pT(traces=trace, title=plot_title, saveLoc=plot_filename)
         
-        print(f'------> Saved pot_RCR trace for event {original_event_index} to {plot_filename}')
+    #     print(f'------> Saved pot_RCR trace for event {original_event_index} to {plot_filename}')
     
+    model = Sherpa_Train_CNN()
+
     import sys
     sys.exit()
 

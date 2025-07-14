@@ -120,7 +120,7 @@ if __name__ == "__main__":
     sim_RCR = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
     # since we load traces depending on station, we need to make data_Backlobe a full list
     data_Backlobe = []
-    data_Backlobe_TraesRCR = []
+    data_Backlobe_TracesRCR = []
     data_Backlobe_chi2016 = []
     data_Backlobe_UNIX = [] 
     for id in station_id:
@@ -128,13 +128,13 @@ if __name__ == "__main__":
         data_Backlobe.extend(traces2016)
         data_Backlobe_chi2016.extend(chi2016)
         data_Backlobe_UNIX.extend(unix)
-        data_Backlobe_TraesRCR.extend(tracesRCR)
+        data_Backlobe_TracesRCR.extend(tracesRCR)
 
     sim_RCR = np.array(sim_RCR) 
     data_Backlobe = np.array(data_Backlobe)
     data_Backlobe_chi2016 = np.array(data_Backlobe_chi2016)
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
-    data_Backlobe_TraesRCR = np.array(data_Backlobe_TraesRCR)
+    data_Backlobe_TraesRCR = np.array(data_Backlobe_TracesRCR)
 
     print(f'RCR shape: {sim_RCR.shape} Backlobe shape: {data_Backlobe.shape}')
 
@@ -168,7 +168,7 @@ if __name__ == "__main__":
 
     prob_RCR = model.predict(sim_RCR)
     # prob_Backlobe = model.predict(data_Backlobe)
-    prob_Backlobe = model.predict(data_Backlobe_TraesRCR)
+    prob_Backlobe = model.predict(data_Backlobe_TracesRCR)
 
     indices = np.where(prob_Backlobe > 0.6)[0]
     print(indices)
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     plt.text(0.96, -0.12, 'RCR', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes, color='red')
     plt.subplots_adjust(left=0.2, right=0.85, bottom=0.2, top=0.8)
 
-    print(f'saving /pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/new_chi/{timestamp}_histogram.png')
+    print(f'saving {network_output_plot_path}/{timestamp}_{amp}_histogram.png')
     plt.savefig(f'{network_output_plot_path}/{timestamp}_{amp}_histogram.png')
     print(f'------> {amp} Done!')
 

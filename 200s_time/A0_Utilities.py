@@ -9,7 +9,6 @@ from PIL import Image
 import keras
 from keras.models import Sequential
 from keras.layers import Conv2D, Dropout, Flatten, Dense
-import matplotlib.pyplot as plt
 from pathlib import Path
 import pickle
 import templateCrossCorr as txc

@@ -36,17 +36,17 @@ def saves_best_result(best_result, algorithm=''):
     hparam = best_result['window_size2']
     hparam_arr = np.array([hparam])
     
-    best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.npy')
+    best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/715_{algorithm}secnd_wdw.npy')
 
 
     best_hparam = np.concatenate((best_hparam, hparam_arr))
 
     print('Saving best hyperparameter setting')
-    np.save(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.npy', best_hparam)
+    np.save(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/715_{algorithm}secnd_wdw.npy', best_hparam)
 
     from collections import Counter
 
-    best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.npy')
+    best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/715_{algorithm}secnd_wdw.npy')
     best_hparam = best_hparam.tolist()
 
     count = Counter(best_hparam)
@@ -62,7 +62,7 @@ def saves_best_result(best_result, algorithm=''):
             f'Best: {most_common_element}',
             ha='center', va='bottom', fontsize=10, color='red')
     print(f'Saving fig for {algorithm}')
-    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.png')
+    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/715_{algorithm}secnd_wdw.png')
     plt.clf()
 
     print(best_hparam)
@@ -209,7 +209,7 @@ def Sherpa_Train_CNN():
 
     parameters = [
                   sherpa.Discrete('window_size2', [1,30])] # range of window sizes to test # sherpa.Discrete('window_size1', [1,30]),
-    alg = sherpa.algorithms.RandomSearch(max_num_trials=60) # 100 trials
+    alg = sherpa.algorithms.RandomSearch(max_num_trials=100) # 100 trials
 
     study = sherpa.Study(parameters=parameters,
                         algorithm=alg,

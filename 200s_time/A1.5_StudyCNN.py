@@ -468,30 +468,35 @@ if __name__ == "__main__":
     print(f'Non-training RCR count {len(RCR_non_training_indices)} Non-training Backlobe count {len(BL_non_training_indices)}')
 
     algorithm = 'RS'
+    from collections import Counter
+
+    # Load and convert to list
     best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.npy')
+    best_hparam = best_hparam.tolist()
 
+    # Count frequency of each element
+    count = Counter(best_hparam)
+    most_common_element, most_common_count = count.most_common(1)[0]
+
+    # Print best setting
+    print(f'Best setting: {most_common_element}')
+
+    # Plot histogram
+    bins = np.linspace(1, 60, 60)
+    plt.hist(best_hparam, bins, edgecolor='black')
+    plt.xlabel('Window size2')
+    plt.ylabel('Count')
+
+    # Annotate most common value
+    plt.text(most_common_element, most_common_count + 0.5,
+            f'Best: {most_common_element}',
+            ha='center', va='bottom', fontsize=10, color='red')
+
+    # Save and clear figure
+    print(f'Saving fig for {algorithm}')
+    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.png')
+    plt.clf()
     
-    print(best_hparam)
-    print(len(best_hparam))
-
-
-
-    # from collections import Counter
-
-    # best_hparam = best_hparam.tolist()
-    # count = Counter(best_result)
-    # most_common_element, most_common_count = count.most_common(1)[0]
-    # print(f'best setting: {most_common_element}')
-    # bins = np.linspace(1,60,60)
-    # plt.hist(best_hparam, bins)
-    # plt.xlabel('Window size2')
-    # plt.ylabel('count')
-    # plt.text(most_common_element, most_common_count, f'Best: {most_common_element}', ha='center', va='bottom', fontsize=10, color='red')
-    # print(f'saving fig for {algorithm}')
-    # plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.png')
-    # plt.clf()
-
-
     import sys
     sys.exit()
 

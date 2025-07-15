@@ -36,7 +36,7 @@ def saves_best_result(best_result, algorithm=''):
     hparam = best_result['window_size2']
     hparam_arr = np.array([hparam])
     
-    best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/715_{algorithm}secnd_wdw.npy')
+    best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.npy')
 
 
     best_hparam = np.concatenate((best_hparam, hparam_arr))

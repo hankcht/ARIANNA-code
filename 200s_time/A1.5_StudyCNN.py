@@ -36,11 +36,8 @@ def saves_best_result(best_result, algorithm=''):
     hparam = best_result['window_size2']
     hparam_arr = np.array([hparam])
     
-    try:
-        best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.npy')
-    except FileNotFoundError as e:
-        print(e)
-        best_hparam = np.array([])  
+    best_hparam = np.load(f'/pub/tangch3/ARIANNA/DeepLearning/sherpa_output/{algorithm}secnd_wdw.npy')
+
 
     best_hparam = np.concatenate((best_hparam, hparam_arr))
 
@@ -49,11 +46,12 @@ def saves_best_result(best_result, algorithm=''):
 
     from collections import Counter
 
+    best_hparam = best_hparam.tolist()
     count = Counter(best_result)
     most_common_element, most_common_count = count.most_common(1)[0]
     print(f'best setting: {most_common_element}')
     bins = np.linspace(1,60,60)
-    plt.hist(best_result, bins)
+    plt.hist(best_hparam, bins)
     plt.xlabel('Window size2')
     plt.ylabel('count')
     plt.text(most_common_element, most_common_count, f'Best: {most_common_element}', ha='center', va='bottom', fontsize=10, color='red')
@@ -471,6 +469,7 @@ if __name__ == "__main__":
 
   
     model = Sherpa_Train_CNN()
+
 
     import sys
     sys.exit()

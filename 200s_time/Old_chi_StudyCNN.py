@@ -24,7 +24,7 @@ import templateCrossCorr as txc
 import matplotlib
 from matplotlib import pyplot as plt
 matplotlib.use('Agg')
-from A0_Utilities import getMaxChi, getMaxSNR, load_sim, load_data, pT, load_sim_rcr
+from A0_Utilities import getMaxChi, getMaxSNR, load_sim, load_data, pT
 
 def saves_best_result(best_result, algorithm=''):
     """
@@ -374,7 +374,7 @@ elif amp == '100s':
     station_id = [13,15,18]
 
 path = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'                                                                                                     #Set which amplifier to run on
-sim_folder = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/{amp}/5.28.25/'
+RCR_path = f'simulatedRCRs/{amp}_2.9.24/'
 backlobe_path = f'simulatedBacklobes/{amp}_2.9.24/'
 
 model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/{amp}_time/'                                  
@@ -386,7 +386,7 @@ timestamp = current_datetime.strftime("%Y-%m-%d_%H-%M") # Format the datetime ob
 
 if __name__ == "__main__":  
 
-    rcr = load_sim_rcr(sim_folder, noise_enabled=True, filter_enabled=True, amp=amp)
+    rcr, sim_Backlobe = load_sim(path, RCR_path, backlobe_path, amp)
     data_Backlobe = []
     data_Backlobe_UNIX = [] 
     data_chi = []
@@ -402,7 +402,8 @@ if __name__ == "__main__":
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
     data_chi = np.array(data_chi)
     # model = keras.models.load_model('/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/data_data_2025-06-02_09-45_RCR_BL_model_2Layer_two_ws_stdy.h5')
-    # rcr = np.array(rcr)z
+    # rcr = np.array(rcr)
+    # data_Backlobe = np.array(data_Backlobe)
     # prob_RCR = model.predict(rcr)
     # prob_Backlobe = model.predict(data_Backlobe)
 
@@ -440,6 +441,10 @@ if __name__ == "__main__":
         
     #     print(f'------> Saved pot_RCR trace for event {original_event_index} to {plot_filename}')
     
+    model = Sherpa_Train_CNN()
+
+    import sys
+    sys.exit()
 
 
     # With argparse, we can either use [1] sim BL, or [2] "BL data events" 
@@ -448,13 +453,16 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if_sim = args.BLsimOrdata
 
-
-    Backlobe = data_Backlobe # Using [2]
-    print('using data Backlobe for training')
+    if if_sim == 'sim_data' or if_sim == 'sim_sim':
+        Backlobe = sim_Backlobe # Using [1]
+        print(f'using sim Backlobe for training')
+    elif if_sim == 'data_sim' or if_sim == 'data_data':
+        Backlobe = data_Backlobe # Using [2]
+        print('using data Backlobe for training')
 
     Backlobe = np.array(Backlobe)
     data_Backlobe_UNIX = np.array(data_Backlobe_UNIX)
-    print(f'RCR shape: {rcr.shape} Backlobe shape: {Backlobe.shape}')
+    print(f'RCR shape: {rcr.shape} Backlobe shape: {if_sim} {Backlobe.shape}')
 
     # take a random selection because events are ordered based off CR simulated, so avoids overrepresenting particular Cosmic Rays
     RCR_training_indices = np.random.choice(rcr.shape[0], size=TrainCut, replace=False)
@@ -470,11 +478,6 @@ if __name__ == "__main__":
     print(f'Non-training RCR count {len(RCR_non_training_indices)} Non-training Backlobe count {len(BL_non_training_indices)}')
 
   
-    model = Sherpa_Train_CNN()
-
-    import sys
-    sys.exit()
-
 
 
     # Now Train

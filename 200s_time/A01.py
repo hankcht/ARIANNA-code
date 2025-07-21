@@ -9,7 +9,7 @@ from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, Flatten
 from tensorflow.keras.models import Sequential
 from NuRadioReco.utilities import units
-from A0_Utilities import load_sim_rcr, load_data, pT
+from Util import load_sim_rcr, load_data, pT
 
 
 # --- Configuration ---

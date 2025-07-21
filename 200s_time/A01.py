@@ -1,22 +1,13 @@
-# A1_TrainCNN.py
-
-# Standard library imports
 import os
 import pickle
 from datetime import datetime
-
-# Third-party imports
 import numpy as np
 import matplotlib
-
-# Set backend before importing pyplot to avoid GUI issues
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, Flatten
 from tensorflow.keras.models import Sequential
-
-# Local application/library specific imports
 from NuRadioReco.utilities import units
 from A0_Utilities import load_sim_rcr, load_data, pT
 
@@ -50,9 +41,9 @@ def get_config():
 
 
 # --- Data Loading and Preparation ---
-def load_and_prepare_data(config):
+def load_and_prep_data_for_training(config):
     """
-    Loads simulation and experimental data, and prepares it for training/testing.
+    Loads sim RCR and data Backlobe, selects random subset for training
 
     Args:
         config (dict): Configuration dictionary.
@@ -68,17 +59,11 @@ def load_and_prepare_data(config):
 
     print(f"Loading data for amplifier type: {amp}")
 
-    sim_rcr = load_sim_rcr(sim_folder, noise_enabled=False,
-                           filter_enabled=True, amp=amp)
+    sim_rcr = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
 
-    backlobe_data = {
-        'snr': [], 'chi2016': [], 'chiRCR': [],
-        'traces2016': [], 'tracesRCR': [], 'unix': []
-    }
+    backlobe_data = {'snr': [], 'chi2016': [], 'chiRCR': [], 'traces2016': [], 'tracesRCR': [], 'unix': []}
     for s_id in station_ids:
-        snr, chi2016, chiRCR, traces2016, tracesRCR, unix = load_data(
-            config['loading_data_type'], amp_type=amp, station_id=s_id
-        )
+        snr, chi2016, chiRCR, traces2016, tracesRCR, unix = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
         backlobe_data['snr'].extend(snr)
         backlobe_data['chi2016'].extend(chi2016)
         backlobe_data['chiRCR'].extend(chiRCR)
@@ -91,24 +76,18 @@ def load_and_prepare_data(config):
     backlobe_traces_rcr = np.array(backlobe_data['tracesRCR'])
 
     # pick random subsets for training
-    rcr_training_indices = np.random.choice(
-        sim_rcr.shape[0], size=train_cut, replace=False)
-    bl_training_indices = np.random.choice(
-        backlobe_traces_2016.shape[0], size=train_cut, replace=False)
+    rcr_training_indices = np.random.choice(sim_rcr.shape[0], size=train_cut, replace=False)
+    bl_training_indices = np.random.choice(backlobe_traces_2016.shape[0], size=train_cut, replace=False)
 
     training_rcr = sim_rcr[rcr_training_indices, :]
     training_backlobe = backlobe_traces_2016[bl_training_indices, :]
 
-    rcr_non_training_indices = np.setdiff1d(
-        np.arange(sim_rcr.shape[0]), rcr_training_indices)
-    bl_non_training_indices = np.setdiff1d(
-        np.arange(backlobe_traces_2016.shape[0]), bl_training_indices)
+    rcr_non_training_indices = np.setdiff1d(np.arange(sim_rcr.shape[0]), rcr_training_indices)
+    bl_non_training_indices = np.setdiff1d(np.arange(backlobe_traces_2016.shape[0]), bl_training_indices)
 
     print(f'RCR shape: {sim_rcr.shape}, Backlobe shape: {backlobe_traces_2016.shape}')
-    print(f'Training shape RCR {training_rcr.shape}, '
-          f'Training Shape Backlobe {training_backlobe.shape}, TrainCut {train_cut}')
-    print(f'Non-training RCR count {len(rcr_non_training_indices)}, '
-          f'Non-training Backlobe count {len(bl_non_training_indices)}')
+    print(f'Training shape RCR {training_rcr.shape}, Training Shape Backlobe {training_backlobe.shape}, TrainCut {train_cut}')
+    print(f'Non-training RCR count {len(rcr_non_training_indices)}, Non-training Backlobe count {len(bl_non_training_indices)}')
 
     return {
         'training_rcr': training_rcr,
@@ -201,9 +180,8 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     os.makedirs(model_path, exist_ok=True)
     os.makedirs(plot_path, exist_ok=True)
 
-    history_file = os.path.join(
-        model_path, config['history_filename_template'].format(timestamp=timestamp))
-    with open(history_file, 'wb') as f:
+    history_file = os.path.join(model_path, config['history_filename_template'].format(timestamp=timestamp))
+    with open(history_file, 'wb') as f: 
         pickle.dump(history.history, f)
     print(f'Training history saved to: {history_file}')
 
@@ -235,10 +213,9 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
 
 
 # --- Model Evaluation ---
-def evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all,
-                               output_cut_value):
+def evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all, output_cut_value):
     """
-    Evaluates the model on full datasets and calculates efficiencies.
+    Evaluates the model on above curve Backlobe in RCR template.
 
     Args:
         model (keras.Model): The trained Keras model.
@@ -289,13 +266,8 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     dense_val = False
     plt.figure(figsize=(8, 6))
 
-    # Split long lines for plt.hist calls
-    plt.hist(prob_backlobe, bins=20, range=(0, 1), histtype='step',
-             color='blue', linestyle='solid',
-             label=f'Backlobe {len(prob_backlobe)}', density=dense_val)
-    plt.hist(prob_rcr, bins=20, range=(0, 1), histtype='step',
-             color='red', linestyle='solid',
-             label=f'RCR {len(prob_rcr)}', density=dense_val)
+    plt.hist(prob_backlobe, bins=20, range=(0, 1), histtype='step', color='blue', linestyle='solid', label=f'Backlobe {len(prob_backlobe)}', density=dense_val)
+    plt.hist(prob_rcr, bins=20, range=(0, 1), histtype='step', color='red', linestyle='solid', label=f'RCR {len(prob_rcr)}', density=dense_val)
 
     plt.xlabel('Network Output', fontsize=18)
     plt.ylabel('Number of Events', fontsize=18)
@@ -313,29 +285,19 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     plt.legend(loc='upper left', fontsize=8)
 
     ax = plt.gca()
-    ax.text(0.35, 0.75, f'RCR efficiency: {rcr_efficiency:.2f}%',
-            fontsize=12, transform=ax.transAxes)
-    ax.text(0.35, 0.70, f'Backlobe efficiency: {backlobe_efficiency:.4f}%',
-            fontsize=12, transform=ax.transAxes)
-    ax.text(0.35, 0.65, f'TrainCut: {train_cut}',
-            fontsize=12, transform=ax.transAxes)
+    ax.text(0.35, 0.75, f'RCR efficiency: {rcr_efficiency:.2f}%', fontsize=12, transform=ax.transAxes)
+    ax.text(0.35, 0.70, f'Backlobe efficiency: {backlobe_efficiency:.4f}%', fontsize=12, transform=ax.transAxes)
+    ax.text(0.35, 0.65, f'TrainCut: {train_cut}', fontsize=12, transform=ax.transAxes)
     plt.axvline(x=output_cut_value, color='y', label='cut', linestyle='--')
-
-    # Aligned arguments for better readability and PEP 8
-    ax.annotate('BL', xy=(0.0, -0.1), xycoords='axes fraction',
-                ha='left', va='center', fontsize=12, color='blue')
-    ax.annotate('RCR', xy=(1.0, -0.1), xycoords='axes fraction',
-                ha='right', va='center', fontsize=12, color='red')
-
+    ax.annotate('BL', xy=(0.0, -0.1), xycoords='axes fraction', ha='left', va='center', fontsize=12, color='blue')
+    ax.annotate('RCR', xy=(1.0, -0.1), xycoords='axes fraction', ha='right', va='center', fontsize=12, color='red')
     plt.subplots_adjust(left=0.15, right=0.85, bottom=0.15, top=0.9)
 
-    hist_file = os.path.join(
-        plot_path, config['histogram_filename_template'].format(timestamp=timestamp, amp=amp))
+    hist_file = os.path.join(plot_path, config['histogram_filename_template'].format(timestamp=timestamp, amp=amp))
     print(f'saving {hist_file}')
     plt.savefig(hist_file)
     plt.close()
     print(f'------> {amp} Done!')
-
 
 
 # --- Main Execution Flow ---
@@ -352,31 +314,24 @@ def main():
     elif amp == '100s':
         config['noise_rms'] = config['noise_rms_100s']
         config['station_ids'] = config['station_ids_100s']
-    else:
-        raise ValueError(f"Unsupported amplifier type: {amp}")
 
-    config['model_path'] = os.path.join(
-        config['base_model_path'], f"{amp}_time/new_chi")
-    config['loss_accuracy_plot_path'] = os.path.join(
-        config['base_plot_path'], 'Loss_Accuracy')
-    config['network_output_plot_path'] = os.path.join(
-        config['base_plot_path'], 'Network_Output')
+    config['model_path'] = os.path.join(config['base_model_path'], f"{amp}_time/new_chi")
+    config['loss_accuracy_plot_path'] = os.path.join(config['base_plot_path'], 'Loss_Accuracy')
+    config['network_output_plot_path'] = os.path.join(config['base_plot_path'], 'Network_Output')
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
     print(f"Starting CNN training at {timestamp} for {amp} amplifier.")
 
-    data = load_and_prepare_data(config)
+    data = load_and_prep_data_for_training(config)
     training_rcr = data['training_rcr']
     training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR_all']
 
-    model, history = train_cnn_model(
-        training_rcr, training_backlobe, config)
+    model, history = train_cnn_model(training_rcr, training_backlobe, config)
     print('------> Training is Done!')
 
-    model_save_path = os.path.join(
-        config['model_path'], config['model_filename_template'].format(timestamp=timestamp))
+    model_save_path = os.path.join(config['model_path'], config['model_filename_template'].format(timestamp=timestamp))
     model.save(model_save_path)
     print(f'Model saved to: {model_save_path}')
 
@@ -384,15 +339,11 @@ def main():
         history, config['model_path'], config['loss_accuracy_plot_path'], timestamp, amp, config)
 
     prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \
-        evaluate_model_performance(
-            model, sim_rcr_all, data_backlobe_traces_rcr_all, config['output_cut_value']
-        )
+        evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all, config['output_cut_value'])
 
-    plot_network_output_histogram(
-        prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency, config, timestamp
-    )
+    plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency, config, timestamp)
 
-    # Example for plotting individual traces if needed (currently commented out in original)
+    # Plotting individual traces if needed 
     # indices = np.where(prob_backlobe.flatten() > config['output_cut_value'])[0]
     # for index in indices:
     #     plot_traces_save_path = os.path.join(config['network_output_plot_path'],

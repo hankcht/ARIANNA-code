@@ -155,7 +155,7 @@ else:
     attenuation_model = None
 
 # Setup detector
-det = generic_detector.GenericDetector(json_filename=f'configurations/gen2_{loc}_old_{amp_type}s_footprint{depthLayer}m_infirn.json', assume_inf=False, antenna_by_depth=False, default_station=1)
+det = generic_detector.GenericDetector(json_filename=f'/pub/tangch3/ARIANNA/DeepLearning/configurations/gen2_{loc}_old_{amp_type}s_footprint{depthLayer}m_infirn.json', assume_inf=False, antenna_by_depth=False, default_station=1)
 det.update(astropy.time.Time('2018-1-1'))
 station_id = 1
 

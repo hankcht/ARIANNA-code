@@ -525,28 +525,52 @@ if __name__ == "__main__":
 
     amp = '200s'
 
-    data =[]
-    for id in station_id:
-        snr, chi2016, chiRCR, traces2016, tracesRCR, unix = load_data('new_chi_above_curve', amp_type = amp, station_id=id)
-        data.extend(tracesRCR)
-
-    data = np.array(data)
-    master_id = 578
-    argument = 'stations'
-    
-    coinc_data = load_coincidence_pkl(master_id, argument, 13)
-    event = coinc_data['Traces']
-    print(isinstance(event, list))  
-    event = np.array(event)
-    print(event.shape)
+    '''run all station data'''
+    data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
+    data = load_520_data(station_id, '', data_folder, single_load=False)
+    All_Traces = data['Traces']
 
     model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi'
-    model = keras.models.load_model(f'{model_path}/2025-07-09_11-25_RCR_Backlobe_model_2Layer.h5')
-    no = model.predict(event)
-    print(no)
-    event_id = coinc_data['event_ids']
-    print(f'event id is {event_id}')
-    prob_Backlobe = model.predict(data)
+    model_filename = '2025-07-21_12-00_RCR_Backlobe_model_2Layer.h5'
+    model = keras.models.load_model(os.path.join(model_path, model_filename))
+
+    All_Traces_expanded = np.expand_dims(All_Traces, axis=-1)
+
+    no = model.predict(All_Traces_expanded)
+
+    plt.figure(figsize=(10, 6))
+    plt.hist(no, bins='auto', edgecolor='black')
+    plt.ylim(bottom=0)
+    plt.title('Histogram of CNN Model Output')
+    plt.xlabel('Output Value (e.g., Probability, Score)')
+    plt.ylabel('Number of Events (Frequency)')
+    plt.grid(axis='y', alpha=0.75)
+    plot_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/'
+    plt.savefig(f'{plot_path}testplotall_netoutput__RCR_Backlobe_model_2Layer.png')
+    '''run on event 578'''
+    # data =[]
+    # for id in station_id:
+    #     snr, chi2016, chiRCR, traces2016, tracesRCR, unix = load_data('new_chi_above_curve', amp_type = amp, station_id=id)
+    #     data.extend(tracesRCR)
+
+    # data = np.array(data)
+    # master_id = 578
+    # argument = 'stations'
+    
+    # coinc_data = load_coincidence_pkl(master_id, argument, 13)
+    # event = coinc_data['Traces']
+    # print(isinstance(event, list))  
+    # event = np.array(event)
+    # print(event.shape)
+
+    # model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi'
+    # model = keras.models.load_model(f'{model_path}/2025-07-21_12-00_RCR_Backlobe_model_2Layer.h5')
+    # no = model.predict(event)
+    # print(no)
+    # event_id = coinc_data['event_ids']
+    # print(f'event id is {event_id}')
+    # prob_Backlobe = model.predict(data)
+
 
 
     # network_output_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Network_Output'

@@ -90,13 +90,13 @@ def load_and_prepare_data(config):
     backlobe_traces_2016 = np.array(backlobe_data['traces2016'])
     backlobe_traces_rcr = np.array(backlobe_data['tracesRCR'])
 
+    # pick random subsets for training
     rcr_training_indices = np.random.choice(
         sim_rcr.shape[0], size=train_cut, replace=False)
     bl_training_indices = np.random.choice(
         backlobe_traces_2016.shape[0], size=train_cut, replace=False)
 
     training_rcr = sim_rcr[rcr_training_indices, :]
-    # Corrected variable name: use backlobe_traces_2016 for training data
     training_backlobe = backlobe_traces_2016[bl_training_indices, :]
 
     rcr_non_training_indices = np.setdiff1d(
@@ -136,8 +136,7 @@ def build_cnn_model(n_channels, n_samples):
         keras.Model: The compiled Keras model.
     """
     model = Sequential()
-    model.add(Conv2D(20, (4, 10), activation='relu',
-                     input_shape=(n_channels, n_samples, 1), groups=1))
+    model.add(Conv2D(20, (4, 10), activation='relu', input_shape=(n_channels, n_samples, 1), groups=1))
     model.add(Conv2D(10, (1, 10), activation='relu'))
     model.add(Dropout(0.5))
     model.add(Flatten())
@@ -165,18 +164,14 @@ def train_cnn_model(training_rcr, training_backlobe, config):
     n_channels = x.shape[1]
     x = np.expand_dims(x, axis=-1)
 
-    y = np.vstack((np.ones((training_rcr.shape[0], 1)),
-                   np.zeros((training_backlobe.shape[0], 1))))
+    y = np.vstack((np.ones((training_rcr.shape[0], 1)), np.zeros((training_backlobe.shape[0], 1)))) # 1s for RCR (signal)
     s = np.arange(x.shape[0])
     np.random.shuffle(s)
     x = x[s]
     y = y[s]
     print(f"Training data shape: {x.shape}, label shape: {y.shape}")
 
-    callbacks_list = [
-        keras.callbacks.EarlyStopping(monitor='val_loss',
-                                      patience=config['early_stopping_patience'])
-    ]
+    callbacks_list = [keras.callbacks.EarlyStopping(monitor='val_loss', patience=config['early_stopping_patience'])]
 
     model = build_cnn_model(n_channels, n_samples)
     model.summary()
@@ -220,8 +215,7 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     plt.ylabel('Loss')
     plt.title('Training vs Validation Loss')
     plt.legend()
-    loss_plot_file = os.path.join(
-        plot_path, config['loss_plot_filename_template'].format(timestamp=timestamp, amp=amp))
+    loss_plot_file = os.path.join(plot_path, config['loss_plot_filename_template'].format(timestamp=timestamp, amp=amp))
     plt.savefig(loss_plot_file)
     plt.close()
     print(f'Loss plot saved to: {loss_plot_file}')
@@ -234,8 +228,7 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     plt.ylabel('Accuracy')
     plt.title('Training vs Validation Accuracy')
     plt.legend()
-    accuracy_plot_file = os.path.join(
-        plot_path, config['accuracy_plot_filename_template'].format(timestamp=timestamp, amp=amp))
+    accuracy_plot_file = os.path.join(plot_path, config['accuracy_plot_filename_template'].format(timestamp=timestamp, amp=amp))
     plt.savefig(accuracy_plot_file)
     plt.close()
     print(f'Accuracy plot saved to: {accuracy_plot_file}')
@@ -293,15 +286,16 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     plot_path = os.path.join(config['base_plot_path'], 'Network_Output')
     os.makedirs(plot_path, exist_ok=True)
 
-    plt.figure(figsize=(8, 6))
     dense_val = False
+    plt.figure(figsize=(8, 6))
 
+    # Split long lines for plt.hist calls
     plt.hist(prob_backlobe, bins=20, range=(0, 1), histtype='step',
-             color='blue', linestyle='solid', label=f'Backlobe {len(prob_backlobe)}',
-             density=dense_val)
+             color='blue', linestyle='solid',
+             label=f'Backlobe {len(prob_backlobe)}', density=dense_val)
     plt.hist(prob_rcr, bins=20, range=(0, 1), histtype='step',
-             color='red', linestyle='solid', label=f'RCR {len(prob_rcr)}',
-             density=dense_val)
+             color='red', linestyle='solid',
+             label=f'RCR {len(prob_rcr)}', density=dense_val)
 
     plt.xlabel('Network Output', fontsize=18)
     plt.ylabel('Number of Events', fontsize=18)
@@ -313,27 +307,26 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     hist_values_bl, _ = np.histogram(prob_backlobe, bins=20, range=(0, 1))
     hist_values_rcr, _ = np.histogram(prob_rcr, bins=20, range=(0, 1))
     max_overall_hist = max(np.max(hist_values_bl), np.max(hist_values_rcr))
-    if max_overall_hist > 0:
-        plt.ylim(1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
-    else:
-        plt.ylim(1, 100)
 
+    plt.ylim(0, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
     plt.tick_params(axis='both', which='major', labelsize=12)
     plt.legend(loc='upper left', fontsize=8)
 
     ax = plt.gca()
-    ax.text(0.05, 0.75, f'RCR efficiency: {rcr_efficiency:.2f}%',
+    ax.text(0.35, 0.75, f'RCR efficiency: {rcr_efficiency:.2f}%',
             fontsize=12, transform=ax.transAxes)
-    ax.text(0.05, 0.70, f'Backlobe efficiency: {backlobe_efficiency:.4f}%',
+    ax.text(0.35, 0.70, f'Backlobe efficiency: {backlobe_efficiency:.4f}%',
             fontsize=12, transform=ax.transAxes)
-    ax.text(0.05, 0.65, f'TrainCut: {train_cut}',
+    ax.text(0.35, 0.65, f'TrainCut: {train_cut}',
             fontsize=12, transform=ax.transAxes)
     plt.axvline(x=output_cut_value, color='y', label='cut', linestyle='--')
 
-    plt.annotate('BL', xy=(0.0, -0.1), xycoords='axes fraction', ha='left',
-                 va='center', fontsize=12, color='blue')
-    plt.annotate('RCR', xy=(1.0, -0.1), xycoords='axes fraction', ha='right',
-                 va='center', fontsize=12, color='red')
+    # Aligned arguments for better readability and PEP 8
+    ax.annotate('BL', xy=(0.0, -0.1), xycoords='axes fraction',
+                ha='left', va='center', fontsize=12, color='blue')
+    ax.annotate('RCR', xy=(1.0, -0.1), xycoords='axes fraction',
+                ha='right', va='center', fontsize=12, color='red')
+
     plt.subplots_adjust(left=0.15, right=0.85, bottom=0.15, top=0.9)
 
     hist_file = os.path.join(
@@ -342,6 +335,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     plt.savefig(hist_file)
     plt.close()
     print(f'------> {amp} Done!')
+
 
 
 # --- Main Execution Flow ---

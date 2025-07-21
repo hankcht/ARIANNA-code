@@ -1,7 +1,7 @@
 from NuRadioReco.utilities import units
-# import NuRadioReco.modules.io.coreas.readCoREAS
-# import NuRadioReco.modules.io.coreas.readCoREASStationGrid
-import readCoREASStationGrid
+import NuRadioReco.modules.io.coreas.readCoREAS
+import NuRadioReco.modules.io.coreas.readCoREASStationGrid
+# import readCoREASStationGrid
 import NuRadioReco.modules.io.coreas.simulationSelector
 import NuRadioReco.modules.efieldToVoltageConverter
 import NuRadioReco.modules.channelGenericNoiseAdder

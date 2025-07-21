@@ -94,9 +94,6 @@ def get_max_all_chi(
     )
 
 
-# ---------- TEMPLATE LOADING ---------- #
-
-
 def load_single_template(series):
     """
     Load single template pickle for given series (e.g., 100 or 200).
@@ -141,9 +138,6 @@ def load_multiple_templates(series, date='3.29.25', add_single=False):
         templates[len(templates)] = load_single_template(series)
 
     return templates
-
-
-# ---------- SIGNAL PROCESSING ---------- #
 
 
 def get_max_snr(traces, noise_rms):
@@ -358,7 +352,7 @@ def siminfo_for_plotting(type_, amp, simulation_date, templates_2016, templates_
 # ---------- PLOTTING ---------- #
 
 
-def plot_traces(
+def pT(
     traces,
     title,
     save_loc,

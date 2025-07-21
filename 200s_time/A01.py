@@ -310,8 +310,8 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     plt.xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0], fontsize=18)
     plt.yticks(fontsize=18)
 
-    hist_values_bl, _, _ = np.histogram(prob_backlobe, bins=20, range=(0, 1))
-    hist_values_rcr, _, _ = np.histogram(prob_rcr, bins=20, range=(0, 1))
+    hist_values_bl, _ = np.histogram(prob_backlobe, bins=20, range=(0, 1))
+    hist_values_rcr, _ = np.histogram(prob_rcr, bins=20, range=(0, 1))
     max_overall_hist = max(np.max(hist_values_bl), np.max(hist_values_rcr))
     if max_overall_hist > 0:
         plt.ylim(1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))

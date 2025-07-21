@@ -527,7 +527,7 @@ if __name__ == "__main__":
 
     '''run all station data'''
     data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
-    data = load_520_data(station_id, '', data_folder, single_load=False)
+    data = load_520_data(14, '', data_folder, single_load=False)
     All_Traces = data['Traces']
 
     model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi'

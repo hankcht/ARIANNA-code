@@ -181,13 +181,13 @@ if __name__ == "__main__":
 
     print("Total events:", len(coinc_dict))
     print("Example event IDs:", list(coinc_dict.keys())[:5])
-    
+
     sample_event_id = list(coinc_dict.keys())[0]
     event = coinc_dict[sample_event_id]
 
     print("Keys under one event:", event.keys())  # should show: numCoincidences, datetime, stations
-    print("Num coincidences:", event['numCoincidences'])
-    print("Datetime:", event['datetime'])
+    print("indices:", event['indices'])
+    print("event_ids:", event['event_ids'])
     print("Station IDs:", list(event['stations'].keys()))
 
 

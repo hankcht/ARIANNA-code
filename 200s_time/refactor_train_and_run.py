@@ -260,7 +260,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     amp = config['amp']
     output_cut_value = config['output_cut_value']
     train_cut = config['train_cut']
-    plot_path = os.path.join(config['base_plot_path'], 'Network_Output')
+    plot_path = os.path.join(config['base_plot_path'], 'network_output')
     os.makedirs(plot_path, exist_ok=True)
 
     dense_val = False

@@ -18,7 +18,7 @@ def get_config():
     return {
         'amp': '200s',
         'output_cut_value': 0.6,
-        'train_cut': 995,
+        'train_cut': 4000,
         'noise_rms_200s': 22.53 * units.mV,
         'noise_rms_100s': 20 * units.mV,
         'station_ids_200s': [14, 17, 19, 30],
@@ -32,7 +32,7 @@ def get_config():
         'history_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer_history.pkl',
         'loss_plot_filename_template': '{timestamp}_{amp}_loss_plot_RCR_Backlobe_model_2Layer.png',
         'accuracy_plot_filename_template': '{timestamp}_{amp}_accuracy_plot_RCR_Backlobe_model_2Layer.png',
-        'histogram_filename_template': '{timestamp}_{amp}_histogram.png',
+        'histogram_filename_template': '{timestamp}_{amp}_train_and_run_histogram.png',
         'early_stopping_patience': 5,
         'keras_epochs': 50,
         'keras_batch_size': 32,
@@ -297,7 +297,6 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     print(f'saving {hist_file}')
     plt.savefig(hist_file)
     plt.close()
-    print(f'------> {amp} Done!')
 
 
 def main():

@@ -31,7 +31,6 @@ def load_most_recent_model(base_model_path, amp, model_prefix=None):
     Returns:
         tuple: (loaded_model, timestamp_str)
     """
-    model_dir = os.path.join(base_model_path, f"{amp}_time")
     pattern = re.compile(r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2})_.*\.h5")
 
     now = time.time()
@@ -39,7 +38,7 @@ def load_most_recent_model(base_model_path, amp, model_prefix=None):
     smallest_diff = float('inf')
     best_timestamp = None
 
-    for fname in os.listdir(model_dir):
+    for fname in os.listdir(base_model_path):
         if not fname.endswith(".h5"):
             continue
         if model_prefix and model_prefix not in fname:
@@ -57,11 +56,11 @@ def load_most_recent_model(base_model_path, amp, model_prefix=None):
 
 
     if best_file:
-        model_path = os.path.join(model_dir, best_file)
+        model_path = os.path.join(base_model_path, best_file)
         print(f"Loading model: {model_path}")
         return keras.models.load_model(model_path), best_timestamp
     else:
-        raise FileNotFoundError(f"No suitable model file found in {model_dir}.")
+        raise FileNotFoundError(f"No suitable model file found in {base_model_path}.")
 
 
 
@@ -134,10 +133,8 @@ def load_all_coincidence_traces(pkl_path):
     return X, metadata
 
 
-def plot_histogram(prob_2016, prob_coincidence, amp, timestamp=None):
-    if timestamp is None:
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-
+def plot_histogram(prob_2016, prob_coincidence, amp, timestamp):
+    
     plt.figure(figsize=(8, 6))
     bins = 20
     range_vals = (0, 1)

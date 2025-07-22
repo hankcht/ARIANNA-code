@@ -33,10 +33,6 @@ def get_config():
         'loss_plot_filename_template': '{timestamp}_loss_plot_RCR_Backlobe_model_2Layer_{amp}.png',
         'accuracy_plot_filename_template': '{timestamp}_accuracy_plot_RCR_Backlobe_model_2Layer_{amp}.png',
         'histogram_filename_template': '{timestamp}_{amp}_histogram.png',
-        'verbose_fit': 1,
-        'keras_epochs': 100,
-        'keras_batch_size': 32,
-        'early_stopping_patience': 2
     }
 
 

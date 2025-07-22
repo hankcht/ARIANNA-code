@@ -20,7 +20,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     
     header += "#SBATCH --output={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.out'))
     header += "#SBATCH --error={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.err'))
-    # header += "#SBATCH --mail-type=fail,end\n"
+    header += "#SBATCH --mail-type=fail,end\n"
     header += "#SBATCH --mail-user=tangch3@uci.edu\n"
 
 
@@ -70,9 +70,9 @@ if multi_run == True:
         # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
         RunMultipleJobs(cmd , jobName=f'genericBatchJob')
 else: 
-        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py' #  B1_BLcurve.py 14
+        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py' #  B1_BLcurve.py 14
         # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
-        RunMultipleJobs(cmd , jobName=f'genericBatchJob')
+        RunMultipleJobs(cmd , jobName=f'workbench')
 
 
 

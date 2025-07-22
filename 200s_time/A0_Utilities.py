@@ -482,33 +482,34 @@ def load_520_data(station_id, param, data_folder, date_filter="5.20.25", single_
 
 def load_coincidence_pkl(master_id, argument, station_id,
     pkl_path="/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
-) :
-    '''
-    Parameters:
-        master_id (int): number to access corect master event
-        argument (str): Key under the event ('numCoincidences', 'datetime', or 'stations').
-        station_id (str): access event information depending on station number
-            is a dict {'indices', 'event_ids', 'Traces', 'SNR', 'ChiRCR', 'Chi2016', 'ChiBad', 'Zen', 'Azi', 'Times', 'PolAngle', 'PolAngleErr', 'ExpectedPolAngle'}
-    '''
+):
+    """
+    Load data from coincidence pickle file for a master event and argument.
+
+    Args:
+        master_id (int): master event ID.
+        argument (str): key under the event.
+        station_id (str): station ID key or empty string.
+        pkl_path (str): path to the pickle file.
+
+    Returns:
+        value corresponding to keys or empty dict if not found.
+    """
     with open(pkl_path, "rb") as f:
         coinc_dict = pickle.load(f)
 
-    try:
-        value = coinc_dict[master_id]
-        if isinstance(value, dict) and argument in value:
-            sub_value = value[argument]
-            # If 'argument' is 'stations' and we're looking deeper
-            if isinstance(sub_value, dict) and station_id in sub_value:
-                return sub_value[station_id] # is a dictionary
-            elif station_id == "":
-                return sub_value # is an int for number of coincidences or float for UNIX timestemp
-            else:
-                raise KeyError(f"Parameter '{station_id}' not found under '{argument}'")
-        else:
-            raise KeyError(f"Argument '{argument}' not found in event ID '{id}'")
-    except KeyError as e:
-        print(f"KeyError: {e}")
+    value = coinc_dict.get(master_id, {})
+    if not value:
         return {}
+
+    sub_value = value.get(argument, {})
+    if not sub_value:
+        return {}
+
+    if station_id == "":
+        return sub_value
+
+    return sub_value.get(station_id, {})
 
 
 if __name__ == "__main__":
@@ -526,39 +527,39 @@ if __name__ == "__main__":
     amp = '200s'
 
     '''run all station data'''
-    data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
-    data = load_520_data(14, '', data_folder, single_load=False)
-    All_Traces = data['Traces']
+    # data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
+    # data = load_520_data(14, '', data_folder, single_load=False)
+    # All_Traces = data['Traces']
 
-    model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi'
-    model_filename = '2025-07-21_12-00_RCR_Backlobe_model_2Layer.h5'
-    model = keras.models.load_model(os.path.join(model_path, model_filename))
+    # model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi'
+    # model_filename = '2025-07-21_12-00_RCR_Backlobe_model_2Layer.h5'
+    # model = keras.models.load_model(os.path.join(model_path, model_filename))
 
-    All_Traces_expanded = np.expand_dims(All_Traces, axis=-1)
+    # All_Traces_expanded = np.expand_dims(All_Traces, axis=-1)
 
-    no = model.predict(All_Traces_expanded)
+    # no = model.predict(All_Traces_expanded)
 
-    no = no.flatten()
-    original_size = len(no)
-    no = no[np.isfinite(no)]
-    filtered_size = len(no)
+    # no = no.flatten()
+    # original_size = len(no)
+    # no = no[np.isfinite(no)]
+    # filtered_size = len(no)
 
-    if original_size != filtered_size:
-        print(f"Warning: Removed {original_size - filtered_size} non-finite values (NaN/Inf) from 'no' before plotting.")
+    # if original_size != filtered_size:
+    #     print(f"Warning: Removed {original_size - filtered_size} non-finite values (NaN/Inf) from 'no' before plotting.")
 
-    plt.figure(figsize=(10, 6))
-    plt.hist(no, bins='auto', edgecolor='black')
-    plt.ylim(bottom=0)
-    plt.title('Histogram of CNN Model Output')
-    plt.xlabel('Output Value (e.g., Probability, Score)')
-    plt.ylabel('Number of Events (Frequency)')
-    plt.grid(axis='y', alpha=0.75)
+    # plt.figure(figsize=(10, 6))
+    # plt.hist(no, bins='auto', edgecolor='black')
+    # plt.ylim(bottom=0)
+    # plt.title('Histogram of CNN Model Output')
+    # plt.xlabel('Output Value (e.g., Probability, Score)')
+    # plt.ylabel('Number of Events (Frequency)')
+    # plt.grid(axis='y', alpha=0.75)
 
-    plot_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/'
-    os.makedirs(plot_path, exist_ok=True)
-    plt.savefig(f'{plot_path}testplotall_netoutput__RCR_Backlobe_model_2Layer.png')
+    # plot_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/'
+    # os.makedirs(plot_path, exist_ok=True)
+    # plt.savefig(f'{plot_path}testplotall_netoutput__RCR_Backlobe_model_2Layer.png')
 
-    print(f"Histogram saved to: {plot_path}testplotall_netoutput__RCR_Backlobe_model_2Layer.png")
+    # print(f"Histogram saved to: {plot_path}testplotall_netoutput__RCR_Backlobe_model_2Layer.png")
     '''run on event 578'''
     # data =[]
     # for id in station_id:

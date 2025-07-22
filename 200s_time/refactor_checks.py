@@ -176,18 +176,20 @@ if __name__ == "__main__":
 
     import pickle
 
-    with open("/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl", "rb") as f:
+    pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
+
+    with open(pkl_path, "rb") as f:
         coinc_dict = pickle.load(f)
 
     print("Total events:", len(coinc_dict))
     print("Example event IDs:", list(coinc_dict.keys())[:5])
 
-    sample_event_id = list(coinc_dict.keys())[0]
-    event = coinc_dict[sample_event_id]
-
-    print("Keys under one event:", event.keys())  # should show: numCoincidences, datetime, stations
-    print("indices:", event['indices'])
-    print("event_ids:", event['event_ids'])
-    print("Station IDs:", list(event['stations'].keys()))
-
+    event_id = 578  
+    if event_id in coinc_dict:
+        event = coinc_dict[event_id]
+        stations = event.get('stations', {})
+        for station_id, station_data in stations.items():
+            print(f"Event ID {event_id}, Station {station_id}")
+            print(f"  Indices: {station_data['indices']}")
+            print(f"  Event IDs: {station_data['event_ids']}")
 

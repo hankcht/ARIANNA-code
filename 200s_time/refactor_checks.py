@@ -139,7 +139,7 @@ def plot_histogram(prob_2016, prob_coincidence, amp, timestamp):
     bins = 20
     range_vals = (0, 1)
 
-    plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='green', linestyle='solid',
+    plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
              label=f'2016-Backlobes ({len(prob_2016)})', density=False)
     plt.hist(prob_coincidence, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',
              label=f'Coincidence-Events ({len(prob_coincidence)})', density=False)

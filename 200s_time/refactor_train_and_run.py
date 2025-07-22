@@ -313,7 +313,6 @@ def main():
 
     # Ensure all paths inside 'refactor' folder
     config['model_path'] = os.path.join(config['base_model_path'])
-    config['loss_accuracy_plot_path'] = os.path.join(config['base_plot_path'], 'Loss_Accuracy')
     config['network_output_plot_path'] = os.path.join(config['base_plot_path'], 'Network_Output')
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
@@ -337,7 +336,7 @@ def main():
 
     # Save training history & plots
     save_and_plot_training_history(
-        history, config['model_path'], config['loss_accuracy_plot_path'], timestamp, amp, config)
+        history, config['model_path'], config['base_plot_path'], timestamp, amp, config)
 
     # Evaluate & plot network output histogram
     prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \

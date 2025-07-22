@@ -140,12 +140,12 @@ def plot_histogram(prob_2016, prob_coincidence, amp, timestamp):
     range_vals = (0, 1)
 
     plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
-             label=f'2016-Backlobes ({len(prob_2016)})', density=False)
+             label=f'2016-Backlobes {len(prob_2016)}', density=False)
     plt.hist(prob_coincidence, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',
-             label=f'Coincidence-Events ({len(prob_coincidence)})', density=False)
+             label=f'Coincidence-Events {len(prob_coincidence)}', density=False)
 
-    plt.xlabel('Network Output', fontsize=16)
-    plt.ylabel('Number of Events', fontsize=16)
+    plt.xlabel('Network Output', fontsize=18)
+    plt.ylabel('Number of Events', fontsize=18)
     plt.yscale('log')
 
     hist_values_2016, _ = np.histogram(prob_2016, bins=20, range=(0, 1))

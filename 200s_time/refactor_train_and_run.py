@@ -282,12 +282,12 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
 
     plt.ylim(0, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
     plt.tick_params(axis='both', which='major', labelsize=12)
-    plt.legend(loc='upper left', fontsize=8)
+    plt.legend(loc='upper left', fontsize=12)
 
     ax = plt.gca()
-    ax.text(0.35, 0.75, f'RCR efficiency: {rcr_efficiency:.2f}%', fontsize=12, transform=ax.transAxes)
-    ax.text(0.35, 0.70, f'Backlobe efficiency: {backlobe_efficiency:.4f}%', fontsize=12, transform=ax.transAxes)
-    ax.text(0.35, 0.65, f'TrainCut: {train_cut}', fontsize=12, transform=ax.transAxes)
+    ax.text(0.32, 0.75, f'RCR efficiency: {rcr_efficiency:.2f}%', fontsize=12, transform=ax.transAxes)
+    ax.text(0.32, 0.70, f'Backlobe efficiency: {backlobe_efficiency:.4f}%', fontsize=12, transform=ax.transAxes)
+    ax.text(0.32, 0.65, f'TrainCut: {train_cut}', fontsize=12, transform=ax.transAxes)
     plt.axvline(x=output_cut_value, color='y', label='cut', linestyle='--')
     ax.annotate('BL', xy=(0.0, -0.1), xycoords='axes fraction', ha='left', va='center', fontsize=12, color='blue')
     ax.annotate('RCR', xy=(1.0, -0.1), xycoords='axes fraction', ha='right', va='center', fontsize=12, color='red')

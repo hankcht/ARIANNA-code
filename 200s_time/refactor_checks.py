@@ -1,41 +1,43 @@
 import os
-import numpy as np
 import re
 import time
 import pickle
+import numpy as np
+import matplotlib.pyplot as plt
 from glob import glob
 from datetime import datetime
+from tensorflow import keras
 
-# --- Configuration ---
+
 def get_config():
-    """Returns a dictionary of configuration parameters."""
     return {
         'amp': '200s',
-        # 'station_ids_200s': [14, 17, 19, 30],
-        # 'station_ids_100s': [13, 15, 18],
-        'base_sim_folder': '/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/',
-        'sim_date': '5.28.25',
-        'base_model_path': '/pub/tangch3/ARIANNA/DeepLearning/models/',
-        'base_plot_path': '/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/',
-        'loading_data_type': 'new_chi_above_curve',
-        'model_filename_template': '{timestamp}_RCR_Backlobe_model_2Layer.h5',
-        'history_filename_template': '{timestamp}_RCR_Backlobe_model_2Layer_history.pkl',
-        'loss_plot_filename_template': '{timestamp}_loss_plot_RCR_Backlobe_model_2Layer_{amp}.png',
-        'accuracy_plot_filename_template': '{timestamp}_accuracy_plot_RCR_Backlobe_model_2Layer_{amp}.png',
-        'histogram_filename_template': '{timestamp}_{amp}_histogram.png',
-        'verbose_fit': 1,
-        'keras_epochs': 100,
-        'keras_batch_size': 32,
-        'early_stopping_patience': 2
+        'base_model_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/models/',
+        'base_plot_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/network_output/',
+        'model_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer.h5',
+        'histogram_filename_template': '{timestamp}_{amp}_checks_histogram.png',
     }
 
 
-def load_most_recent_model(model_dir, model_prefix=None):
+def load_most_recent_model(base_model_path, amp, model_prefix=None):
+    """
+    Load the most recent model matching the prefix from the specified amp subfolder.
+    
+    Args:
+        base_model_path (str): base path to the model directory.
+        amp (str): amplification or timing setting (e.g., '100s', '200s').
+        model_prefix (str, optional): prefix to match in model filename.
+
+    Returns:
+        tuple: (loaded_model, timestamp_str)
+    """
+    model_dir = os.path.join(base_model_path, f"{amp}_time")
     pattern = re.compile(r"(\d{4}-\d{2}-\d{2}_\d{2}-\d{2})_.*\.h5")
 
     now = time.time()
     best_file = None
     smallest_diff = float('inf')
+    best_timestamp = None
 
     for fname in os.listdir(model_dir):
         if not fname.endswith(".h5"):
@@ -45,43 +47,31 @@ def load_most_recent_model(model_dir, model_prefix=None):
 
         match = pattern.search(fname)
         if match:
-            try:
-                timestamp = match.group(1)
-                model_time = datetime.strptime(timestamp, "%Y-%m-%d_%H-%M").timestamp()
-                diff = now - model_time
-                if 0 <= diff < smallest_diff:
-                    smallest_diff = diff
-                    best_file = fname
-            except Exception:
-                continue
+            timestamp = match.group(1)
+            model_time = datetime.strptime(timestamp, "%Y-%m-%d_%H-%M").timestamp()
+            diff = now - model_time
+            if 0 <= diff < smallest_diff:
+                smallest_diff = diff
+                best_file = fname
+                best_timestamp = timestamp
+
 
     if best_file:
-        return os.path.join(model_dir, best_file)
+        model_path = os.path.join(model_dir, best_file)
+        print(f"Loading model: {model_path}")
+        return keras.models.load_model(model_path), best_timestamp
     else:
-        raise FileNotFoundError("No suitable model file found.")
+        raise FileNotFoundError(f"No suitable model file found in {model_dir}.")
+
 
 
 def load_2016_backlobe_templates(file_paths, amp_type='200s'):
-    """
-    Loads and stacks .npy files into a NumPy array for model prediction,
-    and returns metadata (station, chi, snr, trace) for each waveform.
-
-    Args:
-        file_paths (list of str): Paths to .npy files.
-        amp_type (str): '200s' or '100s' to filter by station group.
-
-    Returns:
-        tuple:
-            - np.ndarray: Array of shape (N, ...) suitable for model.predict()
-            - dict: Metadata for each trace {index: {'station', 'chi', 'snr', 'trace'}}
-    """
     station_groups = {
         '200s': [14, 17, 19, 30],
         '100s': [13, 15, 18]
     }
 
-    allowed_stations = station_groups.get(amp_type)
-
+    allowed_stations = station_groups.get(amp_type, [])
     arrays = []
     metadata = {}
 
@@ -106,29 +96,15 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
     return np.stack(arrays, axis=0), metadata
 
 
-def load_all_coincidence_traces(pkl_path="/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"):
-    """
-    Load and concatenate all traces from coincidence pickle file for all events and stations,
-    returning:
-        - X: concatenated np.ndarray (N, ...)
-        - metadata: dict indexed by trace with info (event_id, station_id, SNR, ChiRCR, etc.)
-
-    Args:
-        pkl_path (str): path to the coincidence pickle file.
-
-    Returns:
-        tuple:
-            - np.ndarray: stacked traces
-            - dict: metadata per trace
-    """
+def load_all_coincidence_traces(pkl_path):
     with open(pkl_path, "rb") as f:
         coinc_dict = pickle.load(f)
 
     all_traces = []
     metadata = {}
-    idx = 0  # global trace index
+    idx = 0
 
-    for master_id, event_data in coinc_dict.items():
+    for event_data in coinc_dict.values():
         stations = event_data.get('stations', {})
         for station_id, station_dict in stations.items():
             traces = station_dict.get('Traces')
@@ -136,9 +112,7 @@ def load_all_coincidence_traces(pkl_path="/dfs8/sbarwick_lab/ariannaproject/rric
                 continue
 
             all_traces.append(traces)
-
-            n_traces = len(traces)
-            for i in range(n_traces):
+            for i in range(len(traces)):
                 metadata[idx] = {
                     'index': station_dict['indices'][i],
                     'event_id': station_dict['event_ids'][i],
@@ -159,37 +133,61 @@ def load_all_coincidence_traces(pkl_path="/dfs8/sbarwick_lab/ariannaproject/rric
     X = np.concatenate(all_traces, axis=0)
     return X, metadata
 
-# Example usage
-if __name__ == "__main__":
-    # amp = "200s"
-    # model_dir = f"/pub/tangch3/ARIANNA/DeepLearning/models/{amp}_time/new_chi"
-    # path = load_most_recent_model(model_dir, model_prefix="RCR_Backlobe")
-    # print("Most recent model:", path)
-    
-    # template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
-    # file_paths = glob(f"{template_dir}/Event2016_Stn*.npy")
 
-    # all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(file_paths, amp_type='100s')
+def plot_histogram(prob_2016, prob_coincidence, amp, timestamp=None):
+    if timestamp is None:
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 
-    # print("Model input shape:", all_2016_backlobes.shape)
-    # print("Metadata for first trace:", dict_2016[0])
+    plt.figure(figsize=(8, 6))
+    bins = 20
+    range_vals = (0, 1)
 
-    import pickle
+    plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='green', linestyle='solid',
+             label=f'2016-Backlobes ({len(prob_2016)})', density=False)
+    plt.hist(prob_coincidence, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',
+             label=f'Coincidence-Events ({len(prob_coincidence)})', density=False)
+
+    plt.xlabel('Network Output', fontsize=16)
+    plt.ylabel('Number of Events', fontsize=16)
+    plt.yscale('log')
+
+    hist_values_2016, _ = np.histogram(prob_2016, bins=20, range=(0, 1))
+    hist_values_coincidence, _ = np.histogram(prob_coincidence, bins=20, range=(0, 1))
+    max_overall_hist = max(np.max(hist_values_2016), np.max(hist_values_coincidence))
+    plt.ylim(0, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
+
+    plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=16)
+    plt.legend(loc='upper left', fontsize=12)
+
+    config = get_config()
+    filename = config['histogram_filename_template'].format(timestamp=timestamp, amp=amp)
+    out_path = os.path.join(config['base_plot_path'], filename)
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+    plt.savefig(out_path)
+    print(f"Saved histogram to {out_path}")
+    plt.close()
+
+
+def main():
+    config = get_config()
+    amp = config['amp']
+
+    model, model_timestamp = load_most_recent_model(config['base_model_path'], amp, model_prefix="RCR_Backlobe")
+
+    template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
+    template_paths = glob(os.path.join(template_dir, "Event2016_Stn*.npy"))
+    all_2016_backlobes, _ = load_2016_backlobe_templates(template_paths, amp_type=amp)
+    print(f"[INFO] Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
 
     pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
+    all_coincidence_events, _ = load_all_coincidence_traces(pkl_path)
+    print(f"[INFO] Loaded {len(all_coincidence_events)} coincidence traces.")
 
-    with open(pkl_path, "rb") as f:
-        coinc_dict = pickle.load(f)
+    prob_backlobe = model.predict(all_2016_backlobes).flatten()
+    prob_coincidence = model.predict(all_coincidence_events).flatten()
 
-    print("Total events:", len(coinc_dict))
-    print("Example event IDs:", list(coinc_dict.keys())[:5])
+    plot_histogram(prob_backlobe, prob_coincidence, amp, timestamp=model_timestamp)
 
-    event_id = 578  
-    if event_id in coinc_dict:
-        event = coinc_dict[event_id]
-        stations = event.get('stations', {})
-        for station_id, station_data in stations.items():
-            print(f"Event ID {event_id}, Station {station_id}")
-            print(f"  Indices: {station_data['indices']}")
-            print(f"  Event IDs: {station_data['event_ids']}")
-
+if __name__ == "__main__":
+    main()

@@ -53,28 +53,35 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     return
 
 
-multi_run = False
+def main(multi_run=False):
+    if multi_run:
+        # --- Run multiple stations ---
+        stations = [13, 15, 18, 14, 17, 19, 30]
+        for station_id in stations:
+            if station_id in [14, 17, 19, 30]:
+                amp = '200s'
+                print(f'amp: {amp}')
+            elif station_id in [13, 15, 18]:
+                amp = '100s'
+                print(f'amp: {amp}')
 
-if multi_run == True:
-    # --- Run multiple stations ---
-    stations = [13,15,18,14,17,19,30]
-    for station_id in stations:
-        if station_id in [14,17,19,30]:
-            amp = '200s'   
-            print(f'amp: {amp}') 
-        elif station_id in [13,15,18]:
-            amp = '100s'
-            print(f'amp: {amp}') 
-
-        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/B1_BLcurve.py {station_id}' # {station_id} 4.4.25'
-        # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
-        RunMultipleJobs(cmd , jobName=f'genericBatchJob')
-else: 
-        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py' #  B1_BLcurve.py 14
-        # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'       
-        RunMultipleJobs(cmd , jobName=f'workbench')
+            cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/B1_BLcurve.py {station_id}'
+            # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'
+            RunMultipleJobs(cmd, jobName='genericBatchJob')
+    else:
+        cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py'
+        # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'
+        RunMultipleJobs(cmd, jobName='workbench')
 
 
+if __name__ == "__main__":
+    # multi_run = False
+    # main(multi_run)
+
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run.py'
+    RunMultipleJobs(cmd, jobName='train_and_run')
+    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py'
+    # RunMultipleJobs(cmd, jobName='checks')
 
 
 # Set parameters

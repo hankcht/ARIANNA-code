@@ -25,14 +25,18 @@ def get_config():
         'station_ids_100s': [13, 15, 18],
         'base_sim_folder': '/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/',
         'sim_date': '5.28.25',
-        'base_model_path': '/pub/tangch3/ARIANNA/DeepLearning/models/',
-        'base_plot_path': '/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/',
+        'base_model_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/models/',
+        'base_plot_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/',
         'loading_data_type': 'new_chi_above_curve',
-        'model_filename_template': '{timestamp}_RCR_Backlobe_model_2Layer.h5',
-        'history_filename_template': '{timestamp}_RCR_Backlobe_model_2Layer_history.pkl',
-        'loss_plot_filename_template': '{timestamp}_loss_plot_RCR_Backlobe_model_2Layer_{amp}.png',
-        'accuracy_plot_filename_template': '{timestamp}_accuracy_plot_RCR_Backlobe_model_2Layer_{amp}.png',
+        'model_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer.h5',
+        'history_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer_history.pkl',
+        'loss_plot_filename_template': '{timestamp}_{amp}_loss_plot_RCR_Backlobe_model_2Layer.png',
+        'accuracy_plot_filename_template': '{timestamp}_{amp}_accuracy_plot_RCR_Backlobe_model_2Layer.png',
         'histogram_filename_template': '{timestamp}_{amp}_histogram.png',
+        'early_stopping_patience': 5,
+        'keras_epochs': 50,
+        'keras_batch_size': 32,
+        'verbose_fit': 1,
     }
 
 
@@ -189,7 +193,7 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     plt.ylabel('Loss')
     plt.title('Training vs Validation Loss')
     plt.legend()
-    loss_plot_file = os.path.join(plot_path, config['loss_plot_filename_template'].format(timestamp=timestamp, amp=amp))
+    loss_plot_file = os.path.join(plot_path, 'loss', config['loss_plot_filename_template'].format(timestamp=timestamp, amp=amp))
     plt.savefig(loss_plot_file)
     plt.close()
     print(f'Loss plot saved to: {loss_plot_file}')
@@ -202,7 +206,7 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     plt.ylabel('Accuracy')
     plt.title('Training vs Validation Accuracy')
     plt.legend()
-    accuracy_plot_file = os.path.join(plot_path, config['accuracy_plot_filename_template'].format(timestamp=timestamp, amp=amp))
+    accuracy_plot_file = os.path.join(plot_path, 'accuracy', config['accuracy_plot_filename_template'].format(timestamp=timestamp, amp=amp))
     plt.savefig(accuracy_plot_file)
     plt.close()
     print(f'Accuracy plot saved to: {accuracy_plot_file}')
@@ -296,11 +300,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     print(f'------> {amp} Done!')
 
 
-# --- Main Execution Flow ---
 def main():
-    """
-    Main function to orchestrate the CNN training and evaluation pipeline.
-    """
     config = get_config()
     amp = config['amp']
 
@@ -311,29 +311,35 @@ def main():
         config['noise_rms'] = config['noise_rms_100s']
         config['station_ids'] = config['station_ids_100s']
 
-    config['model_path'] = os.path.join(config['base_model_path'], f"{amp}_time/new_chi")
+    # Ensure all paths inside 'refactor' folder
+    config['model_path'] = os.path.join(config['base_model_path'])
     config['loss_accuracy_plot_path'] = os.path.join(config['base_plot_path'], 'Loss_Accuracy')
     config['network_output_plot_path'] = os.path.join(config['base_plot_path'], 'Network_Output')
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
     print(f"Starting CNN training at {timestamp} for {amp} amplifier.")
 
+    # Data load & prep
     data = load_and_prep_data_for_training(config)
     training_rcr = data['training_rcr']
     training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR_all']
 
+    # Train model
     model, history = train_cnn_model(training_rcr, training_backlobe, config)
     print('------> Training is Done!')
 
-    model_save_path = os.path.join(config['model_path'], config['model_filename_template'].format(timestamp=timestamp))
+    # Save model
+    model_save_path = os.path.join(config['model_path'], config['model_filename_template'].format(timestamp=timestamp, amp=amp))
     model.save(model_save_path)
     print(f'Model saved to: {model_save_path}')
 
+    # Save training history & plots
     save_and_plot_training_history(
         history, config['model_path'], config['loss_accuracy_plot_path'], timestamp, amp, config)
 
+    # Evaluate & plot network output histogram
     prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \
         evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all, config['output_cut_value'])
 
@@ -350,7 +356,6 @@ def main():
     #     print(f"Saved trace plot for Backlobe event {index} to {plot_traces_save_path}")
 
     print("Script finished successfully.")
-
 
 if __name__ == "__main__":
     main()

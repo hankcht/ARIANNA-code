@@ -538,6 +538,14 @@ if __name__ == "__main__":
 
     no = model.predict(All_Traces_expanded)
 
+    no = no.flatten()
+    original_size = len(no)
+    no = no[np.isfinite(no)]
+    filtered_size = len(no)
+
+    if original_size != filtered_size:
+        print(f"Warning: Removed {original_size - filtered_size} non-finite values (NaN/Inf) from 'no' before plotting.")
+
     plt.figure(figsize=(10, 6))
     plt.hist(no, bins='auto', edgecolor='black')
     plt.ylim(bottom=0)
@@ -545,8 +553,12 @@ if __name__ == "__main__":
     plt.xlabel('Output Value (e.g., Probability, Score)')
     plt.ylabel('Number of Events (Frequency)')
     plt.grid(axis='y', alpha=0.75)
+
     plot_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/'
+    os.makedirs(plot_path, exist_ok=True)
     plt.savefig(f'{plot_path}testplotall_netoutput__RCR_Backlobe_model_2Layer.png')
+
+    print(f"Histogram saved to: {plot_path}testplotall_netoutput__RCR_Backlobe_model_2Layer.png")
     '''run on event 578'''
     # data =[]
     # for id in station_id:

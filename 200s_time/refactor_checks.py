@@ -75,7 +75,7 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
     metadata = {}
 
     for path in file_paths:
-        match = re.search(r'Stn(\d+)_\d+\.\d+_Chi([\d.]+)_SNR([\d.]+)', path)
+        match = re.search(r'Stn(\d+)_\d+\.\d+_Chi(\d+\.\d+)_SNR(\d+\.\d+)', path)
         if match:
             station_id = int(match.group(1))
             chi = float(match.group(2))

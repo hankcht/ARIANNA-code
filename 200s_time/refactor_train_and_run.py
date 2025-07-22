@@ -272,7 +272,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     plt.xlabel('Network Output', fontsize=18)
     plt.ylabel('Number of Events', fontsize=18)
     plt.yscale('log')
-    plt.title(f'{amp}_time RCR-Backlobe network output', fontsize=18)
+    plt.title(f'{amp}_time RCR-Backlobe network output', fontsize=14)
     plt.xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0], fontsize=18)
     plt.yticks(fontsize=18)
 

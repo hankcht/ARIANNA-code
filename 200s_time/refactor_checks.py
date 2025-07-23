@@ -75,25 +75,29 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
     metadata = {}
 
     for path in file_paths:
-        match = re.search(r'Stn(\d+)_\d+\.\d+_Chi(\d+\.\d+)_SNR(\d+\.\d+)', path)
+        match = re.search(r'Stn(\d+)_([\d\.]+)_Chi([\d\.]+)_SNR([\d\.]+)\.npy', path)
         if match:
-            station_id = int(match.group(1))
-            chi = float(match.group(2))
-            snr = float(match.group(3))
+            station_id = match.group(1)
+            unix_timestamp = match.group(2)
+            chi = match.group(3)
+            snr = match.group(4)
 
             if station_id in allowed_stations:
                 arr = np.load(path)
                 arrays.append(arr)
                 index = len(arrays) - 1
+
+                plot_filename = f"Event2016_Stn{station_id}_{unix_timestamp}_Chi{chi}_SNR{snr}.png"
+
                 metadata[index] = {
                     "station": station_id,
                     "chi": chi,
                     "snr": snr,
-                    "trace": arr
+                    "trace": arr,
+                    "plot_filenames": plot_filename
                 }
 
     return np.stack(arrays, axis=0), metadata
-
 
 def load_all_coincidence_traces(pkl_path):
     with open(pkl_path, "rb") as f:
@@ -174,8 +178,14 @@ def main():
 
     template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
     template_paths = glob(os.path.join(template_dir, "Event2016_Stn*.npy"))
-    all_2016_backlobes, _ = load_2016_backlobe_templates(template_paths, amp_type=amp)
-    print(all_2016_backlobes.shape)
+    all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
+
+    #
+    from A0_Utilities import pT
+    for tempBL, filename in zip(all_2016_backlobes, dict_2016['plot_filenames']):
+        pT(tempBL, 'confirmed 2016 Backlobe', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/plots/{filename}')
+    #
+
     print(f"[INFO] Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
 
     pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
@@ -189,3 +199,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -12,7 +12,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 from NuRadioReco.utilities import units
 
-from A0_Utilities import load_sim_rcr, load_data, load_all_station_data
+from A0_Utilities import load_sim_rcr, load_data
 from refactor_train_and_run import load_and_prep_data_for_training
 
 # --- Configuration ---

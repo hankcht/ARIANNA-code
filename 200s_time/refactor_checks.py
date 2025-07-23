@@ -74,29 +74,28 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
     arrays = []
     metadata = {}
 
-    # Check if file_paths is empty
-    print(f"Number of files in file_paths: {len(file_paths)}")
-    if len(file_paths) == 0:
-        raise ValueError("No files to process.")
-
     for path in file_paths:
         match = re.search(r'Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', path)
         if match:
-            print(f"Matched file: {path}")
-            station_id = int(match.group(1))
-            timestamp = match.group(2)
+            station_id = match.group(1)
+            unix_timestamp = match.group(2)
             chi = match.group(3)
             snr = match.group(4)
-            print(f"Extracted station_id: {station_id}, timestamp: {timestamp}, chi: {chi}, snr: {snr}")
 
             if station_id in allowed_stations:
-                print(f"Loading file {path} for station {station_id}")
                 arr = np.load(path)
                 arrays.append(arr)
-            else:
-                print(f"Skipping file {path} because station {station_id} is not in allowed_stations.")
-        else:
-            print(f"No match for file: {path}")
+                index = len(arrays) - 1
+
+                plot_filename = f"Event2016_Stn{station_id}_{unix_timestamp}_Chi{chi}_SNR{snr}.png"
+
+                metadata[index] = {
+                    "station": station_id,
+                    "chi": chi,
+                    "snr": snr,
+                    "trace": arr,
+                    "plot_filenames": plot_filename
+                }
 
     return np.stack(arrays, axis=0), metadata
 

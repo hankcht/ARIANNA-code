@@ -82,7 +82,7 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
             chi = match.group(3)
             snr = match.group(4)
 
-            if station_id in allowed_stations:
+            if int(station_id) in allowed_stations:
                 arr = np.load(path)
                 arrays.append(arr)
                 index = len(arrays) - 1

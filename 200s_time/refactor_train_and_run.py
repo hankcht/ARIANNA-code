@@ -24,7 +24,6 @@ def get_config():
         'station_ids_200s': [14, 17, 19, 30],
         'station_ids_100s': [13, 15, 18],
         'base_sim_folder': '/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/',
-        'sim_date': '5.28.25',
         'base_model_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/models/',
         'base_plot_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/',
         'loading_data_type': 'new_chi_above_curve',

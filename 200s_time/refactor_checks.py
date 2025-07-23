@@ -175,6 +175,7 @@ def main():
     template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
     template_paths = glob(os.path.join(template_dir, "Event2016_Stn*.npy"))
     all_2016_backlobes, _ = load_2016_backlobe_templates(template_paths, amp_type=amp)
+    print(all_2016_backlobes.shape)
     print(f"[INFO] Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
 
     pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"

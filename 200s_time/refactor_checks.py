@@ -94,7 +94,7 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
                     "chi": chi,
                     "snr": snr,
                     "trace": arr,
-                    "plot_filenames": plot_filename
+                    "plot_filename": plot_filename
                 }
 
     return np.stack(arrays, axis=0), metadata
@@ -182,7 +182,8 @@ def main():
 
     #
     from A0_Utilities import pT
-    for tempBL, filename in zip(all_2016_backlobes, dict_2016['plot_filenames']):
+    for index, tempBL in enumerate(all_2016_backlobes):
+        filename = dict_2016[index]['plot_filename']
         pT(tempBL, 'confirmed 2016 Backlobe', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/plots/{filename}')
     #
 

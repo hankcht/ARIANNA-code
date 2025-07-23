@@ -11,7 +11,7 @@ from tensorflow import keras
 
 def get_config():
     return {
-        'amp': '200s',
+        'amp': '100s',
         'base_model_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/models/',
         'base_plot_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/network_output/',
         'model_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer.h5',

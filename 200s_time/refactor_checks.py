@@ -75,7 +75,7 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
     metadata = {}
 
     for path in file_paths:
-        match = re.search(r'Stn(\d+)_([\d\.]+)_Chi([\d\.]+)_SNR([\d\.]+)\.npy', path)
+        match = re.search(r'Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', path)
         if match:
             station_id = match.group(1)
             unix_timestamp = match.group(2)

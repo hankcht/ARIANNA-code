@@ -59,13 +59,13 @@ def get_config():
 
 # --- Gradient Reversal Layer ---
 @tf.custom_gradient
-def gradient_reversal(x, lambda_):
+def gradient_reversal_operation(x, lambda_): # custom operation for forward and backward prop  
     def grad(dy):
         return -lambda_ * dy, tf.zeros_like(lambda_)
     return x, grad
 
-def GradientReversal(lambda_):
-    return Lambda(lambda x: gradient_reversal(x, lambda_), name='gradient_reversal')
+def GradientReversalLayer(lambda_):
+    return Lambda(lambda x: gradient_reversal_operation(x, lambda_), name='gradient_reversal_operation')
 
 # --- DANN Model ---
 def build_dann_model(input_shape, lambda_):
@@ -81,7 +81,7 @@ def build_dann_model(input_shape, lambda_):
     label_output = Dense(1, activation='sigmoid', name='label_output')(x)
 
     # Domain classifier
-    reversed_x = GradientReversal(lambda_)(x)
+    reversed_x = GradientReversalLayer(lambda_)(x) # GRL 
     domain_output = Dense(1, activation='sigmoid', name='domain_output')(reversed_x)
 
     model = Model(inputs=inputs, outputs=[label_output, domain_output])
@@ -89,7 +89,7 @@ def build_dann_model(input_shape, lambda_):
     model.compile(
         optimizer=Adam(),
         loss={'label_output': 'binary_crossentropy', 'domain_output': 'binary_crossentropy'},
-        loss_weights={'label_output': 1.0, 'domain_output': 1.0},
+        loss_weights={'label_output': 1.0, 'domain_output': 1.0}, # can adjust this to focus more on a certain domain
         metrics={'label_output': 'accuracy', 'domain_output': 'accuracy'}
     )
     return model
@@ -99,39 +99,39 @@ def prep_dann_data(config):
     data = load_and_prep_data_for_training(config)
 
     # Source domain: labeled
-    x_rcr = data['training_rcr']
-    x_bl = data['training_backlobe']
-    y_rcr = np.ones(len(x_rcr))
-    y_bl = np.zeros(len(x_bl))
+    x_rcr = data['training_rcr']          
+    x_bl = data['training_backlobe']      
+    y_rcr = np.ones(len(x_rcr))           # label 1 for RCR
+    y_bl = np.zeros(len(x_bl))            # label 0 for Backlobe
 
-    x_src = np.concatenate([x_rcr, x_bl])
-    y_src = np.concatenate([y_rcr, y_bl])
+    x_source = np.concatenate([x_rcr, x_bl]) # Labeled input data
+    y_source = np.concatenate([y_rcr, y_bl]) # Corresponding labels
 
     # Target domain: unlabeled
-    x_tgt = data['data_backlobe_tracesRCR_all']
+    x_target = data['data_backlobe_tracesRCR_all']  # Input only, no labels
 
-    # Domain labels: 0 for source, 1 for target
-    x_dom = np.concatenate([x_src, x_tgt])
-    y_dom = np.concatenate([
-        np.zeros(len(x_src)),
-        np.ones(len(x_tgt))
+    # Domain classification inputs/labels
+    x_domain = np.concatenate([x_source, x_target])       # All data (for domain classifier)
+    y_domain = np.concatenate([
+        np.zeros(len(x_source)),                    # Domain label 0 = source
+        np.ones(len(x_target))                      # Domain label 1 = target
     ])
 
-    # Reshape
-    x_src = x_src[..., np.newaxis]
-    x_dom = x_dom[..., np.newaxis]
+    # CNN expects shape: (samples, features, channels)
+    x_source = x_source[..., np.newaxis]               # Add channel dimension for CNN
+    x_domain = x_domain[..., np.newaxis]
 
-    return x_src, y_src, x_dom, y_dom
+    return x_source, y_source, x_domain, y_domain
 
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
-def plot_tsne_features(model, x_src, x_tgt):
+def plot_tsne_features(model, x_source, x_target):
     # Extract the feature extractor part (before classification heads)
     feature_model = Model(inputs=model.input, outputs=model.get_layer('flatten').output)
 
-    features_src = feature_model.predict(x_src, batch_size=128)
-    features_tgt = feature_model.predict(x_tgt, batch_size=128)
+    features_src = feature_model.predict(x_source, batch_size=128)
+    features_tgt = feature_model.predict(x_target, batch_size=128)
 
     features = np.concatenate([features_src, features_tgt])
     labels = np.array([0] * len(features_src) + [1] * len(features_tgt))  # 0=source, 1=target
@@ -180,11 +180,15 @@ if __name__ == '__main__':
     cfg = get_config()
 
     # Load data
-    x_src, y_src, x_dom, y_dom = prep_dann_data(cfg)
+    x_source, y_source, x_domain, y_domain = prep_dann_data(cfg)
 
-    n_target = len(x_dom) - len(x_src)
+    n_target = len(x_domain) - len(x_source)
     y_target_dummy = np.zeros(n_target)
-    y_combined = np.concatenate([y_src, y_target_dummy])
+    y_combined = np.concatenate([y_source, y_target_dummy])
+
+    # adding this to deal with high domain loss
+    y_domain = y_domain.reshape(-1, 1)
+    y_combined = y_combined.reshape(-1, 1)
 
     # Build model
     model = build_dann_model(input_shape=cfg['input_shape'], lambda_=cfg['lambda_adversary'])
@@ -196,8 +200,8 @@ if __name__ == '__main__':
 
     # Train model
     history = model.fit(
-        x=x_dom,
-        y={'label_output': y_combined, 'domain_output': y_dom},
+        x=x_domain,
+        y={'label_output': y_combined, 'domain_output': y_domain},
         epochs=cfg['keras_epochs'],
         batch_size=cfg['keras_batch_size'],
         validation_split=0.2,
@@ -213,7 +217,7 @@ if __name__ == '__main__':
     model.save(model_path)
     print(f'Model saved to: {model_path}')
 
-    x_tgt = x_dom[len(x_src):]  # From your prep_dann_data()
-    plot_tsne_features(model, x_src, x_tgt)
+    x_target = x_domain[len(x_source):]  # From your prep_dann_data()
+    plot_tsne_features(model, x_source, x_target)
 
     plot_dann_training_history(history, output_dir='/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/', prefix=cfg['amp'])

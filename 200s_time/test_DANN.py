@@ -18,10 +18,8 @@ from refactor_train_and_run import load_and_prep_data_for_training
 
 # --- Configuration ---
 def get_config():
-    """Returns a dictionary of configuration parameters with derived fields set."""
-    amp = '200s'  
+    amp = '200s' 
 
-    # Base config
     config = {
         'amp': amp,
         'output_cut_value': 0.6,
@@ -37,8 +35,9 @@ def get_config():
         'loading_data_type': 'new_chi_above_curve',
         'model_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer.h5',
         'history_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer_history.pkl',
-        'loss_plot_filename_template': '{timestamp}_{amp}_loss_plot_RCR_Backlobe_model_2Layer.png',
-        'accuracy_plot_filename_template': '{timestamp}_{amp}_accuracy_plot_RCR_Backlobe_model_2Layer.png',
+        'loss_plot_filename_template': '{timestamp}_{amp}_{prefix}_loss_plot_RCR_Backlobe_model_2Layer.png',
+        'accuracy_plot_filename_template': '{timestamp}_{amp}_{prefix}_accuracy_plot_RCR_Backlobe_model_2Layer.png',
+        'tsne_plot_filename_template': '{timestamp}_{amp}_{prefix}_tsne_feature_space_RCR_Backlobe_model_2Layer.png',
         'histogram_filename_template': '{timestamp}_{amp}_train_and_run_histogram.png',
         'early_stopping_patience': 5,
         'keras_epochs': 50,
@@ -99,10 +98,10 @@ def prep_dann_data(config):
     data = load_and_prep_data_for_training(config)
 
     # Source domain: labeled
-    x_rcr = data['training_rcr']          
-    x_bl = data['training_backlobe']      
-    y_rcr = np.ones(len(x_rcr))           # label 1 for RCR
-    y_bl = np.zeros(len(x_bl))            # label 0 for Backlobe
+    x_rcr = data['training_rcr']           
+    x_bl = data['training_backlobe']       
+    y_rcr = np.ones(len(x_rcr))            # label 1 for RCR
+    y_bl = np.zeros(len(x_bl))             # label 0 for Backlobe
 
     x_source = np.concatenate([x_rcr, x_bl]) # Labeled input data
     y_source = np.concatenate([y_rcr, y_bl]) # Corresponding labels
@@ -111,22 +110,23 @@ def prep_dann_data(config):
     x_target = data['data_backlobe_tracesRCR_all']  # Input only, no labels
 
     # Domain classification inputs/labels
-    x_domain = np.concatenate([x_source, x_target])       # All data (for domain classifier)
+    x_domain = np.concatenate([x_source, x_target])      # All data (for domain classifier)
     y_domain = np.concatenate([
-        np.zeros(len(x_source)),                    # Domain label 0 = source
-        np.ones(len(x_target))                      # Domain label 1 = target
+        np.zeros(len(x_source)),                     # Domain label 0 = source
+        np.ones(len(x_target))                       # Domain label 1 = target
     ])
 
     # CNN expects shape: (samples, features, channels)
-    x_source = x_source[..., np.newaxis]               # Add channel dimension for CNN
+    x_source = x_source[..., np.newaxis]              # Add channel dimension for CNN
     x_domain = x_domain[..., np.newaxis]
 
-    return x_source, y_source, x_domain, y_domain
+    return x_source, y_source, x_domain, y_domain, x_target # Also return x_target for t-SNE plotting
+
 
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
-def plot_tsne_features(model, x_source, x_target):
+def plot_tsne_features(model, x_source, x_target, config, timestamp):
     # Extract the feature extractor part (before classification heads)
     feature_model = Model(inputs=model.input, outputs=model.get_layer('flatten').output)
 
@@ -148,13 +148,16 @@ def plot_tsne_features(model, x_source, x_target):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig('/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/tsne_feature_space.png')
+    
+    # Save with dynamic filename
+    tsne_filename = config['tsne_plot_filename_template'].format(timestamp=timestamp, amp=config['amp'], prefix='tsne')
+    plt.savefig(os.path.join(config['base_plot_path'], tsne_filename))
     plt.close()
 
-def plot_dann_training_history(history, output_dir='.', prefix='dann'):
+def plot_dann_training_history(history, output_dir, config, timestamp):
     hist = history.history
 
-    def plot_metric(metric, val_metric, title, ylabel, filename):
+    def plot_metric(metric, val_metric, title, ylabel, filename_template, prefix):
         plt.figure(figsize=(8, 6))
         plt.plot(hist[metric], label='Train')
         plt.plot(hist[val_metric], label='Validation')
@@ -164,23 +167,24 @@ def plot_dann_training_history(history, output_dir='.', prefix='dann'):
         plt.legend()
         plt.grid(True)
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, f'{prefix}_{filename}.png'))
+        filename = filename_template.format(timestamp=timestamp, amp=config['amp'], prefix=prefix)
+        plt.savefig(os.path.join(output_dir, filename))
         plt.close()
 
     # Label task loss & accuracy
-    plot_metric('label_output_loss', 'val_label_output_loss', 'Label Loss (RCR task)', 'Loss', 'label_loss')
-    plot_metric('label_output_accuracy', 'val_label_output_accuracy', 'Label Accuracy (RCR task)', 'Accuracy', 'label_accuracy')
+    plot_metric('label_output_loss', 'val_label_output_loss', 'Label Loss (RCR task)', 'Loss', config['loss_plot_filename_template'], prefix='label')
+    plot_metric('label_output_accuracy', 'val_label_output_accuracy', 'Label Accuracy (RCR task)', 'Accuracy', config['accuracy_plot_filename_template'], prefix='label')
 
     # Domain loss & accuracy
-    plot_metric('domain_output_loss', 'val_domain_output_loss', 'Domain Loss (Domain Discriminator)', 'Loss', 'domain_loss')
-    plot_metric('domain_output_accuracy', 'val_domain_output_accuracy', 'Domain Accuracy (should → 50%)', 'Accuracy', 'domain_accuracy')
+    plot_metric('domain_output_loss', 'val_domain_output_loss', 'Domain Loss (Domain Discriminator)', 'Loss', config['loss_plot_filename_template'], prefix='domain')
+    plot_metric('domain_output_accuracy', 'val_domain_output_accuracy', 'Domain Accuracy (should → 50%)', 'Accuracy', config['accuracy_plot_filename_template'], prefix='domain')
 
 # --- Main ---
 if __name__ == '__main__':
     cfg = get_config()
 
     # Load data
-    x_source, y_source, x_domain, y_domain = prep_dann_data(cfg)
+    x_source, y_source, x_domain, y_domain, x_target_for_tsne = prep_dann_data(cfg)
 
     n_target = len(x_domain) - len(x_source)
     y_target_dummy = np.zeros(n_target)
@@ -217,7 +221,8 @@ if __name__ == '__main__':
     model.save(model_path)
     print(f'Model saved to: {model_path}')
 
-    x_target = x_domain[len(x_source):]  # From your prep_dann_data()
-    plot_tsne_features(model, x_source, x_target)
+    # Plot t-SNE features
+    plot_tsne_features(model, x_source, x_target_for_tsne, cfg, timestamp)
 
-    plot_dann_training_history(history, output_dir='/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/', prefix=cfg['amp'])
+    # Plot training history
+    plot_dann_training_history(history, output_dir=cfg['base_plot_path'], config=cfg, timestamp=timestamp)

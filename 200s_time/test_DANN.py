@@ -40,8 +40,9 @@ def get_config():
         'early_stopping_patience': 5,
         'keras_epochs': 50,
         'keras_batch_size': 64,
-        'verbose_fit': 1,
-        'lambda_adversary': 0.01,
+        'verbose_fit': 2,
+        'lambda_adversary': 1.0,
+        'lambda_schedule': [(0, 0.0), (10, 0.1), (20, 0.5), (30, 1.0)],
         'input_shape': (4, 256, 1),
     }
     config['noise_rms'] = config['noise_rms_200s'] if amp == '200s' else config['noise_rms_100s']
@@ -49,28 +50,50 @@ def get_config():
     return config
 
 # --- Gradient Reversal Layer ---
-@tf.custom_gradient
-def gradient_reversal_operation(x, lambda_):
-    def grad(dy):
-        return -lambda_ * dy, tf.zeros_like(lambda_)
-    return x, grad
+class ScheduledGradientReversal(tf.keras.layers.Layer):
+    def __init__(self, schedule, **kwargs):
+        super().__init__(**kwargs)
+        self.schedule = schedule
+        self.global_step = tf.Variable(0, trainable=False, dtype=tf.int32)
 
-def GradientReversalLayer(lambda_):
-    return Lambda(lambda x: gradient_reversal_operation(x, lambda_), name='gradient_reversal_operation')
+    def call(self, x):
+        lambda_val = self.get_lambda()
+
+        @tf.custom_gradient
+        def _flip_gradient(x):
+            def grad(dy):
+                return -lambda_val * dy
+            return x, grad
+
+        return _flip_gradient(x)
+
+    def get_lambda(self):
+        lambda_val = 0.0
+        for step, val in self.schedule:
+            if self.global_step >= step:
+                lambda_val = val
+            else:
+                break
+        return tf.convert_to_tensor(lambda_val, dtype=tf.float32)
+
+    def increment_step(self):
+        self.global_step.assign_add(1)
 
 # --- DANN Model ---
-def build_dann_model(input_shape, lambda_):
+def build_dann_model(input_shape, lambda_schedule):
     inputs = Input(shape=input_shape)
     x = Conv2D(16, (4, 10), activation='relu')(inputs)
     x = Conv2D(8, (1, 10), activation='relu')(x)
     x = Dropout(0.5)(x)
     x = Flatten(name='flatten')(x)
     label_output = Dense(1, activation='sigmoid', name='label_output')(x)
-    reversed_x = GradientReversalLayer(lambda_)(x)
+    reversal_layer = ScheduledGradientReversal(schedule=lambda_schedule, name='gradient_reversal')
+    reversed_x = reversal_layer(x)
     domain_output = Dense(1, activation='sigmoid', name='domain_output')(reversed_x)
     model = Model(inputs=inputs, outputs=[label_output, domain_output])
+    model.reversal_layer = reversal_layer
     model.compile(
-        optimizer=Adam(learning_rate=1e-4, clipvalue=1.0),  # gradient clipping added to limit how much a single batch can affect weights.
+        optimizer=Adam(learning_rate=1e-4, clipvalue=1.0),
         loss={'label_output': 'binary_crossentropy', 'domain_output': 'binary_crossentropy'},
         loss_weights={'label_output': 1.0, 'domain_output': 1.0},
         metrics={'label_output': 'accuracy', 'domain_output': 'accuracy'}
@@ -118,7 +141,7 @@ def plot_tsne_features(model, x_source, x_target, config):
     plt.close()
 
 # --- Training History Plotting ---
-def plot_dann_training_history(history, config, amp, timestamp, output_dir='.'):
+def plot_dann_training_history(history, config, amp, timestamp, output_dir='.'): 
     hist = history.history
     def plot_metric(metric, val_metric, title, ylabel, filename):
         plt.figure(figsize=(8, 6))
@@ -151,7 +174,7 @@ if __name__ == '__main__':
     y_domain = y_domain.reshape(-1, 1)
     y_combined = y_combined.reshape(-1, 1)
 
-    model = build_dann_model(input_shape=cfg['input_shape'], lambda_=cfg['lambda_adversary'])
+    model = build_dann_model(input_shape=cfg['input_shape'], lambda_schedule=cfg['lambda_schedule'])
     model.summary()
 
     callbacks = [
@@ -168,6 +191,10 @@ if __name__ == '__main__':
         verbose=cfg['verbose_fit'],
         shuffle=True
     )
+
+    # manually increment step after each epoch
+    for _ in range(cfg['keras_epochs']):
+        model.reversal_layer.increment_step()
 
     timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
     model_filename = cfg['model_filename_template'].format(timestamp=timestamp, amp=cfg['amp'])

@@ -15,16 +15,22 @@ from NuRadioReco.utilities import units
 from A0_Utilities import load_sim_rcr, load_data
 from refactor_train_and_run import load_and_prep_data_for_training
 
+
 # --- Configuration ---
-def config():
-    return {
-        'amp': '200s',
+def get_config():
+    """Returns a dictionary of configuration parameters with derived fields set."""
+    amp = '200s'  
+
+    # Base config
+    config = {
+        'amp': amp,
         'output_cut_value': 0.6,
         'train_cut': 4000,
+        'noise_rms_200s': 22.53 * units.mV,
+        'noise_rms_100s': 20 * units.mV,
         'station_ids_200s': [14, 17, 19, 30],
         'station_ids_100s': [13, 15, 18],
         'base_sim_folder': '/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/',
-        'sim_date': '5.28.25',
         'base_model_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/models/',
         'base_plot_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/',
         'loading_data_type': 'new_chi_above_curve',
@@ -38,8 +44,17 @@ def config():
         'keras_batch_size': 64,
         'verbose_fit': 1,
         'lambda_adversary': 1.0,
-        'input_shape': (3, 256, 1),  # Set according to your data
+        'input_shape': (3, 256, 1),
     }
+
+    if amp == '200s':
+        config['noise_rms'] = config['noise_rms_200s']
+        config['station_ids'] = config['station_ids_200s']
+    elif amp == '100s':
+        config['noise_rms'] = config['noise_rms_100s']
+        config['station_ids'] = config['station_ids_100s']
+
+    return config
 
 # --- Gradient Reversal Layer ---
 @tf.custom_gradient
@@ -161,7 +176,7 @@ def plot_dann_training_history(history, output_dir='.', prefix='dann'):
 
 # --- Main ---
 if __name__ == '__main__':
-    cfg = config()
+    cfg = get_config()
 
     # Load data
     x_src, y_src, x_dom, y_dom = prep_dann_data(cfg)

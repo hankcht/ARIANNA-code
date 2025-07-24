@@ -14,9 +14,12 @@ from A0_Utilities import load_sim_rcr, load_data, pT
 
 # --- Configuration ---
 def get_config():
-    """Returns a dictionary of configuration parameters."""
-    return {
-        'amp': '200s',
+    """Returns a dictionary of configuration parameters with derived fields set."""
+    amp = '200s'  
+
+    # Base config
+    config = {
+        'amp': amp,
         'output_cut_value': 0.6,
         'train_cut': 4000,
         'noise_rms_200s': 22.53 * units.mV,
@@ -37,6 +40,15 @@ def get_config():
         'keras_batch_size': 32,
         'verbose_fit': 1,
     }
+
+    if amp == '200s':
+        config['noise_rms'] = config['noise_rms_200s']
+        config['station_ids'] = config['station_ids_200s']
+    elif amp == '100s':
+        config['noise_rms'] = config['noise_rms_100s']
+        config['station_ids'] = config['station_ids_100s']
+
+    return config
 
 
 # --- Data Loading and Preparation ---
@@ -301,13 +313,6 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
 def main():
     config = get_config()
     amp = config['amp']
-
-    if amp == '200s':
-        config['noise_rms'] = config['noise_rms_200s']
-        config['station_ids'] = config['station_ids_200s']
-    elif amp == '100s':
-        config['noise_rms'] = config['noise_rms_100s']
-        config['station_ids'] = config['station_ids_100s']
 
     # Ensure all paths inside 'refactor' folder
     config['model_path'] = os.path.join(config['base_model_path'])

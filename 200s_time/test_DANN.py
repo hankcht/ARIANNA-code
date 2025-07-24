@@ -45,7 +45,7 @@ def get_config():
         'keras_batch_size': 64,
         'verbose_fit': 1,
         'lambda_adversary': 1.0,
-        'input_shape': (3, 256, 1),
+        'input_shape': (4, 256, 1),
     }
 
     if amp == '200s':

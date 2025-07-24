@@ -35,13 +35,13 @@ def get_config():
         'history_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer_history.pkl',
         'loss_plot_filename_template': '{timestamp}_{amp}_{prefix}_loss_plot_RCR_Backlobe_model_2Layer.png',
         'accuracy_plot_filename_template': '{timestamp}_{amp}_{prefix}_accuracy_plot_RCR_Backlobe_model_2Layer.png',
-        'tsne_plot_filename_template': '{timestamp}_{amp}_{prefix}_tsne_feature_space_RCR_Backlobe_model_2Layer.png',
+        'tsne_plot_filename_template': '{timestamp}_{amp}_tsne_feature_space_RCR_Backlobe_model_2Layer.png',
         'histogram_filename_template': '{timestamp}_{amp}_train_and_run_histogram.png',
         'early_stopping_patience': 5,
         'keras_epochs': 50,
         'keras_batch_size': 64,
         'verbose_fit': 1,
-        'lambda_adversary': 1.0,
+        'lambda_adversary': 0.01,
         'input_shape': (4, 256, 1),
     }
     config['noise_rms'] = config['noise_rms_200s'] if amp == '200s' else config['noise_rms_100s']
@@ -61,8 +61,8 @@ def GradientReversalLayer(lambda_):
 # --- DANN Model ---
 def build_dann_model(input_shape, lambda_):
     inputs = Input(shape=input_shape)
-    x = Conv2D(20, (4, 10), activation='relu')(inputs)
-    x = Conv2D(10, (1, 10), activation='relu')(x)
+    x = Conv2D(16, (4, 10), activation='relu')(inputs)
+    x = Conv2D(8, (1, 10), activation='relu')(x)
     x = Dropout(0.5)(x)
     x = Flatten(name='flatten')(x)
     label_output = Dense(1, activation='sigmoid', name='label_output')(x)
@@ -70,7 +70,7 @@ def build_dann_model(input_shape, lambda_):
     domain_output = Dense(1, activation='sigmoid', name='domain_output')(reversed_x)
     model = Model(inputs=inputs, outputs=[label_output, domain_output])
     model.compile(
-        optimizer=Adam(),
+        optimizer=Adam(learning_rate=1e-4, clipvalue=1.0),  # gradient clipping added to limit how much a single batch can affect weights.
         loss={'label_output': 'binary_crossentropy', 'domain_output': 'binary_crossentropy'},
         loss_weights={'label_output': 1.0, 'domain_output': 1.0},
         metrics={'label_output': 'accuracy', 'domain_output': 'accuracy'}
@@ -99,7 +99,7 @@ def prep_dann_data(config):
 # --- t-SNE Visualization ---
 from sklearn.manifold import TSNE
 
-def plot_tsne_features(model, x_source, x_target):
+def plot_tsne_features(model, x_source, x_target, config):
     feature_model = Model(inputs=model.input, outputs=model.get_layer('flatten').output)
     features_src = feature_model.predict(x_source, batch_size=128)
     features_tgt = feature_model.predict(x_target, batch_size=128)
@@ -114,7 +114,7 @@ def plot_tsne_features(model, x_source, x_target):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig('/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/tsne_feature_space.png')
+    plt.savefig(os.path.join('/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/', config['tsne_plot_filename_template'].format(timestamp=timestamp, amp=config['amp'])))
     plt.close()
 
 # --- Training History Plotting ---
@@ -176,7 +176,7 @@ if __name__ == '__main__':
     print(f'Model saved to: {model_path}')
 
     x_target = x_domain[len(x_source):]
-    plot_tsne_features(model, x_source, x_target)
+    plot_tsne_features(model, x_source, x_target, config=cfg)
 
     plot_dann_training_history(history, config=cfg, amp=cfg['amp'], timestamp=timestamp,
                                output_dir='/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/')

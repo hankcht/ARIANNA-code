@@ -78,8 +78,8 @@ if __name__ == "__main__":
     # multi_run = False
     # main(multi_run)
 
-    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run.py'
-    # RunMultipleJobs(cmd, jobName='train_and_run')
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run.py'
+    RunMultipleJobs(cmd, jobName='train_and_run')
     cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py'
     RunMultipleJobs(cmd, jobName='checks')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/test_DANN.py'

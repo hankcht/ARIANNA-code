@@ -47,7 +47,7 @@ def load_most_recent_model(base_model_path, amp, model_prefix=None):
         match = pattern.search(fname)
         if match:
             timestamp = match.group(1)
-            model_time = datetime.strptime(timestamp, "%Y-%m-%d_%H-%M").timestamp()
+            model_time = datetime.strptime(timestamp, '%m.%d.%y_%H-%M').timestamp()
             diff = now - model_time
             if 0 <= diff < smallest_diff:
                 smallest_diff = diff
@@ -179,13 +179,6 @@ def main():
     template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
     template_paths = glob(os.path.join(template_dir, "Event2016_Stn*.npy"))
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
-
-    #
-    from A0_Utilities import pT
-    for index, tempBL in enumerate(all_2016_backlobes):
-        filename = dict_2016[index]['plot_filename']
-        pT(tempBL, 'confirmed 2016 Backlobe', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/plots/{filename}')
-    #
 
     print(f"[INFO] Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
 

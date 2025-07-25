@@ -41,7 +41,7 @@ def get_config():
         'keras_epochs': 50,
         'keras_batch_size': 64,
         'verbose_fit': 2,
-        'lambda_adversary': 0.01,
+        'lambda_adversary': 0.001,
         'input_shape': (4, 256, 1),
     }
     config['noise_rms'] = config['noise_rms_200s'] if amp == '200s' else config['noise_rms_100s']

@@ -31,7 +31,7 @@ def load_most_recent_model(base_model_path, amp, model_prefix=None):
     Returns:
         tuple: (loaded_model, timestamp_str)
     """
-    pattern = re.compile(r"(\d{2}.\d{2}.\d{2}_\d{2}-\d{2})_.*\.h5")
+    pattern = re.compile(r"(\d{2}\.\d{2}\.\d{2}_\d{2}-\d{2})_.*\.h5")
 
     now = time.time()
     best_file = None

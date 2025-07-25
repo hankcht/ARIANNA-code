@@ -16,16 +16,18 @@ def get_config():
         'base_plot_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/network_output/',
         'model_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer.h5',
         'histogram_filename_template': '{timestamp}_{amp}_checks_histogram.png',
+        'if_dann' : True
     }
 
 
-def load_most_recent_model(base_model_path, amp, model_prefix=None):
+def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None):
     """
     Load the most recent model matching the prefix from the specified amp subfolder.
     
     Args:
         base_model_path (str): base path to the model directory.
         amp (str): amplification or timing setting (e.g., '100s', '200s').
+        if_dann (bool): to load dann model as custom object.
         model_prefix (str, optional): prefix to match in model filename.
 
     Returns:
@@ -54,11 +56,17 @@ def load_most_recent_model(base_model_path, amp, model_prefix=None):
                 best_file = fname
                 best_timestamp = timestamp
 
+    # Handle custom objects for DANN
+    if if_dann:
+        from test_DANN import gradient_reversal_operation
+        custom_objects = {"gradient_reversal_operation": gradient_reversal_operation}
+    else:
+        custom_objects = None
 
     if best_file:
         model_path = os.path.join(base_model_path, best_file)
         print(f"Loading model: {model_path}")
-        return keras.models.load_model(model_path), best_timestamp
+        return keras.models.load_model(model_path, custom_objects=custom_objects), best_timestamp
     else:
         raise FileNotFoundError(f"No suitable model file found in {base_model_path}.")
 
@@ -174,7 +182,7 @@ def main():
     config = get_config()
     amp = config['amp']
 
-    model, model_timestamp = load_most_recent_model(config['base_model_path'], amp, model_prefix="RCR_Backlobe")
+    model, model_timestamp = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="RCR_Backlobe")
 
     template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
     template_paths = glob(os.path.join(template_dir, "Event2016_Stn*.npy"))
@@ -186,8 +194,20 @@ def main():
     all_coincidence_events, _ = load_all_coincidence_traces(pkl_path)
     print(f"[INFO] Loaded {len(all_coincidence_events)} coincidence traces.")
 
-    prob_backlobe = model.predict(all_2016_backlobes).flatten()
-    prob_coincidence = model.predict(all_coincidence_events).flatten()
+    if all_2016_backlobes.ndim == 3:
+        all_2016_backlobes = all_2016_backlobes[..., np.newaxis]
+    if all_coincidence_events.ndim == 3:
+        all_coincidence_events = all_coincidence_events[..., np.newaxis]
+
+    if config['if_dann']:
+        prob_backlobe, _ = model.predict(all_2016_backlobes)
+        prob_coincidence, _ = model.predict(all_coincidence_events)
+    else:
+        prob_backlobe = model.predict(all_2016_backlobes)
+        prob_coincidence = model.predict(all_coincidence_events)
+
+    prob_backlobe = prob_backlobe.flatten()
+    prob_coincidence = prob_coincidence.flatten()
 
     plot_histogram(prob_backlobe, prob_coincidence, amp, timestamp=model_timestamp)
 

@@ -40,24 +40,10 @@ def get_max_chi(
     max_corr = []
     if use_average:
         for group in parallel_channels:
-            par_corr = sum(
-                np.abs(
-                    txc.get_xcorr_for_channel(
-                        traces[i], template_trace, sampling_rate, template_sampling_rate
-                    )
-                )
-                for i in group
-            ) / len(group)
+            par_corr = sum(np.abs(txc.get_xcorr_for_channel(traces[i], template_trace, sampling_rate, template_sampling_rate)) for i in group) / len(group)
             max_corr.append(par_corr)
     else:
-        max_corr = [
-            np.abs(
-                txc.get_xcorr_for_channel(
-                    trace, template_trace, sampling_rate, template_sampling_rate
-                )
-            )
-            for trace in traces
-        ]
+        max_corr = [np.abs(txc.get_xcorr_for_channel(trace, template_trace, sampling_rate, template_sampling_rate))for trace in traces]
 
     return max(max_corr)
 

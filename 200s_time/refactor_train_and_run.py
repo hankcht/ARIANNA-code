@@ -9,48 +9,7 @@ from tensorflow import keras
 from tensorflow.keras.layers import Conv2D, Dense, Dropout, Flatten
 from tensorflow.keras.models import Sequential
 from NuRadioReco.utilities import units
-from A0_Utilities import load_sim_rcr, load_data, pT
-
-
-# --- Configuration ---
-def get_config():
-    """Returns a dictionary of configuration parameters with derived fields set."""
-    amp = '200s'  
-
-    # Base config
-    config = {
-        'amp': amp,
-        'output_cut_value': 0.6,
-        'train_cut': 4000,
-        'noise_rms_200s': 22.53 * units.mV,
-        'noise_rms_100s': 20 * units.mV,
-        'station_ids_200s': [14, 17, 19, 30],
-        'station_ids_100s': [13, 15, 18],
-        'sim_date': '5.28.25',
-        'base_sim_folder': '/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/',
-        'base_model_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/models/',
-        'base_plot_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/',
-        'loading_data_type': 'new_chi_above_curve',
-        'model_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer.h5',
-        'history_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer_history.pkl',
-        'loss_plot_filename_template': '{timestamp}_{amp}_loss_plot_RCR_Backlobe_model_2Layer.png',
-        'accuracy_plot_filename_template': '{timestamp}_{amp}_accuracy_plot_RCR_Backlobe_model_2Layer.png',
-        'histogram_filename_template': '{timestamp}_{amp}_train_and_run_histogram.png',
-        'early_stopping_patience': 5,
-        'keras_epochs': 50,
-        'keras_batch_size': 32,
-        'verbose_fit': 1,
-    }
-
-    if amp == '200s':
-        config['noise_rms'] = config['noise_rms_200s']
-        config['station_ids'] = config['station_ids_200s']
-    elif amp == '100s':
-        config['noise_rms'] = config['noise_rms_100s']
-        config['station_ids'] = config['station_ids_100s']
-
-    return config
-
+from A0_Utilities import load_sim_rcr, load_data, pT, load_config
 
 # --- Data Loading and Preparation ---
 def load_and_prep_data_for_training(config):
@@ -67,7 +26,7 @@ def load_and_prep_data_for_training(config):
     train_cut = config['train_cut']
     # Already determined in main based on amp, so directly use 'station_ids'
     station_ids = config['station_ids']
-    sim_folder = os.path.join(config['base_sim_folder'], amp, config['sim_date'])
+    sim_folder = os.path.join(config['base_sim_rcr_folder'], amp, config['sim_rcr_date'])
 
     print(f"Loading data for amplifier type: {amp}")
 
@@ -312,11 +271,11 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
 
 
 def main():
-    config = get_config()
+    
+    config = load_config()
     amp = config['amp']
 
     # Ensure all paths inside 'refactor' folder
-    config['model_path'] = os.path.join(config['base_model_path'])
     config['network_output_plot_path'] = os.path.join(config['base_plot_path'], 'Network_Output')
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
@@ -334,7 +293,7 @@ def main():
     print('------> Training is Done!')
 
     # Save model
-    model_save_path = os.path.join(config['model_path'], config['model_filename_template'].format(timestamp=timestamp, amp=amp))
+    model_save_path = os.path.join(config['base_model_path'], config['model_filename_template'].format(timestamp=timestamp, amp=amp))
     model.save(model_save_path)
     print(f'Model saved to: {model_save_path}')
 

@@ -7,17 +7,7 @@ import matplotlib.pyplot as plt
 from glob import glob
 from datetime import datetime
 from tensorflow import keras
-
-
-def get_config():
-    return {
-        'amp': '200s',
-        'base_model_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/models/',
-        'base_plot_path': '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/network_output/',
-        'model_filename_template': '{timestamp}_{amp}_RCR_Backlobe_model_2Layer.h5',
-        'histogram_filename_template': '{timestamp}_{amp}_checks_histogram.png',
-        'if_dann' : True
-    }
+from A0_Utilities import load_config
 
 
 def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None):
@@ -168,7 +158,7 @@ def plot_histogram(prob_2016, prob_coincidence, amp, timestamp):
     plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=14)
     plt.legend(loc='upper left', fontsize=12)
 
-    config = get_config()
+    config = load_config()
     filename = config['histogram_filename_template'].format(timestamp=timestamp, amp=amp)
     out_path = os.path.join(config['base_plot_path'], filename)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
@@ -179,7 +169,7 @@ def plot_histogram(prob_2016, prob_coincidence, amp, timestamp):
 
 
 def main():
-    config = get_config()
+    config = load_config()
     amp = config['amp']
 
     model, model_timestamp = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="RCR_Backlobe")

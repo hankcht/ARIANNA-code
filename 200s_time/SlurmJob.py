@@ -53,7 +53,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     return
 
 
-def main(multi_run=False):
+def main(jobName, multi_run=False):
     if multi_run:
         # --- Run multiple stations ---
         stations = [13, 15, 18, 14, 17, 19, 30]
@@ -82,7 +82,9 @@ if __name__ == "__main__":
     # RunMultipleJobs(cmd, jobName='train_and_run')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py'
     # RunMultipleJobs(cmd, jobName='checks')
-    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/test_DANN.py'
+    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/test_DANN.py'
+    # RunMultipleJobs(cmd, jobName='test')
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
     RunMultipleJobs(cmd, jobName='test')
 
 

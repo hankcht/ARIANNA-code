@@ -15,7 +15,19 @@ import templateCrossCorr as txc
 import NuRadioReco
 from NuRadioReco.utilities import units, fft
 from NuRadioReco.utilities.io_utilities import read_pickle
+import yaml
 
+
+def load_config(config_path="config.yaml"):
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+
+    amp = config['amp']
+
+    config['noise_rms'] = config['noise_rms_200s'] * units.mV if amp == '200s' else config['noise_rms_100s'] * units.mV
+    config['station_ids'] = config['station_ids_200s'] if amp == '200s' else config['station_ids_100s']
+
+    return config
     
 def getMaxChi(traces, sampling_rate, template_trace, template_sampling_rate, parallelChannels=[[0, 2], [1, 3]], use_average=False):
     #Parallel channels should be index corresponding to the channel in traces
@@ -525,6 +537,18 @@ if __name__ == "__main__":
     file_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
 
     amp = '200s'
+
+
+    path = f"/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/reflectedCR_template_{amp}eries.pkl"
+
+    with open(path, 'rb') as f:
+        templates = pickle.load(f)
+    
+    print(type(templates))      # should be dict
+    print(templates.keys())  
+
+    template = next(iter(templates.values()))
+    print(template.shape)
 
     '''run all station data'''
     # data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'

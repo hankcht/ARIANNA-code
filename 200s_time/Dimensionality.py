@@ -22,7 +22,7 @@ for poss in possibilities:
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X_flat)
 
-    pca = PCA(n_components=2)
+    pca = PCA(n_components=3)
     X_pca = pca.fit_transform(X_scaled)
 
     plt.figure(figsize=(10, 8))
@@ -50,5 +50,5 @@ for poss in possibilities:
 
     plt.tight_layout()
     print('saving')
-    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/test_pca_{poss}.png', dpi=300)
+    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/test_pca_{poss}_three_component.png', dpi=300)
     plt.show()

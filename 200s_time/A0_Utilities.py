@@ -18,7 +18,7 @@ from NuRadioReco.utilities.io_utilities import read_pickle
 import yaml
 
 
-def load_config(config_path="/200s_time/config.yaml"):
+def load_config(config_path="200s_time/config.yaml"):
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 

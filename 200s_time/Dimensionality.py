@@ -11,7 +11,7 @@ data = load_and_prep_data_for_training(config)
 training_rcr = data['training_rcr']
 training_backlobe = data['training_backlobe']
 
-X = np.vstack([training_rcr, training_backlobe])
+X = np.vstack([training_backlobe, training_rcr])
 labels = np.array([0]*len(training_backlobe) + [1]*len(training_rcr))
 
 X_flat = X.reshape(X.shape[0], -1)
@@ -45,10 +45,7 @@ plt.legend(handles=handles, labels=custom_labels, title="Waveform Type", loc='be
 
 plt.grid(True, linestyle='--', alpha=0.7)
 
-plt.figtext(0.15, 0.02, f'Total Explained Variance by 2 PCs: {(pca.explained_variance_ratio_.sum()*100):.1f}%',
-            fontsize=10, bbox=dict(facecolor='white', alpha=0.7))
-
 plt.tight_layout()
 print('saving')
-plt.savefig('/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/test_pca_enhanced.png', dpi=300)
+plt.savefig('/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/test_pca_data_BL.png', dpi=300)
 plt.show()

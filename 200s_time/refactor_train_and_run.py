@@ -64,8 +64,8 @@ def load_and_prep_data_for_training(config):
         'training_rcr': training_rcr,
         'training_backlobe': training_backlobe,
         'sim_rcr_all': sim_rcr,
-        'data_backlobe_all': backlobe_traces_2016,
-        'data_backlobe_tracesRCR_all': backlobe_traces_rcr,
+        'data_backlobe_traces2016': backlobe_traces_2016,
+        'data_backlobe_tracesRCR': backlobe_traces_rcr,
         'data_backlobe_unix_all': np.array(backlobe_data['unix']),
         'data_backlobe_chi2016_all': np.array(backlobe_data['chi2016']),
         'rcr_non_training_indices': rcr_non_training_indices,
@@ -286,7 +286,7 @@ def main():
     training_rcr = data['training_rcr']
     training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']
-    data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR_all']
+    data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
 
     # Train model
     model, history = train_cnn_model(training_rcr, training_backlobe, config)

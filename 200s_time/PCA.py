@@ -19,11 +19,13 @@ rcr, Backlobe = load_sim(path, RCR_path, backlobe_path, amp)
 
 possibilities = ['data_backlobe_traces2016', 'data_backlobe_tracesRCR', 'sim_Backlobe']
 for poss in possibilities:
-    training_backlobe = data[poss]
+
     if poss == 'sim_Backlobe':
         print('using sim BL')
         training_backlobe = Backlobe
-
+    else:
+        training_backlobe = data[poss]
+        
     X = np.vstack([training_backlobe, training_rcr])
     labels = np.array([0]*len(training_backlobe) + [1]*len(training_rcr))
 

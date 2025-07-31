@@ -20,7 +20,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     
     header += "#SBATCH --output={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.out'))
     header += "#SBATCH --error={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.err'))
-    header += "#SBATCH --mail-type=fail,end\n"
+    header += "#SBATCH --mail-type=FAIL,END\n"
     header += "#SBATCH --mail-user=tangch3@uci.edu\n"
 
 

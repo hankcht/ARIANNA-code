@@ -103,22 +103,25 @@ def load_all_coincidence_traces(pkl_path):
 
     all_traces = []
     metadata = {}
-    idx = 0
 
-    for master_id in coinc_dict:
-        for station_id in coinc_dict[master_id]['stations']:
-            station_dict = coinc_dict[master_id]['stations'][station_id]
-            print(station_dict)
-            traces = station_dict['Traces']
+    idx = 0  # Global trace index
+    for master_id, master_data in coinc_dict.items():
+        for station_id, station_dict in master_data['stations'].items():
+            traces = station_dict.get('Traces')
             if traces is None or len(traces) == 0:
                 continue
 
-            all_traces.append(traces)
-            for i in range(len(traces)):
+            # Ensure traces are numpy array
+            traces = np.array(traces)
+            n_traces = len(traces)
+
+            for i in range(n_traces):
+                all_traces.append(traces[i])  # Append each individual trace
                 metadata[idx] = {
+                    'master_id': master_id,
+                    'station_id': station_id,
                     'index': station_dict['indices'][i],
                     'event_id': station_dict['event_ids'][i],
-                    'station_id': station_id,
                     'SNR': station_dict['SNR'][i],
                     'ChiRCR': station_dict['ChiRCR'][i],
                     'Chi2016': station_dict['Chi2016'][i],
@@ -130,13 +133,10 @@ def load_all_coincidence_traces(pkl_path):
                     'PolAngleErr': station_dict['PolAngleErr'][i],
                     'ExpectedPolAngle': station_dict['ExpectedPolAngle'][i],
                 }
-                print(metadata[idx])
                 idx += 1
-                
-                if idx > 2: 
-                    break
 
-    X = np.concatenate(all_traces, axis=0)
+    # Stack individual traces into a big numpy array
+    X = np.stack(all_traces, axis=0)  # shape: (1341, ...) for CNN input
     return X, metadata
 
 

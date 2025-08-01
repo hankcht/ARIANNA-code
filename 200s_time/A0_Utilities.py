@@ -546,8 +546,10 @@ if __name__ == "__main__":
 
     print(dict)
     print(len(dict))
-    print(dict[578])
-    print(dict[578][17])
+    print(len(_))
+    for id in dict:
+        if dict['master_id'] == 578:
+            print(f'found RCR event {dict['station_id'].items()}') 
 
     # import re
     # files = os.listdir(path)

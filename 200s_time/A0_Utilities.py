@@ -542,14 +542,14 @@ if __name__ == "__main__":
     path = f"/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/"
     from refactor_checks import load_all_coincidence_traces
     pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
-    _, dict = load_all_coincidence_traces(pkl_path)
+    X, dict = load_all_coincidence_traces(pkl_path)
 
     print(dict)
     print(len(dict))
-    print(len(_))
-    for id in dict:
-        if dict['master_id'] == 578:
-            print(f'found RCR event {dict['station_id'].items()}') 
+    print(len(X))
+    # for id in dict:
+    #     if dict['master_id'] == 578:
+    #         print(f'found RCR event {dict['station_id'].items()}') 
 
     # import re
     # files = os.listdir(path)

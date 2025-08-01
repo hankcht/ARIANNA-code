@@ -203,7 +203,8 @@ def main():
         all_coincidence_events = all_coincidence_events[..., np.newaxis]
         print(f'changed to shape {all_coincidence_events.shape}')
 
-    print(np.allclose(all_2016_backlobes[14], all_coincidence_events[148]))
+    print(np.allclose(all_2016_backlobes[5], all_coincidence_events[148]))
+    print('test')
 
     if config['if_dann']:
         prob_backlobe, _ = model.predict(all_2016_backlobes)

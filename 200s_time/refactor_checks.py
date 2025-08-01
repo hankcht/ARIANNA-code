@@ -130,8 +130,9 @@ def load_all_coincidence_traces(pkl_path):
                     'PolAngleErr': station_dict['PolAngleErr'][i],
                     'ExpectedPolAngle': station_dict['ExpectedPolAngle'][i],
                 }
-                idx += 1
                 print(metadata[idx])
+                idx += 1
+                
                 if idx > 2: 
                     break
 

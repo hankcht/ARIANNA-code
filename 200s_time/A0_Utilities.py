@@ -544,23 +544,8 @@ if __name__ == "__main__":
     pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
     _, dict = load_all_coincidence_traces(pkl_path)
 
-    with open(pkl_path, "rb") as f:
-        coinc_dict = pickle.load(f)
-
-    # 1. Print all top-level keys in the dictionary
-    print("Top-level keys in coinc_dict:")
-    print(coinc_dict.keys())
-
-    # 2. Iterate through each event and print the keys in 'stations'
-    for event_id, event_data in coinc_dict.items():
-        print(f"\nKeys for event {event_id}:")
-        print(event_data.keys())  # This will print keys like 'numCoincidences', 'datetime', 'stations'
-
-        # 3. Now, iterate through each station and print the keys within that station's data
-        if 'stations' in event_data:
-            for station_id, station_data in event_data['stations'].items():
-                print(f"\nKeys for station {station_id} in event {event_id}:")
-                print(station_data.keys())
+    print(dict)
+    print(dict[578]['stations'][13])
 
     # import re
     # files = os.listdir(path)

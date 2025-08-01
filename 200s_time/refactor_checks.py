@@ -212,17 +212,29 @@ def main():
     print(all_coincidence_events[149])
     print(all_2016_backlobes[5])
 
-    if config['if_dann']:
-        prob_backlobe, _ = model.predict(all_2016_backlobes)
-        prob_coincidence, _ = model.predict(all_coincidence_events)
-    else:
-        prob_backlobe = model.predict(all_2016_backlobes)
-        prob_coincidence = model.predict(all_coincidence_events)
+    from A0_Utilities import pT
+    plot_dir="/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/"
+    coinc_save_name = f"830test_plot_coincidence.png"
+    coinc_save_path = os.path.join(plot_dir, coinc_save_name)
+    bl_save_name = f"830test_plot_bl.png"
+    bl_save_path = os.path.join(plot_dir, bl_save_name)
 
-    prob_backlobe = prob_backlobe.flatten()
-    prob_coincidence = prob_coincidence.flatten()
+    pT(traces=all_coincidence_events[149], title=f"test plot coincidence",
+                    saveLoc=coinc_save_path)
+    pT(traces=all_2016_backlobes[5], title=f"test plot bl",
+                    saveLoc=bl_save_path)
 
-    plot_histogram(prob_backlobe, prob_coincidence, amp, timestamp=model_timestamp, prefix=prefix)
+    # if config['if_dann']:
+    #     prob_backlobe, _ = model.predict(all_2016_backlobes)
+    #     prob_coincidence, _ = model.predict(all_coincidence_events)
+    # else:
+    #     prob_backlobe = model.predict(all_2016_backlobes)
+    #     prob_coincidence = model.predict(all_coincidence_events)
+
+    # prob_backlobe = prob_backlobe.flatten()
+    # prob_coincidence = prob_coincidence.flatten()
+
+    # plot_histogram(prob_backlobe, prob_coincidence, amp, timestamp=model_timestamp, prefix=prefix)
 
 if __name__ == "__main__":
     main()

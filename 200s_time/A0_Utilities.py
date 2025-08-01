@@ -553,7 +553,6 @@ if __name__ == "__main__":
         for idx, info in metadata.items():
             coinc_time = float(info['Times'])
 
-            # Optional: apply some small tolerance for float precision
             matched_time = next((ts for ts in file_times if abs(coinc_time - ts) < 1e-4), None)
 
             if matched_time is not None:

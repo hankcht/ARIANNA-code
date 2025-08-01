@@ -539,30 +539,28 @@ if __name__ == "__main__":
     # amp = '200s'
 
     # to find 2016 events in coincidence
-    path = f"/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/"
+    def find_2016_matches(metadata, path):
+        files = os.listdir(path)
+
+        # Extract timestamps from all 2016 files
+        file_times = {}  # maps timestamp -> filename
+        for file in files:
+            match = re.search(r'Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', file)
+            if match:
+                unix_timestamp = float(match.group(2))
+                file_times[unix_timestamp] = file
+
+        # Now look for matching timestamps in coincidence metadata
+        for idx, info in metadata.items():
+            coinc_time = float(info['Times'])
+            if coinc_time in file_times:
+                print(f"✅ Found 2016 BL match in coincidence: trace idx {idx}, station {info['station_id']}, file {file_times[coinc_time]}")
+
     from refactor_checks import load_all_coincidence_traces
-    pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
-    X, dict = load_all_coincidence_traces(pkl_path)
+    X, metadata = load_all_coincidence_traces("path/to/coinc.pkl")
+    find_2016_matches(metadata, "/your/path/to/2016/events/")
 
-    print(dict)
-    print(len(dict))
-    print(len(X))
-    for idx, info in dict.items():
-        if info['master_id'] == 578:
-            print(f"Found RCR event at station {info['station_id']}, trace index {idx}")
-
-    # import re
-    # files = os.listdir(path)
-    # for file in files:
-    #     match = re.search(r'Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', path)
-    #     if match:
-    #         unix_timestamp = match.group(2)
-
-    #     for i in range(600):
-    #         coinc_unix_timestamp = dict['Times'][i]
-    #         if float(unix_timestamp) == float(coinc_unix_timestamp):
-    #             print(f'found BL event in coincidence events, id {i}')
-
+    
     '''run all station data'''
     # data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
     # data = load_520_data(14, '', data_folder, single_load=False)

@@ -82,6 +82,7 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
             chi = match.group(3)
             snr = match.group(4)
 
+
             if int(station_id) in allowed_stations:
                 arr = np.load(path)
                 arrays.append(arr)
@@ -221,7 +222,7 @@ def main():
     pT(traces=all_coincidence_events[149], title=f"test plot coincidence",
                     saveLoc=coinc_save_path)
     for idx, bl in enumerate(all_2016_backlobes):
-        bl_save_name = f"830test_plot_bl_{idx}.png"
+        bl_save_name = dict_2016[idx]['plot_filename']
         bl_save_path = os.path.join(plot_dir, bl_save_name)
         pT(traces=bl, title=f"test plot bl {idx}",
                     saveLoc=bl_save_path)

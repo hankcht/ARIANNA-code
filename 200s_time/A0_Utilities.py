@@ -526,29 +526,51 @@ def load_coincidence_pkl(master_id, argument, station_id,
 
 if __name__ == "__main__":
 
-    station_id = [14, 17, 19, 30, 13, 15, 18]
-    parameters = ['ChiRCR', 'Chi2016']
-    plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning'
-    extraname = 'quicktest'
-    if_sim = ''
-    station_data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
-    date_filter = '5.20.25'
+    # station_id = [14, 17, 19, 30, 13, 15, 18]
+    # parameters = ['ChiRCR', 'Chi2016']
+    # plot_folder = f'/pub/tangch3/ARIANNA/DeepLearning'
+    # extraname = 'quicktest'
+    # if_sim = ''
+    # station_data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
+    # date_filter = '5.20.25'
 
-    file_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
+    # file_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
 
-    amp = '200s'
+    # amp = '200s'
 
+    # to find 2016 events in coincidence
+    import os
+    import re
+    from refactor_checks import load_all_coincidence_traces
 
-    path = f"/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/reflectedCR_template_{amp}eries.pkl"
+    # File paths
+    path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/"
+    pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
 
-    with open(path, 'rb') as f:
-        templates = pickle.load(f)
-    
-    print(type(templates))      # should be dict
-    print(templates.keys())  
+    # Load the coincidence data
+    _, coincidence_data = load_all_coincidence_traces(pkl_path)
 
-    template = next(iter(templates.values()))
-    print(template.shape)
+    # Ensure 'Times' exists in the dictionary
+    if 'Times' not in coincidence_data:
+        raise KeyError("'Times' not found in the loaded dictionary.")
+
+    # Convert all Times to strings for easier matching later
+    coinc_times_set = set(map(lambda x: f"{x:.6f}", coincidence_data['Times']))
+
+    # Iterate through files in the specified directory
+    for file in os.listdir(path):
+        # Use regex to extract the timestamp from the filename
+        match = re.search(r'Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', file)
+        
+        if match:
+            # Extract the timestamp from the filename (2nd group)
+            unix_timestamp = match.group(2)
+            
+            # Compare the extracted timestamp against the 'Times' values
+            if unix_timestamp in coinc_times_set:
+                print(f'Found BL event in coincidence events: {file}')
+            else:
+                print(f'No match for event in coincidence: {file}')
 
     '''run all station data'''
     # data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'

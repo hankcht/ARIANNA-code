@@ -84,7 +84,7 @@ if __name__ == "__main__":
     # RunMultipleJobs(cmd, jobName='checks')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/test_DANN.py'
     # RunMultipleJobs(cmd, jobName='test')
-    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/PCA.py'
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
     RunMultipleJobs(cmd, jobName='test')
 
 

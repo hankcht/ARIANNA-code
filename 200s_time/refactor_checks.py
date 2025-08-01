@@ -108,18 +108,31 @@ def load_all_coincidence_traces(pkl_path):
     for master_id in coinc_dict:
         for station_id in coinc_dict[master_id]['stations']:
             station_dict = coinc_dict[master_id]['stations'][station_id]
-            trace = station_dict['Traces']
-            if trace is None or len(trace) == 0:
+            traces = station_dict['Traces']
+            if traces is None or len(traces) == 0:
                 continue
 
-            all_traces.append(trace)
-            # add index
-            station_dict['indices'] = idx
-            idx += 1
+            all_traces.append(traces)
+            for i in range(len(traces)):
+                metadata[idx] = {
+                    'index': station_dict['indices'][i],
+                    'event_id': station_dict['event_ids'][i],
+                    'station_id': station_id,
+                    'SNR': station_dict['SNR'][i],
+                    'ChiRCR': station_dict['ChiRCR'][i],
+                    'Chi2016': station_dict['Chi2016'][i],
+                    'ChiBad': station_dict['ChiBad'][i],
+                    'Zen': station_dict['Zen'][i],
+                    'Azi': station_dict['Azi'][i],
+                    'Times': station_dict['Times'][i],
+                    'PolAngle': station_dict['PolAngle'][i],
+                    'PolAngleErr': station_dict['PolAngleErr'][i],
+                    'ExpectedPolAngle': station_dict['ExpectedPolAngle'][i],
+                }
+                idx += 1
 
-            
     X = np.concatenate(all_traces, axis=0)
-    return X, station_dict
+    return X, metadata
 
 
 def plot_histogram(prob_2016, prob_coincidence, amp, timestamp):

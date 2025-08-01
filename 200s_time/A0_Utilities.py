@@ -557,10 +557,12 @@ if __name__ == "__main__":
                 print(f"✅ Found 2016 BL match in coincidence: trace idx {idx}, station {info['station_id']}, file {file_times[coinc_time]}")
 
     from refactor_checks import load_all_coincidence_traces
-    X, metadata = load_all_coincidence_traces("path/to/coinc.pkl")
-    find_2016_matches(metadata, "/your/path/to/2016/events/")
 
-    
+
+    X, metadata = load_all_coincidence_traces("/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl")
+    find_2016_matches(metadata, "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates")
+
+
     '''run all station data'''
     # data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
     # data = load_520_data(14, '', data_folder, single_load=False)

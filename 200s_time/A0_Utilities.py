@@ -543,34 +543,31 @@ if __name__ == "__main__":
     import re
     from refactor_checks import load_all_coincidence_traces
 
-    # File paths
-    path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/"
+    # Load the data
     pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
+    _, dict = load_all_coincidence_traces(pkl_path)
 
-    # Load the coincidence data
-    _, coincidence_data = load_all_coincidence_traces(pkl_path)
+    # Path to 2016 event files
+    path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/"
 
-    # Ensure 'Times' exists in the dictionary
-    if 'Times' not in coincidence_data:
-        raise KeyError("'Times' not found in the loaded dictionary.")
+    # List all files in the directory
+    files = os.listdir(path)
 
-    # Convert all Times to strings for easier matching later
-    coinc_times_set = set(map(lambda x: f"{x:.6f}", coincidence_data['Times']))
-
-    # Iterate through files in the specified directory
-    for file in os.listdir(path):
-        # Use regex to extract the timestamp from the filename
+    # Iterate over each file
+    for file in files:
+        # Use regex to extract info from the filename
         match = re.search(r'Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', file)
-        
         if match:
-            # Extract the timestamp from the filename (2nd group)
-            unix_timestamp = match.group(2)
-            
-            # Compare the extracted timestamp against the 'Times' values
-            if unix_timestamp in coinc_times_set:
-                print(f'Found BL event in coincidence events: {file}')
-            else:
-                print(f'No match for event in coincidence: {file}')
+            unix_timestamp_2016 = float(match.group(2))  # Convert to float once we extract the timestamp
+
+            # Compare with the event times in the coincidence dictionary
+            for i in range(600):
+                coinc_unix_timestamp = dict['Times'][i]
+
+                # Use a tolerance for float comparison to avoid precision issues
+                if abs(float(unix_timestamp_2016) - float(coinc_unix_timestamp)) < 1e-6:
+                    print(f'Found matching event in coincidence events, event ID: {i}, 2016 timestamp: {unix_timestamp_2016}')
+
 
     '''run all station data'''
     # data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'

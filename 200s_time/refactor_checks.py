@@ -183,7 +183,7 @@ def main():
     model, model_timestamp, prefix = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="RCR_Backlobe")
 
     template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
-    template_paths = glob(os.path.join(template_dir, "Event2016_Stn*.npy"))
+    template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
 
     print(f"[INFO] Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")

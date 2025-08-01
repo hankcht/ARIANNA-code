@@ -160,7 +160,7 @@ def plot_histogram(prob_2016, prob_coincidence, amp, timestamp, prefix):
     hist_values_2016, _ = np.histogram(prob_2016, bins=20, range=(0, 1))
     hist_values_coincidence, _ = np.histogram(prob_coincidence, bins=20, range=(0, 1))
     max_overall_hist = max(np.max(hist_values_2016), np.max(hist_values_coincidence))
-    plt.ylim(1e-1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
+    plt.ylim(7*1e-1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
 
     plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=14)
     plt.legend(loc='upper left', fontsize=12)
@@ -191,10 +191,17 @@ def main():
     all_coincidence_events, _ = load_all_coincidence_traces(pkl_path)
     print(f"[INFO] Loaded {len(all_coincidence_events)} coincidence traces.")
 
+    all_2016_backlobes = np.array(all_2016_backlobes)
+    all_coincidence_events = np.array(all_coincidence_events)
+    print(all_2016_backlobes.shape)
+    print(all_coincidence_events.shape)
+
     if all_2016_backlobes.ndim == 3:
         all_2016_backlobes = all_2016_backlobes[..., np.newaxis]
+        print(f'changed to shape {all_2016_backlobes.shape}')
     if all_coincidence_events.ndim == 3:
         all_coincidence_events = all_coincidence_events[..., np.newaxis]
+        print(f'changed to shape {all_2016_backlobes.shape}')
 
     if config['if_dann']:
         prob_backlobe, _ = model.predict(all_2016_backlobes)

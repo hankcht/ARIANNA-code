@@ -547,9 +547,9 @@ if __name__ == "__main__":
     print(dict)
     print(len(dict))
     print(len(X))
-    # for id in dict:
-    #     if dict['master_id'] == 578:
-    #         print(f'found RCR event {dict['station_id'].items()}') 
+    for idx, info in dict.items():
+        if info['master_id'] == 578:
+            print(f"Found RCR event at station {info['station_id']}, trace index {idx}")
 
     # import re
     # files = os.listdir(path)

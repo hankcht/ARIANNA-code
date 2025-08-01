@@ -108,6 +108,7 @@ def load_all_coincidence_traces(pkl_path):
     for master_id in coinc_dict:
         for station_id in coinc_dict[master_id]['stations']:
             station_dict = coinc_dict[master_id]['stations'][station_id]
+            print(station_dict)
             traces = station_dict['Traces']
             if traces is None or len(traces) == 0:
                 continue
@@ -130,6 +131,9 @@ def load_all_coincidence_traces(pkl_path):
                     'ExpectedPolAngle': station_dict['ExpectedPolAngle'][i],
                 }
                 idx += 1
+                print(metadata[idx])
+                if idx > 2: 
+                    break
 
     X = np.concatenate(all_traces, axis=0)
     return X, metadata

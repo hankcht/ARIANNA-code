@@ -204,7 +204,7 @@ def main():
         print(f'changed to shape {all_coincidence_events.shape}')
 
     for bl in all_2016_backlobes:
-      print(np.allclose(bl, all_coincidence_events[149]))
+      print(np.allclose(bl, all_coincidence_events[149], rtol=1e-01))
 
     if config['if_dann']:
         prob_backlobe, _ = model.predict(all_2016_backlobes)

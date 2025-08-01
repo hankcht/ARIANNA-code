@@ -216,13 +216,16 @@ def main():
     plot_dir="/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/"
     coinc_save_name = f"830test_plot_coincidence.png"
     coinc_save_path = os.path.join(plot_dir, coinc_save_name)
-    bl_save_name = f"830test_plot_bl.png"
-    bl_save_path = os.path.join(plot_dir, bl_save_name)
+
 
     pT(traces=all_coincidence_events[149], title=f"test plot coincidence",
                     saveLoc=coinc_save_path)
-    pT(traces=all_2016_backlobes[5], title=f"test plot bl",
+    for idx, bl in enumerate(all_2016_backlobes):
+        bl_save_name = f"830test_plot_bl_{idx}.png"
+        bl_save_path = os.path.join(plot_dir, bl_save_name)
+        pT(traces=bl, title=f"test plot bl {idx}",
                     saveLoc=bl_save_path)
+
 
     # if config['if_dann']:
     #     prob_backlobe, _ = model.predict(all_2016_backlobes)

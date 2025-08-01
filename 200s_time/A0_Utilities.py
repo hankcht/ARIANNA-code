@@ -545,7 +545,8 @@ if __name__ == "__main__":
     _, dict = load_all_coincidence_traces(pkl_path)
 
     print(dict)
-    print(dict[578][13])
+    print(len(dict))
+    print(dict[578])
     print(dict[578][17])
 
     # import re

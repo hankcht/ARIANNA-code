@@ -545,7 +545,7 @@ if __name__ == "__main__":
     _, dict = load_all_coincidence_traces(pkl_path)
 
     with open(pkl_path, "rb") as f:
-    coinc_dict = pickle.load(f)
+        coinc_dict = pickle.load(f)
 
     # 1. Print all top-level keys in the dictionary
     print("Top-level keys in coinc_dict:")

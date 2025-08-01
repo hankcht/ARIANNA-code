@@ -209,6 +209,9 @@ def main():
     print(all_coincidence_events[149].shape)
     print(all_2016_backlobes[5].shape)
 
+    print(all_coincidence_events[149])
+    print(all_2016_backlobes[5])
+
     if config['if_dann']:
         prob_backlobe, _ = model.predict(all_2016_backlobes)
         prob_coincidence, _ = model.predict(all_coincidence_events)

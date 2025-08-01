@@ -50,13 +50,15 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None):
     if if_dann:
         from test_DANN import gradient_reversal_operation
         custom_objects = {"gradient_reversal_operation": gradient_reversal_operation}
+        prefix = 'DANN'
     else:
         custom_objects = None
+        prefix = 'CNN'
 
     if best_file:
         model_path = os.path.join(base_model_path, best_file)
         print(f"Loading model: {model_path}")
-        return keras.models.load_model(model_path, custom_objects=custom_objects), best_timestamp
+        return keras.models.load_model(model_path, custom_objects=custom_objects), best_timestamp, prefix
     else:
         raise FileNotFoundError(f"No suitable model file found in {base_model_path}.")
 
@@ -140,7 +142,7 @@ def load_all_coincidence_traces(pkl_path):
     return X, metadata
 
 
-def plot_histogram(prob_2016, prob_coincidence, amp, timestamp):
+def plot_histogram(prob_2016, prob_coincidence, amp, timestamp, prefix):
     
     plt.figure(figsize=(8, 6))
     bins = 20
@@ -164,7 +166,7 @@ def plot_histogram(prob_2016, prob_coincidence, amp, timestamp):
     plt.legend(loc='upper left', fontsize=12)
 
     config = load_config()
-    filename = config['histogram_filename_template'].format(timestamp=timestamp, amp=amp)
+    filename = config['histogram_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix)
     out_path = os.path.join(config['base_plot_path'], filename)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
@@ -177,7 +179,7 @@ def main():
     config = load_config()
     amp = config['amp']
 
-    model, model_timestamp = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="RCR_Backlobe")
+    model, model_timestamp, prefix = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="RCR_Backlobe")
 
     template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
     template_paths = glob(os.path.join(template_dir, "Event2016_Stn*.npy"))
@@ -204,7 +206,7 @@ def main():
     prob_backlobe = prob_backlobe.flatten()
     prob_coincidence = prob_coincidence.flatten()
 
-    plot_histogram(prob_backlobe, prob_coincidence, amp, timestamp=model_timestamp)
+    plot_histogram(prob_backlobe, prob_coincidence, amp, timestamp=model_timestamp, prefix=prefix)
 
 if __name__ == "__main__":
     main()

@@ -160,7 +160,7 @@ def plot_histogram(prob_2016, prob_coincidence, amp, timestamp, prefix):
     hist_values_2016, _ = np.histogram(prob_2016, bins=20, range=(0, 1))
     hist_values_coincidence, _ = np.histogram(prob_coincidence, bins=20, range=(0, 1))
     max_overall_hist = max(np.max(hist_values_2016), np.max(hist_values_coincidence))
-    plt.ylim(0, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
+    plt.ylim(1e-1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
 
     plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=14)
     plt.legend(loc='upper left', fontsize=12)

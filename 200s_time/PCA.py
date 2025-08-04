@@ -11,8 +11,8 @@ from A0_Utilities import load_config, load_sim
 
 def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape=(4, 256)):
     # Flatten and normalize
-    X = np.vstack(X_list)
-    X_flat = X.reshape(X.shape[0], -1)
+    X = np.array(X_list)        # shape: (N, 4, 256)
+    X_flat = X.reshape(10, -1)  # shape: (N, 1024)
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X_flat)
 
@@ -44,6 +44,22 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
     plt.title(f'PCA Visualization ({n_components}D)')
     plt.tight_layout()
     plt.savefig(f'{out_prefix}_pca_{n_components}d.png', dpi=300)
+
+
+    # --- Find and Plot certain events on scatter plot ---
+    # With the scatter plot, we can find events in a closed ball around some coordinate
+    def find_points_in_radius(X_pca, center, radius):
+        distances = np.linalg.norm(X_pca - center, radius)
+        return np.where(distances <= radius)[0]
+    
+    center = np.array([1.0, 0.0])
+    radius = 0.3
+    indices = find_points_in_radius(X_pca - center, radius)
+
+    # for idx in indices:
+    #     trace = X[idx].reshape(4, 256)
+
+    print(len(indices))
 
     # --- Scree plot ---
     plt.figure(figsize=(10, 6))
@@ -82,7 +98,8 @@ if __name__ == "__main__":
     rcr_sim, backlobe_sim = load_sim(path, RCR_path, backlobe_path, amp)
 
     # Choose which sets to include
-    input_types = ['sim_rcr', 'data_bl_2016', 'data_bl_rcr', 'sim_bl', 'confirmed_bl_2016', 'coincidence_event']
+    all_types = ['sim_rcr', 'data_bl_2016', 'data_bl_rcr', 'sim_bl', 'confirmed_bl_2016', 'coincidence_event']
+    input_types = ['sim_rcr', 'data_bl_2016']
     n_components = 2  # Change to 3 for 3D
 
     X_list = []

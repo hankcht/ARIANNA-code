@@ -54,7 +54,7 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
     
     center = np.array([12, 0])
     radius = 6
-    indices = find_points_in_radius(X_pca - center, radius)
+    indices = find_points_in_radius(X_pca, center, radius)
 
     print(indices)
 

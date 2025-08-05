@@ -23,27 +23,9 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
     pca = PCA(n_components=n_components)
     X_pca = pca.fit_transform(X_scaled)
 
-    # --- Plot PCA scatter ---
-    plt.figure(figsize=(10, 8))
-    if n_components == 2:
-        sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=labels, palette='viridis', alpha=0.8, s=50, edgecolor='w')
-        plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
-        plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
-    elif n_components == 3:
-        fig = plt.figure(figsize=(10, 8))
-        ax = fig.add_subplot(111, projection='3d')
-        for i in np.unique(labels):
-            ax.scatter(X_pca[labels == i, 0], X_pca[labels == i, 1], X_pca[labels == i, 2], label=label_names[i], alpha=0.7)
-        ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
-        ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
-        ax.set_zlabel(f'PC3 ({pca.explained_variance_ratio_[2]*100:.1f}%)')
-        ax.legend()
-    else:
-        raise ValueError("n_components must be 2 or 3")
-
-    plt.title(f'PCA Visualization ({n_components}D)')
-    plt.tight_layout()
-    plt.savefig(f'{out_prefix}_pca_{n_components}d.png', dpi=300)
+    if n_components == 2 and region_filter is not None:
+        circle = plt.Circle(region_filter['center'], region_filter['radius'], color='red', fill=False, linestyle='--', linewidth=2)
+        plt.gca().add_patch(circle)
 
     # --- Find and print indices in region (with optional label filter) ---
     def find_points_in_radius(X_pca, center, radius, labels=None, target_label=None):
@@ -67,6 +49,30 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
         #     trace = X[idx].reshape(input_shape)
         #     # Do something with `trace`
 
+    # --- Plot PCA scatter ---
+    plt.figure(figsize=(10, 8))
+    if n_components == 2:
+        sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=labels, palette='viridis', alpha=0.8, s=50, edgecolor='w')
+        plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
+        plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
+    elif n_components == 3:
+        fig = plt.figure(figsize=(10, 8))
+        ax = fig.add_subplot(111, projection='3d')
+        for i in np.unique(labels):
+            ax.scatter(X_pca[labels == i, 0], X_pca[labels == i, 1], X_pca[labels == i, 2], label=label_names[i], alpha=0.7)
+        ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
+        ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
+        ax.set_zlabel(f'PC3 ({pca.explained_variance_ratio_[2]*100:.1f}%)')
+        ax.legend()
+    else:
+        raise ValueError("n_components must be 2 or 3")
+
+    plt.title(f'PCA Visualization ({n_components}D)')
+    plt.tight_layout()
+    print(f'saving to {out_prefix}_pca_{n_components}d.png')
+    plt.savefig(f'{out_prefix}_pca_{n_components}d.png', dpi=300)
+
+
     # --- Scree plot ---
     plt.figure(figsize=(10, 6))
     explained_var = pca_full.explained_variance_ratio_
@@ -78,6 +84,7 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
     plt.ylabel('Explained Variance Ratio')
     plt.grid(True)
     plt.tight_layout()
+    print(f'{out_prefix}_scree.png')
     plt.savefig(f'{out_prefix}_scree.png', dpi=300)
 
     # --- PC Weights Heatmap ---
@@ -90,6 +97,7 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
         plt.xlabel('Time')
         plt.ylabel('Channels')
         plt.tight_layout()
+        print(f'saving {out_prefix}_pc{i+1}_weights.png')
         plt.savefig(f'{out_prefix}_pc{i+1}_weights.png', dpi=300)
 
 
@@ -139,7 +147,8 @@ if __name__ == "__main__":
         label_idx += 1
 
     labels = np.array(label_list)
-    out_prefix = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/pca_{"_".join(input_types)}'
+    plot_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/'
+    out_prefix = f'{plot_path}pca_{"_".join(input_types)}'
 
     # Define region filter parameters (optional)
     target_label_name = 'data Backlobe 2016'

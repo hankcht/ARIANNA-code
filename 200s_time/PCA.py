@@ -49,7 +49,7 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
     # --- Find and Plot certain events on scatter plot ---
     # With the scatter plot, we can find events in a closed ball around some coordinate
     def find_points_in_radius(X_pca, center, radius):
-        distances = np.linalg.norm(X_pca - center, radius)
+        distances = np.linalg.norm(X_pca - center, axis=1)
         return np.where(distances <= radius)[0]
     
     center = np.array([12, 0])

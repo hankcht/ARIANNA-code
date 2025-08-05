@@ -9,7 +9,7 @@ from refactor_train_and_run import load_and_prep_data_for_training
 from A0_Utilities import load_config, load_sim
 
 
-def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape=(4, 256)):
+def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape=(4, 256), region_filter=None):
     # Flatten and normalize
     X = np.vstack(X_list)
     X_flat = X.reshape(X.shape[0], -1)
@@ -45,21 +45,27 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
     plt.tight_layout()
     plt.savefig(f'{out_prefix}_pca_{n_components}d.png', dpi=300)
 
-
-    # --- Find and Plot certain events on scatter plot ---
-    # With the scatter plot, we can find events in a closed ball around some coordinate
-    def find_points_in_radius(X_pca, center, radius):
+    # --- Find and print indices in region (with optional label filter) ---
+    def find_points_in_radius(X_pca, center, radius, labels=None, target_label=None):
         distances = np.linalg.norm(X_pca - center, axis=1)
-        return np.where(distances <= radius)[0]
-    
-    center = np.array([12, 0])
-    radius = 6
-    indices = find_points_in_radius(X_pca, center, radius)
+        in_radius = distances <= radius
+        if labels is not None and target_label is not None:
+            in_label = labels == target_label
+            return np.where(in_radius & in_label)[0]
+        else:
+            return np.where(in_radius)[0]
 
-    print(indices)
-
-    # for idx in indices:
-    #     trace = X[idx].reshape(4, 256)
+    if region_filter is not None:
+        center = np.array(region_filter['center'])
+        radius = region_filter['radius']
+        target_label = region_filter['target_label']
+        indices = find_points_in_radius(X_pca, center, radius, labels=labels, target_label=target_label)
+        print(f"\nFound {len(indices)} points within radius {radius} of {center} for label '{label_names[target_label]}'")
+        print(f"Indices: {indices}")
+        # Optional: Save or analyze these traces
+        # for idx in indices:
+        #     trace = X[idx].reshape(input_shape)
+        #     # Do something with `trace`
 
     # --- Scree plot ---
     plt.figure(figsize=(10, 6))
@@ -97,8 +103,7 @@ if __name__ == "__main__":
     backlobe_path = f'simulatedBacklobes/{amp}_2.9.24/'
     rcr_sim, backlobe_sim = load_sim(path, RCR_path, backlobe_path, amp)
 
-    # Choose which sets to include
-    input_types = ['sim_rcr', 'sim_bl', 'data_bl_2016', 'data_bl_rcr', 'confirmed_bl_2016', 'coincidence_event']
+    input_types = ['sim_rcr', 'sim_bl', 'data_bl_2016', 'data_bl_rcr']
     n_components = 2  # Change to 3 for 3D
 
     X_list = []
@@ -116,7 +121,7 @@ if __name__ == "__main__":
     if 'sim_bl' in input_types:
         X_list.append(backlobe_sim)
         label_list.extend([label_idx]*len(backlobe_sim))
-        label_names[label_idx] = 'Sim Backlobe'
+        label_names[label_idx] = 'sim Backlobe'
         label_idx += 1
 
     if 'data_bl_2016' in input_types:
@@ -133,7 +138,16 @@ if __name__ == "__main__":
         label_names[label_idx] = 'data Backlobe RCR'
         label_idx += 1
 
-
     labels = np.array(label_list)
     out_prefix = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/pca_{"_".join(input_types)}'
-    run_pca(X_list, labels, label_names, out_prefix, n_components=n_components)
+
+    # Define region filter parameters (optional)
+    target_label_name = 'data Backlobe 2016'
+    target_label_idx = [k for k, v in label_names.items() if v == target_label_name][0]
+    region_filter = {
+        'center': [12, 0],
+        'radius': 6,
+        'target_label': target_label_idx
+    }
+
+    run_pca(X_list, labels, label_names, out_prefix, n_components=n_components, region_filter=region_filter)

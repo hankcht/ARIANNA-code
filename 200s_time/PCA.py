@@ -55,6 +55,10 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
         sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=labels, palette='viridis', alpha=0.8, s=50, edgecolor='w')
         plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
         plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
+        handles, plot_labels = plt.gca().get_legend_handles_labels()
+        # custom_labels = ['Backlobe', 'RCR']
+        plt.legend(handles=handles, labels=labels, title="Waveform Type", loc='best')
+
     elif n_components == 3:
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection='3d')
@@ -69,6 +73,7 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
 
     plt.title(f'PCA Visualization ({n_components}D)')
     plt.tight_layout()
+    plt.grid(True)
     print(f'saving to {out_prefix}_pca_{n_components}d.png')
     plt.savefig(f'{out_prefix}_pca_{n_components}d.png', dpi=300)
 

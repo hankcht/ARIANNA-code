@@ -111,7 +111,9 @@ if __name__ == "__main__":
     backlobe_path = f'simulatedBacklobes/{amp}_2.9.24/'
     rcr_sim, backlobe_sim = load_sim(path, RCR_path, backlobe_path, amp)
 
-    input_types = ['sim_rcr', 'sim_bl', 'data_bl_2016', 'data_bl_rcr']
+
+    all_possible_types = ['sim_rcr', 'sim_bl', 'data_bl_2016', 'data_bl_rcr'] # list of all types of data I want to examine
+    input_types = ['sim_rcr', 'data_bl_2016']
     n_components = 2  # Change to 3 for 3D
 
     X_list = []

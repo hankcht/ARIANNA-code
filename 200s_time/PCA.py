@@ -23,10 +23,6 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
     pca = PCA(n_components=n_components)
     X_pca = pca.fit_transform(X_scaled)
 
-    if n_components == 2 and region_filter is not None:
-        circle = plt.Circle(region_filter['center'], region_filter['radius'], color='red', fill=False, linestyle='--', linewidth=2)
-        plt.gca().add_patch(circle)
-
     # --- Find and print indices in region (with optional label filter) ---
     def find_points_in_radius(X_pca, center, radius, labels=None, target_label=None):
         distances = np.linalg.norm(X_pca - center, axis=1)
@@ -51,13 +47,20 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
 
     # --- Plot PCA scatter ---
     plt.figure(figsize=(10, 8))
+    if n_components == 2 and region_filter is not None:
+        circle = plt.Circle(region_filter['center'], region_filter['radius'], color='red', fill=False, linestyle='--', linewidth=2)
+        plt.gca().add_patch(circle)
+
     if n_components == 2:
         sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=labels, palette='viridis', alpha=0.8, s=50, edgecolor='w')
         plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
         plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
         handles, plot_labels = plt.gca().get_legend_handles_labels()
         # custom_labels = ['Backlobe', 'RCR']
-        plt.legend(handles=handles, labels=labels, title="Waveform Type", loc='best')
+        unique_labels = np.unique(labels)
+        custom_labels = [label_names[i] for i in unique_labels]
+        plt.legend(handles=handles, labels=custom_labels, title="Waveform Type", loc='best')
+
 
     elif n_components == 3:
         fig = plt.figure(figsize=(10, 8))

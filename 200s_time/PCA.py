@@ -48,11 +48,14 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
     # --- Plot PCA scatter ---
     plt.figure(figsize=(10, 8))
 
+    unique_labels = np.unique(labels)
+
     if n_components == 2:
         if region_filter is not None:
             circle = plt.Circle(region_filter['center'], region_filter['radius'], color='red', fill=False, linestyle='--', linewidth=2)
             plt.gca().add_patch(circle)
-        sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=labels, palette='viridis', alpha=0.8, s=50, edgecolor='w')
+        palette = sns.color_palette('viridis', n_colors=len(unique_labels))
+        sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=labels, palette=palette, hue_order=unique_labels, alpha=0.8, s=50, edgecolor='w')
         plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
         plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
         handles, plot_labels = plt.gca().get_legend_handles_labels()
@@ -64,9 +67,6 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection='3d')
 
-        unique_labels = np.unique(labels)
-
-        # Use the same seaborn color palette
         palette = sns.color_palette('viridis', n_colors=len(unique_labels))
         label_to_color = {label: palette[i] for i, label in enumerate(unique_labels)}
 

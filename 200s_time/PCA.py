@@ -59,40 +59,53 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
         plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
         plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
         handles, plot_labels = plt.gca().get_legend_handles_labels()
-        # custom_labels = ['Backlobe', 'RCR']
-        unique_labels = np.unique(labels)
         custom_labels = [label_names[i] for i in unique_labels]
         plt.legend(handles=handles, labels=custom_labels, title="Waveform Type", loc='best')
-    elif n_components == 3:
-        fig = plt.figure(figsize=(10, 8))
-        ax = fig.add_subplot(111, projection='3d')
+        
+        plt.title(f'PCA Visualization ({n_components}D)')
+        plt.tight_layout()
+        plt.grid(True)
+        print(f'saving to {out_prefix}_pca_{n_components}d.png')
+        plt.savefig(f'{out_prefix}_pca_{n_components}d.png', dpi=300)
 
+    elif n_components == 3:
         palette = sns.color_palette('viridis', n_colors=len(unique_labels))
         label_to_color = {label: palette[i] for i, label in enumerate(unique_labels)}
 
-        # Plot with consistent colors
-        for i in unique_labels:
-            ax.scatter(
-                X_pca[labels == i, 0],
-                X_pca[labels == i, 1],
-                X_pca[labels == i, 2],
-                color=label_to_color[i],
-                label=label_names[i],
-                alpha=0.7, s=50, edgecolor='w'
-            )
+        # Define different POVs you want to save images for
+        povs = [(30, 45), (60, 90), (90, 0)]
 
-        ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
-        ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
-        ax.set_zlabel(f'PC3 ({pca.explained_variance_ratio_[2]*100:.1f}%)')
-        ax.legend()
+        for idx, (elev, azim) in enumerate(povs):
+            fig = plt.figure(figsize=(10, 8))
+            ax = fig.add_subplot(111, projection='3d')
+
+            for i in unique_labels:
+                ax.scatter(
+                    X_pca[labels == i, 0],
+                    X_pca[labels == i, 1],
+                    X_pca[labels == i, 2],
+                    color=label_to_color[i],
+                    label=label_names[i],
+                    alpha=0.7, s=50, edgecolor='w'
+                )
+
+            ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
+            ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
+            ax.set_zlabel(f'PC3 ({pca.explained_variance_ratio_[2]*100:.1f}%)')
+            ax.legend()
+
+            ax.view_init(elev=elev, azim=azim)
+            plt.title(f'PCA Visualization ({n_components}D) - elev={elev}, azim={azim}')
+            plt.tight_layout()
+            plt.grid(True)
+
+            filename = f'{out_prefix}_pca_{n_components}d_view_{idx}_elev_{elev}_azim_{azim}.png'
+            print(f'saving to {filename}')
+            plt.savefig(filename, dpi=300)
+            plt.close(fig)
+
     else:
         raise ValueError("n_components must be 2 or 3")
-
-    plt.title(f'PCA Visualization ({n_components}D)')
-    plt.tight_layout()
-    plt.grid(True)
-    print(f'saving to {out_prefix}_pca_{n_components}d.png')
-    plt.savefig(f'{out_prefix}_pca_{n_components}d.png', dpi=300)
 
 
     # --- Scree plot ---

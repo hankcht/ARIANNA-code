@@ -166,5 +166,6 @@ if __name__ == "__main__":
         'radius': 8,
         'target_label': target_label_idx
     }
+    use_region_filter = False
 
-    run_pca(X_list, labels, label_names, out_prefix, n_components=n_components, region_filter=region_filter)
+    run_pca(X_list, labels, label_names, out_prefix, n_components=n_components, region_filter=region_filter if use_region_filter else None)

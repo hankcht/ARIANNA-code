@@ -73,7 +73,7 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
         label_to_color = {label: palette[i] for i, label in enumerate(unique_labels)}
 
         # Define different POVs you want to save images for
-        povs = [(30, -60), (10, 270), (10, 0)]
+        povs = [(30, -60), (80, -10), (10, 90)]
 
         for idx, (elev, azim) in enumerate(povs):
             fig = plt.figure(figsize=(10, 8))

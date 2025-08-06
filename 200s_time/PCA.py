@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
 
     all_possible_types = ['sim_rcr', 'sim_bl', 'data_bl_2016', 'data_bl_rcr'] # list of all types of data I want to examine
-    input_types = ['sim_rcr', 'data_bl_2016']
+    input_types = ['sim_rcr', 'data_bl_rcr']
     n_components = 2  # Change to 3 for 3D
 
     X_list = []
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     out_prefix = f'{plot_path}pca_{"_".join(input_types)}'
 
     # Define region filter parameters (optional)
-    target_label_name = 'data Backlobe 2016'
+    target_label_name = 'data Backlobe RCR'
     target_label_idx = [k for k, v in label_names.items() if v == target_label_name][0]
     region_filter = {
         'center': [12, 0],

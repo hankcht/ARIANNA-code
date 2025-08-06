@@ -4,6 +4,8 @@ import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from mpl_toolkits.mplot3d import Axes3D
+from glob import glob
+import os
 
 from refactor_train_and_run import load_and_prep_data_for_training
 from A0_Utilities import load_config, load_sim, pT
@@ -146,9 +148,16 @@ if __name__ == "__main__":
     backlobe_path = f'simulatedBacklobes/{amp}_2.9.24/'
     rcr_sim, backlobe_sim = load_sim(path, RCR_path, backlobe_path, amp)
 
+    from refactor_checks import load_all_coincidence_traces, load_2016_backlobe_templates
+    pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
+    all_coincidence_events, _ = load_all_coincidence_traces(pkl_path)
 
-    all_possible_types = ['sim_rcr', 'sim_bl', 'data_bl_2016', 'data_bl_rcr'] # list of all types of data I want to examine
-    input_types = ['sim_rcr', 'sim_bl']
+    template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
+    template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))
+    all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
+
+    all_possible_types = ['sim_rcr', 'sim_bl', 'data_bl_2016', 'data_bl_rcr', 'confirmed_2016_bl', 'coincidence'] # list of all types of data I want to examine
+    input_types = ['sim_rcr', 'coincidence']
     n_components = 3  # Change to 3 for 3D
 
     X_list = []
@@ -181,6 +190,18 @@ if __name__ == "__main__":
         X_list.append(X_data_bl_rcr)
         label_list.extend([label_idx]*len(X_data_bl_rcr))
         label_names[label_idx] = 'data Backlobe RCR'
+        label_idx += 1
+    
+    if 'confirmed_2016_bl' in input_types:
+        X_list.append(all_2016_backlobes)
+        label_list.extend([label_idx]*len(all_2016_backlobes))
+        label_names[label_idx] = '2016 Backlobes'
+        label_idx += 1
+
+    if 'coincidence' in input_types:
+        X_list.append(all_coincidence_events)
+        label_list.extend([label_idx]*len(all_coincidence_events))
+        label_names[label_idx] = 'coincidence events'
         label_idx += 1
 
     labels = np.array(label_list)

@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from mpl_toolkits.mplot3d import Axes3D
 
 from refactor_train_and_run import load_and_prep_data_for_training
-from A0_Utilities import load_config, load_sim
+from A0_Utilities import load_config, load_sim, pT
 
 
 def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape=(4, 256), region_filter=None):
@@ -41,9 +41,9 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
         print(f"\nFound {len(indices)} points within radius {radius} of {center} for label '{label_names[target_label]}'")
         print(f"Indices: {indices}")
         # Optional: Save or analyze these traces
-        # for idx in indices:
-        #     trace = X[idx].reshape(input_shape)
-        #     # Do something with `trace`
+        for idx in indices:
+            trace = X[idx].reshape(input_shape)
+            pT(trace, f'test plot pot. RCR {idx}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/pca_test_plot_potrcr_{idx}.png')
 
     # --- Plot PCA scatter ---
     plt.figure(figsize=(10, 8))
@@ -164,8 +164,8 @@ if __name__ == "__main__":
     target_label_name = 'data Backlobe RCR'
     target_label_idx = [k for k, v in label_names.items() if v == target_label_name][0]
     region_filter = {
-        'center': [12, 0],
-        'radius': 6,
+        'center': [14, 0],
+        'radius': 8,
         'target_label': target_label_idx
     }
 

@@ -78,7 +78,7 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
                 X_pca[labels == i, 2],
                 color=label_to_color[i],
                 label=label_names[i],
-                alpha=0.7
+                alpha=0.7, s=50, edgecolor='w'
             )
 
         ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')

@@ -188,13 +188,15 @@ if __name__ == "__main__":
     out_prefix = f'{plot_path}pca_{"_".join(input_types)}'
 
     # Define region filter parameters (optional)
-    target_label_name = 'data Backlobe RCR'
-    target_label_idx = [k for k, v in label_names.items() if v == target_label_name][0]
-    region_filter = {
-        'center': [14, 0], # check dimensions of center with n_components
-        'radius': 8,
-        'target_label': target_label_idx
-    }
     use_region_filter = False
+    if use_region_filter == True:
+        target_label_name = 'data Backlobe RCR'
+        target_label_idx = [k for k, v in label_names.items() if v == target_label_name][0]
+        region_filter = {
+            'center': [14, 0], # check dimensions of center with n_components
+            'radius': 8,
+            'target_label': target_label_idx
+        }
+
 
     run_pca(X_list, labels, label_names, out_prefix, n_components=n_components, region_filter=region_filter if use_region_filter else None)

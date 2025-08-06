@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     all_possible_types = ['sim_rcr', 'sim_bl', 'data_bl_2016', 'data_bl_rcr'] # list of all types of data I want to examine
     input_types = ['sim_rcr', 'data_bl_rcr', 'data_bl_2016']
-    n_components = 3  # Change to 3 for 3D
+    n_components = 2  # Change to 3 for 3D
 
     X_list = []
     label_list = []

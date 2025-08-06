@@ -63,8 +63,24 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
     elif n_components == 3:
         fig = plt.figure(figsize=(10, 8))
         ax = fig.add_subplot(111, projection='3d')
-        for i in np.unique(labels):
-            ax.scatter(X_pca[labels == i, 0], X_pca[labels == i, 1], X_pca[labels == i, 2], label=label_names[i], alpha=0.7)
+
+        unique_labels = np.unique(labels)
+
+        # Use the same seaborn color palette
+        palette = sns.color_palette('viridis', n_colors=len(unique_labels))
+        label_to_color = {label: palette[i] for i, label in enumerate(unique_labels)}
+
+        # Plot with consistent colors
+        for i in unique_labels:
+            ax.scatter(
+                X_pca[labels == i, 0],
+                X_pca[labels == i, 1],
+                X_pca[labels == i, 2],
+                color=label_to_color[i],
+                label=label_names[i],
+                alpha=0.7
+            )
+
         ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
         ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
         ax.set_zlabel(f'PC3 ({pca.explained_variance_ratio_[2]*100:.1f}%)')
@@ -162,7 +178,7 @@ if __name__ == "__main__":
     target_label_name = 'data Backlobe RCR'
     target_label_idx = [k for k, v in label_names.items() if v == target_label_name][0]
     region_filter = {
-        'center': [14, 0],
+        'center': [14, 0], # check dimensions of center with n_components
         'radius': 8,
         'target_label': target_label_idx
     }

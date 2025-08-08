@@ -157,7 +157,7 @@ if __name__ == "__main__":
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
 
     all_possible_types = ['sim_rcr', 'sim_bl', 'data_bl_2016', 'data_bl_rcr', 'confirmed_2016_bl', 'coincidence'] # list of all types of data I want to examine
-    input_types = ['sim_rcr', 'confirmed_2016_bl']
+    input_types = ['coincidence', 'confirmed_2016_bl']
     n_components = 3  # Change to 3 for 3D
 
     X_list = []

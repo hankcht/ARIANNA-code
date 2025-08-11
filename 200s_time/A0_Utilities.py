@@ -18,11 +18,11 @@ from NuRadioReco.utilities.io_utilities import read_pickle
 import yaml
 
 
-def load_config(config_path="/pub/tangch3/ARIANNA/DeepLearning/code/200s_time/config.yaml"):
+def load_config(config_path="/pub/tangch3/ARIANNA/DeepLearning/code/200s_time/config.yaml", station_id=None):
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
-    amp = config['amp']
+    amp = config['amp'] 
 
     config['noise_rms'] = config['noise_rms_200s'] * units.mV if amp == '200s' else config['noise_rms_100s'] * units.mV
     config['station_ids'] = config['station_ids_200s'] if amp == '200s' else config['station_ids_100s']
@@ -538,167 +538,7 @@ if __name__ == "__main__":
 
     # amp = '200s'
 
-    # to find 2016 events in coincidence
-    def plot_2016_matches(X, metadata, path_to_2016_events, plot_dir):
-        os.makedirs(plot_dir, exist_ok=True)
 
-        files = os.listdir(path_to_2016_events)
-        file_times = {}
-        for file in files:
-            match = re.search(r'Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', file)
-            if match:
-                unix_timestamp = float(match.group(2))
-                file_times[unix_timestamp] = file
-
-        for idx, info in metadata.items():
-            coinc_time = float(info['Times'])
-
-            matched_time = next((ts for ts in file_times if abs(coinc_time - ts) < 1e-4), None)
-
-            if matched_time is not None:
-                filename = file_times[matched_time]
-                save_name = f"BLmatch_idx{idx}_Stn{info['station_id']}_Master{info['master_id']}_Time{coinc_time}.png"
-                save_path = os.path.join(plot_dir, save_name)
-
-                print(f"✅ Plotting match: idx={idx}, station={info['station_id']}, master_id={info['master_id']}")
-                pT(
-                    traces=X[idx],
-                    title=f"BL Match: idx={idx}, station={info['station_id']}, time={coinc_time}",
-                    saveLoc=save_path,
-                    sampling_rate=2
-                )
-
-    from refactor_checks import load_all_coincidence_traces
-
-
-    X, metadata = load_all_coincidence_traces("/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl")
-    path_to_2016_events = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
-    plot_2016_matches(X, metadata, path_to_2016_events, plot_dir="/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/")
-
-    '''run all station data'''
-    # data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
-    # data = load_520_data(14, '', data_folder, single_load=False)
-    # All_Traces = data['Traces']
-
-    # model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi'
-    # model_filename = '2025-07-21_12-00_RCR_Backlobe_model_2Layer.h5'
-    # model = keras.models.load_model(os.path.join(model_path, model_filename))
-
-    # All_Traces_expanded = np.expand_dims(All_Traces, axis=-1)
-
-    # no = model.predict(All_Traces_expanded)
-
-    # no = no.flatten()
-    # original_size = len(no)
-    # no = no[np.isfinite(no)]
-    # filtered_size = len(no)
-
-    # if original_size != filtered_size:
-    #     print(f"Warning: Removed {original_size - filtered_size} non-finite values (NaN/Inf) from 'no' before plotting.")
-
-    # plt.figure(figsize=(10, 6))
-    # plt.hist(no, bins='auto', edgecolor='black')
-    # plt.ylim(bottom=0)
-    # plt.title('Histogram of CNN Model Output')
-    # plt.xlabel('Output Value (e.g., Probability, Score)')
-    # plt.ylabel('Number of Events (Frequency)')
-    # plt.grid(axis='y', alpha=0.75)
-
-    # plot_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/'
-    # os.makedirs(plot_path, exist_ok=True)
-    # plt.savefig(f'{plot_path}testplotall_netoutput__RCR_Backlobe_model_2Layer.png')
-
-    # print(f"Histogram saved to: {plot_path}testplotall_netoutput__RCR_Backlobe_model_2Layer.png")
-    '''run on event 578'''
-    # data =[]
-    # for id in station_id:
-    #     snr, chi2016, chiRCR, traces2016, tracesRCR, unix = load_data('new_chi_above_curve', amp_type = amp, station_id=id)
-    #     data.extend(tracesRCR)
-
-    # data = np.array(data)
-    # master_id = 578
-    # argument = 'stations'
-    
-    # coinc_data = load_coincidence_pkl(master_id, argument, 13)
-    # event = coinc_data['Traces']
-    # print(isinstance(event, list))  
-    # event = np.array(event)
-    # print(event.shape)
-
-    # model_path = f'/pub/tangch3/ARIANNA/DeepLearning/models/200s_time/new_chi'
-    # model = keras.models.load_model(f'{model_path}/2025-07-21_12-00_RCR_Backlobe_model_2Layer.h5')
-    # no = model.predict(event)
-    # print(no)
-    # event_id = coinc_data['event_ids']
-    # print(f'event id is {event_id}')
-    # prob_Backlobe = model.predict(data)
-
-
-
-    # network_output_plot_path = f'/pub/tangch3/ARIANNA/DeepLearning/plots/A1_Training/Network_Output'
-
-    # dense_val = False
-    # plt.figure(figsize=(8, 6))
-    # plt.hist(prob_Backlobe, bins=20, range=(0,1), histtype='step', color='blue', linestyle='solid', label=f'Backlobe {len(prob_Backlobe)}', density=dense_val)
-
-    # plt.xlabel('Network Output', fontsize=18)
-    # plt.ylabel('Number of Events', fontsize=18)
-    # plt.yscale('log')
-    # plt.title(f'{amp}_time RCR-Backlobe network output')
-    # plt.xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0], fontsize=18)
-    # plt.yticks(fontsize=18)
-
-    # hist_values, bin_edges, _ = plt.hist(prob_Backlobe, bins=20, range=(0,1), histtype='step')
-    # plt.ylim(0, max(10 ** (np.ceil(np.log10(hist_values)))))
-    # plt.tick_params(axis='both', which='major', labelsize=12)
-    # plt.legend(loc='upper left', fontsize=8)
-    # # plt.text(0.375, 0.75, f'RCR efficiency: {RCR_efficiency}%', fontsize=12, transform=plt.gcf().transFigure)
-    # # plt.text(0.375, 0.7, f'Backlobe efficiency: {Backlobe_efficiency}%', fontsize=12, transform=plt.gcf().transFigure)
-    # # plt.text(0.375, 0.65, f'TrainCut: {TrainCut}', fontsize=12, transform=plt.gcf().transFigure)
-    # # plt.axvline(x=output_cut_value, color='y', label='cut')
-    # plt.text(0.05, -0.12, 'BL', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes, color='blue')
-    # plt.text(0.96, -0.12, 'RCR', verticalalignment='center', horizontalalignment='center', fontsize=12, transform=plt.gca().transAxes, color='red')
-    # plt.subplots_adjust(left=0.2, right=0.85, bottom=0.2, top=0.8)
-
-    # print(f'saving /pub/tangch3/ARIANNA/DeepLearning/plots/Simulation/network_output/{amp}_time/new_chi/test_histogram.png')
-    # plt.savefig(f'{network_output_plot_path}/test_{amp}_histogram.png')
-
-
-
-    '''find event 578'''
-    # eventid = load_520_data(13, 'EventIDs', station_data_folder)
-    # for evtid in eventid:
-    #     if evtid == 17121:
-    #         print('found event 578')
-
-
-    # index = np.where(eventid == 17121)[0]
-    # idx = index[0] 
-    
-    # snrs = load_520_data(13, 'SNR', station_data_folder)
-    # chircrs = load_520_data(13, 'ChiRCR', station_data_folder)
-    # chi2016s = load_520_data(13, 'Chi2016', station_data_folder)
-    # times = load_520_data(13, 'Times', station_data_folder)
-
-    # snr = snrs[idx]
-    # chircr = chircrs[idx]
-    # chi2016 = chi2016s[idx]
-    # thetime = times[idx]
-
-    # from datetime import datetime, timezone
-    # utc_time = datetime.fromtimestamp(thetime, tz=timezone.utc)
-
-    # print("UTC time:", utc_time)
-    # print(snr, chircr, chi2016, thetime)
-
-    '''test load coincidence pickle'''
-    # test = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/Station14_SNR_Chi.npy', allow_pickle=True)
-    # print('loaded test')
-
-    # for id in station_id:
-    #     for param in parameters:
-    #         chi = load_coincidence_pkl(id, param) 
-    #         print(len(chi))
 
     '''load and plot SNR-ChiRCR/2016'''
     # for id in station_id:

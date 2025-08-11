@@ -70,7 +70,7 @@ def load_and_prep_data_for_training(config):
         'data_backlobe_chi2016_all': np.array(backlobe_data['chi2016']),
         'rcr_non_training_indices': rcr_non_training_indices,
         'bl_non_training_indices': bl_non_training_indices
-    }
+    } 
 
 
 # --- CNN Model ---

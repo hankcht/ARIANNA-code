@@ -531,10 +531,13 @@ if __name__ == "__main__":
     print(f'number of traces is {len(conic_traces)}')
     conic_traces = np.array(conic_traces)
     
+    station_Data = np.load('/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/testFiltering/5.20.25_Station30_Traces_fileID43_48evts_Part0_filtered.npy')
+
 
     for i in range(5):
-        saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coincidence_event_{i}.png'
-        pT(conic_traces[i], f'filtered coincidence event, index: {i}', saveLoc)
+        saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/ryans_filtered_data_event_{i}.png'
+        pT(station_Data[i], f'filtered coincidence event, index: {i}', saveLoc)
+
 
 
 

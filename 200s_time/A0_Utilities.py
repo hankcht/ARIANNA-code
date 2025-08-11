@@ -526,7 +526,28 @@ def load_coincidence_pkl(master_id, argument, station_id,
 
 if __name__ == "__main__":
 
-    hey = 0 
+    # plot filtered coincidence events
+    conic_traces = np.load('/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc_traces.npy')
+    print(f'number of traces is {len(conic_traces)}')
+    conic_traces = np.array(conic_traces)
+    
+
+    for i in range(5):
+        saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coincidence_event_{i}.png'
+        pT(conic_traces[i], f'filtered coincidence event, index: {i}', saveLoc)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

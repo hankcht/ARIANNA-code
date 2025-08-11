@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 from NuRadioReco.utilities import fft, units
 from scipy import signal
 
@@ -110,3 +111,51 @@ np.save(output_path, filtered_data)
 print(f"Saved filtered data to {output_path}")
 
 print(f"All files processed successfully! {filtered_data.shape}")
+
+def plot_and_save_event_traces(traces, output_dir, n_channels=4):
+    """
+    Plot and save each event individually, displaying `n_channels` traces for each event.
+    
+    Parameters
+    ----------
+    traces: np.array
+        The filtered traces array (N events, 4 channels, 256 samples)
+    output_dir: str
+        Directory to save the plots
+    n_channels: int
+        The number of channels per event (default is 4)
+    """
+    # Check if output directory exists, if not create it
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Iterate over each event
+    i = 0
+    for event_idx in range(traces.shape[0]):
+        if i > 4:
+            break
+        # Create subplots (1 row, n_channels columns)
+        fig, axes = plt.subplots(1, n_channels, figsize=(12, 3), sharex=True)
+        
+        # Loop through each channel and plot
+        for ch_idx in range(n_channels):
+            ax = axes[ch_idx] if n_channels > 1 else axes  # Handle case with single channel
+            ax.plot(traces[event_idx, ch_idx], label=f'Channel {ch_idx+1}')
+            ax.set_ylabel('Amplitude')
+            ax.set_title(f'Event {event_idx+1} - Channel {ch_idx+1}')
+            ax.legend(loc='best')
+        
+        # Set xlabel only once for the whole figure
+        plt.xlabel('Time (samples)')
+        plt.tight_layout()
+
+        # Save the plot as an image file
+        plot_filename = f'event_{event_idx}_traces.png'
+        plot_path = os.path.join(output_dir, plot_filename)
+        plt.savefig(plot_path)
+        plt.close()  # Close the plot to avoid memory issues for large datasets
+
+        print(f"Saved plot for Event {event_idx} to {plot_path}")
+
+# Example usage: Plot and save each event individually
+plot_and_save_event_traces(filtered_data, output_dir)

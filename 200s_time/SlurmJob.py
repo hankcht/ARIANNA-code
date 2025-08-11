@@ -12,7 +12,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     header += "#SBATCH --time=0-10:00:00               ##Max runtime D-HH:MM:SS, 3 days free maximum\n"
     header += "#SBATCH --nodes=1                       ##Nodes to be used\n"
     
-    header += "#SBATCH --ntasks=30                     ##Number of processes to be launched (CPUs)\n" 
+    header += "#SBATCH --ntasks=5                     ##Number of processes to be launched (CPUs)\n" 
     header += "#SBATCH --mem-per-cpu=6G                ##Requesting 6GB memory per CPU\n"
     # If keep --mem, it will override --mem-per-cpu * --ntasks if it's a lower value.
     # It's better to explicitly calculate and rely on mem-per-cpu * ntasks for clarity.
@@ -86,6 +86,8 @@ if __name__ == "__main__":
     RunMultipleJobs(cmd, jobName='test')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
     # RunMultipleJobs(cmd, jobName='test')
+    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/apply_bandpass.py'
+    # RunMultipleJobs(cmd, jobName='bandpass')
 
 
 # Set parameters

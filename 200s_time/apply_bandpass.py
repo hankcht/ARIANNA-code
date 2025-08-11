@@ -6,19 +6,34 @@ from scipy import signal
 from refactor_checks import load_all_coincidence_traces
 
 def apply_butterworth(spectrum, frequencies, passband, order=8):
-    f = np.zeros_like(frequencies, dtype=complex)
-    mask = frequencies > 0
-    b, a = signal.butter(order, passband, "bandpass", analog=True)
-    w, h = signal.freqs(b, a, frequencies[mask])
+    # spectrum has shape (4, 129), frequencies has shape (129,)
+    f = np.zeros_like(frequencies, dtype=complex)  # f should be shaped like frequencies
+    mask = (frequencies > passband[0]) & (frequencies < passband[1])  # Mask for the passband
+    b, a = signal.butter(order, passband, "bandpass", fs=frequencies[1] - frequencies[0])  # fs in Hz
+    w, h = signal.freqs(b, a, frequencies[mask])  # Frequency response at the mask
+
+    # Create a filter that matches the number of frequency bins
     f[mask] = h
+    
+    # Apply filter to spectrum (element-wise multiplication)
     return f * spectrum
 
 def butterworth_filter_trace(trace, sampling_frequency, passband, order=8):
+    # trace has shape (256,) for each event
     n_samples = len(trace)
-    spectrum = fft.time2freq(trace, sampling_frequency)
-    frequencies = np.fft.rfftfreq(n_samples, d=1 / sampling_frequency)
-    filtered_spectrum = apply_butterworth(spectrum, frequencies, passband, order)
-    return fft.freq2time(filtered_spectrum, sampling_frequency)
+    spectrum = fft.time2freq(trace, sampling_frequency)  # Shape: (4, 129) after FFT
+    frequencies = np.fft.rfftfreq(n_samples, d=1 / sampling_frequency)  # Shape: (129,)
+    
+    # Apply the filter to each trace individually
+    filtered_spectrum = np.array([
+        apply_butterworth(spectrum[i], frequencies, passband, order)
+        for i in range(spectrum.shape[0])  # Loop over each trace (4 traces)
+    ])
+    
+    # Convert back to time domain
+    return np.array([fft.freq2time(filtered_spectrum[i], sampling_frequency) for i in range(filtered_spectrum.shape[0])])
+
+
 
 # Paths
 pkl_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl'

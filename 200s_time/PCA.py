@@ -158,7 +158,7 @@ if __name__ == "__main__":
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
 
     all_possible_types = ['sim_rcr', 'sim_bl', 'data_bl_2016', 'data_bl_rcr', 'confirmed_2016_bl', 'coincidence'] # list of all types of data I want to examine
-    input_types = ['coincidence', 'confirmed_2016_bl']
+    input_types = [ 'confirmed_2016_bl']
     n_components = 3  # Change to 3 for 3D
 
     X_list = []
@@ -196,13 +196,13 @@ if __name__ == "__main__":
     if 'confirmed_2016_bl' in input_types:
         X_list.append(all_2016_backlobes)
         label_list.extend([label_idx]*len(all_2016_backlobes))
-        label_names[label_idx] = '2016 Backlobes'
+        label_names[label_idx] = f'2016 Backlobes {len(all_2016_backlobes)}'
         label_idx += 1
 
     if 'coincidence' in input_types:
         X_list.append(all_coincidence_events)
         label_list.extend([label_idx]*len(all_coincidence_events))
-        label_names[label_idx] = 'coincidence events'
+        label_names[label_idx] = f'coincidence events f{len(all_coincidence_events)}'
         label_idx += 1
 
     labels = np.array(label_list)

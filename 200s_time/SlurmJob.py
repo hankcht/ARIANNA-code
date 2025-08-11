@@ -82,12 +82,12 @@ if __name__ == "__main__":
     # RunMultipleJobs(cmd, jobName='train_and_run')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py'
     # RunMultipleJobs(cmd, jobName='checks')
-    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/PCA.py'
-    RunMultipleJobs(cmd, jobName='test')
+    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/PCA.py'
+    # RunMultipleJobs(cmd, jobName='test')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
     # RunMultipleJobs(cmd, jobName='test')
-    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/apply_bandpass.py'
-    # RunMultipleJobs(cmd, jobName='bandpass')
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/apply_bandpass.py'
+    RunMultipleJobs(cmd, jobName='bandpass')
 
 
 # Set parameters

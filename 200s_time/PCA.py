@@ -94,7 +94,8 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
             ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
             ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
             ax.set_zlabel(f'PC3 ({pca.explained_variance_ratio_[2]*100:.1f}%)')
-            ax.legend()
+            ax.legend(handles=handles, labels=custom_labels, title="Waveform Type", 
+                      loc='center left', bbox_to_anchor=(1.01, 0.5), borderaxespad=0.)
 
             ax.view_init(elev=elev, azim=azim)
             plt.title(f'PCA Visualization ({n_components}D) - elev={elev}, azim={azim}')

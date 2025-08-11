@@ -52,7 +52,7 @@ def loadTemplate(type='RCR', amp='200s'):
 
 def SimSNRChi(templates_RCR, noiseRMS, amp, type):
 
-    path = '../../../../../dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'
+    path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/'
     
     RCR_files = []
     if type == 'RCR':

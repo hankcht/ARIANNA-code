@@ -1,112 +1,56 @@
 import os
 import numpy as np
+import pickle
 from NuRadioReco.utilities import fft, units
 from scipy import signal
+from refactor_checks import load_all_coincidence_traces
 
 def apply_butterworth(spectrum, frequencies, passband, order=8):
-    """
-    Calculates the response from a Butterworth filter and applies it to the
-    input spectrum
-
-    Parameters
-    ----------
-    spectrum: array of complex
-        Fourier spectrum to be filtere
-    frequencies: array of floats
-        Frequencies of the input spectrum
-    passband: (float, float) tuple
-        Tuple indicating the cutoff frequencies
-    order: integer
-        Filter order
-
-    Returns
-    -------
-    filtered_spectrum: array of complex
-        The filtered spectrum
-    """
-
     f = np.zeros_like(frequencies, dtype=complex)
     mask = frequencies > 0
     b, a = signal.butter(order, passband, "bandpass", analog=True)
     w, h = signal.freqs(b, a, frequencies[mask])
     f[mask] = h
-
-    filtered_spectrum = f * spectrum
-
-    return filtered_spectrum
+    return f * spectrum
 
 def butterworth_filter_trace(trace, sampling_frequency, passband, order=8):
-    """
-    Filters a trace using a Butterworth filter.
-
-    Parameters
-    ----------
-    trace: array of floats
-        Trace to be filtered
-    sampling_frequency: float
-        Sampling frequency
-    passband: (float, float) tuple
-        Tuple indicating the cutoff frequencies
-    order: integer
-        Filter order
-
-    Returns
-    -------
-
-    filtered_trace: array of floats
-        The filtered trace
-    """
-
     n_samples = len(trace)
-
     spectrum = fft.time2freq(trace, sampling_frequency)
-    frequencies = np.fft.rfftfreq(n_samples, d = 1 / sampling_frequency)
-
+    frequencies = np.fft.rfftfreq(n_samples, d=1 / sampling_frequency)
     filtered_spectrum = apply_butterworth(spectrum, frequencies, passband, order)
-    filtered_trace = fft.freq2time(filtered_spectrum, sampling_frequency)
+    return fft.freq2time(filtered_spectrum, sampling_frequency)
 
-    return filtered_trace
-
-# Input and output directories
+# Paths
 pkl_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl'
 output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc'
+os.makedirs(output_dir, exist_ok=True)
 
-# load input data
-from refactor_checks import load_all_coincidence_traces
-coinc_traces, metadata = load_all_coincidence_traces(pkl_path)
+# Load dictionary directly instead of flattened traces
+with open(pkl_path, "rb") as f:
+    coinc_dict = pickle.load(f)
 
-# Define the sampling rate
 sampling_rate_hz = 2 * units.MHz
+passband = [50 * units.MHz, 1000 * units.MHz]
+order = 2
 
-
-# Create an empty list to store the filtered traces
-filtered_traces = []
-
-# Iterate over each event in the data
-for event_data in coinc_traces:
-    filtered_event = []
-    # Iterate over each channel in the event
-    for trace_ch_data_arr in event_data:
-        # Define the butterworth filter parameters
-        passband = [50 * units.MHz, 1000 * units.MHz] 
-        order = 2
+# Process in-place
+for master_id, master_data in coinc_dict.items():
+    for station_id, station_dict in master_data['stations'].items():
+        traces = station_dict.get('Traces')
+        if traces is None or len(traces) == 0:
+            continue
         
-        # Apply the butterworth filter
-        filtered_trace = butterworth_filter_trace(trace_ch_data_arr, sampling_rate_hz, passband, order)
-        
-        filtered_event.append(filtered_trace)
-        
-    filtered_traces.append(filtered_event)
-    
-# Convert the list of filtered traces to a numpy array
-filtered_data = np.array(filtered_traces)
+        traces = np.array(traces)
+        filtered_traces = [
+            butterworth_filter_trace(trace, sampling_rate_hz, passband, order)
+            for trace in traces
+        ]
+        station_dict['Filtered_Traces'] = np.array(filtered_traces)
 
-# Create the new filename
-new_filename = ''
+# Save updated dictionary
+new_filename = 'coinc_with_filtered.pkl'
 output_path = os.path.join(output_dir, new_filename)
+with open(output_path, "wb") as f:
+    pickle.dump(coinc_dict, f)
 
-# Save the filtered data to the new file
-np.save(output_path, filtered_data)
-print(f"Saved filtered data to {output_path}")
-
-print("All files processed successfully!")
+print(f"Saved updated PKL with Filtered_Traces to {output_path}")

@@ -207,9 +207,6 @@ def main():
     for bl in all_2016_backlobes:
       print(np.allclose(bl, all_coincidence_events[149], rtol=1e-01))
 
-    print(all_coincidence_events[149].shape)
-    print(all_2016_backlobes[5].shape)
-
     print(all_coincidence_events[149])
     print(all_2016_backlobes[5])
 
@@ -224,8 +221,7 @@ def main():
     for idx, bl in enumerate(all_2016_backlobes):
         bl_save_name = dict_2016[idx]['plot_filename']
         bl_save_path = os.path.join(plot_dir, bl_save_name)
-        pT(traces=bl, title=f"test plot bl {idx}",
-                    saveLoc=bl_save_path)
+        pT(traces=bl, title=f"test plot bl {idx}", saveLoc=bl_save_path)
 
 
     # if config['if_dann']:

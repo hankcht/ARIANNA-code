@@ -157,5 +157,5 @@ def plot_and_save_event_traces(traces, output_dir, n_channels=4):
 
         print(f"Saved plot for Event {event_idx} to {plot_path}")
 
-# Example usage: Plot and save each event individually
+
 plot_and_save_event_traces(filtered_data, output_dir)

@@ -100,26 +100,45 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
 
     return np.stack(arrays, axis=0), metadata
 
-def load_all_coincidence_traces(pkl_path):
+def load_all_coincidence_traces(pkl_path, trace_key="Traces"):
+    """
+    Load coincidence traces from a PKL file.
+
+    Parameters
+    ----------
+    pkl_path : str
+        Path to the PKL file.
+    trace_key : str, optional
+        Key in each station dictionary from which to load traces.
+        Usually "Traces" or "Filtered_Traces".
+        Default is "Traces".
+
+    Returns
+    -------
+    coinc_dict : dict
+        The full coincidence dictionary.
+    X : np.ndarray
+        Stacked traces of shape (n_events, n_channels, n_samples).
+    metadata : dict
+        Mapping of global trace index to metadata.
+    """
     with open(pkl_path, "rb") as f:
         coinc_dict = pickle.load(f)
 
     all_traces = []
     metadata = {}
+    idx = 0
 
-    idx = 0  # Global trace index
     for master_id, master_data in coinc_dict.items():
         for station_id, station_dict in master_data['stations'].items():
-            traces = station_dict.get('Traces')
+            traces = station_dict.get(trace_key)
             if traces is None or len(traces) == 0:
                 continue
-
-            # Ensure traces are numpy array
             traces = np.array(traces)
             n_traces = len(traces)
 
             for i in range(n_traces):
-                all_traces.append(traces[i])  # Append each individual trace
+                all_traces.append(traces[i])
                 metadata[idx] = {
                     'master_id': master_id,
                     'station_id': station_id,
@@ -138,9 +157,8 @@ def load_all_coincidence_traces(pkl_path):
                 }
                 idx += 1
 
-    # Stack individual traces into a big numpy array
-    X = np.stack(all_traces, axis=0)  # shape: (1341, ...) for CNN input
-    return X, metadata
+    X = np.stack(all_traces, axis=0)
+    return coinc_dict, X, metadata
 
 
 def plot_histogram(prob_2016, prob_coincidence, amp, timestamp, prefix):

@@ -131,4 +131,8 @@ with open(updated_pkl_path, "wb") as f:
 print(f"Updated PKL saved to {updated_pkl_path}")
 
 # Plot first few filtered traces
-plot_and_save_event_traces(filtered_traces, output_dir)
+# plot_and_save_event_traces(filtered_traces, output_dir)
+
+from A0_Utilities import pT
+for i in range(4):
+    pT(filtered_traces[i], 'plot filtered coinc', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/event_{i}_trace.png')

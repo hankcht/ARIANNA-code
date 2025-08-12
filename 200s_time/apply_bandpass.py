@@ -136,3 +136,6 @@ print(f"Updated PKL saved to {updated_pkl_path}")
 from A0_Utilities import pT
 for i in range(4):
     pT(filtered_traces[i], 'plot filtered coinc', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/event_{i}_trace.png')
+
+    pT(filtered_traces[1297], 'plot filtered coinc RCR', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/event_1297_trace.png')
+    pT(filtered_traces[1298], 'plot filtered coinc BL', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/event_1298_trace.png')

@@ -72,7 +72,7 @@ print(f"Updated PKL saved to {updated_pkl_path}")
 
 from A0_Utilities import pT
 
-coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
+coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(updated_pkl_path, "Filtered_Traces")
 coinc_traces = np.array(coinc_traces)
 print(coinc_traces.shape)
 

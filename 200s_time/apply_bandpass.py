@@ -63,7 +63,7 @@ for master_id, master_data in coinc_dict.items():
         station_dict['Filtered_Traces'] = filtered_traces[idx:idx+n_traces]
         idx += n_traces
 
-# Save updated PKL
+# Save updated pickle
 os.makedirs(output_dir, exist_ok=True)
 with open(updated_pkl_path, "wb") as f:
     pickle.dump(coinc_dict, f)

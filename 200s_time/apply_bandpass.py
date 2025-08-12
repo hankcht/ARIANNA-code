@@ -76,5 +76,3 @@ coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(updated_pkl_pat
 coinc_traces = np.array(coinc_traces)
 print(coinc_traces.shape)
 
-pT(coinc_traces[1297], 'test plot filtered coinc RCR', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/eventt_1297_trace.png')
-pT(coinc_traces[1298], 'test plot filtered coinc BL', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/eventt_1298_trace.png')

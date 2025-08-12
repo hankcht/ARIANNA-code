@@ -202,12 +202,12 @@ def main():
 
     template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
     template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))
-    all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
+    coinc_dict, all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
 
     print(f"[INFO] Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
 
     pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
-    all_coincidence_events, _ = load_all_coincidence_traces(pkl_path)
+    all_coincidence_events, _ = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
     print(f"[INFO] Loaded {len(all_coincidence_events)} coincidence traces.")
 
     all_2016_backlobes = np.array(all_2016_backlobes)
@@ -222,37 +222,17 @@ def main():
         all_coincidence_events = all_coincidence_events[..., np.newaxis]
         print(f'changed to shape {all_coincidence_events.shape}')
 
-    for bl in all_2016_backlobes:
-      print(np.allclose(bl, all_coincidence_events[149], rtol=1e-01))
+    if config['if_dann']:
+        prob_backlobe, _ = model.predict(all_2016_backlobes)
+        prob_coincidence, _ = model.predict(all_coincidence_events)
+    else:
+        prob_backlobe = model.predict(all_2016_backlobes)
+        prob_coincidence = model.predict(all_coincidence_events)
 
-    print(all_coincidence_events[149])
-    print(all_2016_backlobes[5])
+    prob_backlobe = prob_backlobe.flatten()
+    prob_coincidence = prob_coincidence.flatten()
 
-    from A0_Utilities import pT
-    plot_dir="/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/"
-    coinc_save_name = f"830test_plot_coincidence.png"
-    coinc_save_path = os.path.join(plot_dir, coinc_save_name)
-
-
-    pT(traces=all_coincidence_events[149], title=f"test plot coincidence",
-                    saveLoc=coinc_save_path)
-    for idx, bl in enumerate(all_2016_backlobes):
-        bl_save_name = dict_2016[idx]['plot_filename']
-        bl_save_path = os.path.join(plot_dir, bl_save_name)
-        pT(traces=bl, title=f"test plot bl {idx}", saveLoc=bl_save_path)
-
-
-    # if config['if_dann']:
-    #     prob_backlobe, _ = model.predict(all_2016_backlobes)
-    #     prob_coincidence, _ = model.predict(all_coincidence_events)
-    # else:
-    #     prob_backlobe = model.predict(all_2016_backlobes)
-    #     prob_coincidence = model.predict(all_coincidence_events)
-
-    # prob_backlobe = prob_backlobe.flatten()
-    # prob_coincidence = prob_coincidence.flatten()
-
-    # plot_histogram(prob_backlobe, prob_coincidence, amp, timestamp=model_timestamp, prefix=prefix)
+    plot_histogram(prob_backlobe, prob_coincidence, amp, timestamp=model_timestamp, prefix=prefix)
 
 if __name__ == "__main__":
     main()

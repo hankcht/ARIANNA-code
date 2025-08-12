@@ -1,163 +1,134 @@
 import os
+import pickle
 import numpy as np
 import matplotlib.pyplot as plt
-from NuRadioReco.utilities import fft, units
+from NuRadioReco.utilities import units
 from scipy import signal
 
-def apply_butterworth(spectrum, frequencies, passband, order=8):
+def apply_butterworth(spectrum, frequencies, passband, sampling_frequency, order=8):
     """
-    Calculates the response from a Butterworth filter and applies it to the
-    input spectrum
-
-    Parameters
-    ----------
-    spectrum: array of complex
-        Fourier spectrum to be filtere
-    frequencies: array of floats
-        Frequencies of the input spectrum
-    passband: (float, float) tuple
-        Tuple indicating the cutoff frequencies
-    order: integer
-        Filter order
-
-    Returns
-    -------
-    filtered_spectrum: array of complex
-        The filtered spectrum
+    Apply a digital Butterworth bandpass filter to a Fourier spectrum.
     """
-
-    f = np.zeros_like(frequencies, dtype=complex)
-    mask = frequencies > 0
-    b, a = signal.butter(order, passband, "bandpass", analog=True)
-    w, h = signal.freqs(b, a, frequencies[mask])
-    f[mask] = h
-
-    filtered_spectrum = f * spectrum
-
-    return filtered_spectrum
+    nyquist = sampling_frequency / 2
+    norm_passband = [passband[0] / nyquist, passband[1] / nyquist]
+    b, a = signal.butter(order, norm_passband, btype="bandpass", analog=False)
+    w, h = signal.freqz(b, a, worN=len(frequencies), fs=sampling_frequency)
+    return spectrum * h
 
 def butterworth_filter_trace(trace, sampling_frequency, passband, order=8):
     """
-    Filters a trace using a Butterworth filter.
-
-    Parameters
-    ----------
-    trace: array of floats
-        Trace to be filtered
-    sampling_frequency: float
-        Sampling frequency
-    passband: (float, float) tuple
-        Tuple indicating the cutoff frequencies
-    order: integer
-        Filter order
-
-    Returns
-    -------
-
-    filtered_trace: array of floats
-        The filtered trace
+    Filters a time-domain trace with a digital Butterworth filter.
     """
-
     n_samples = len(trace)
-
-    spectrum = fft.time2freq(trace, sampling_frequency)
-    frequencies = np.fft.rfftfreq(n_samples, d = 1 / sampling_frequency)
-
-    filtered_spectrum = apply_butterworth(spectrum, frequencies, passband, order)
-    filtered_trace = fft.freq2time(filtered_spectrum, sampling_frequency)
-
-    return filtered_trace
-
-# Input and output directories
-pkl_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl'
-output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc'
-
-# load input data
-from refactor_checks import load_all_coincidence_traces
-coinc_traces, metadata = load_all_coincidence_traces(pkl_path)
-
-# Define the sampling rate
-sampling_rate_hz = 2 * units.MHz
-
-
-# Create an empty list to store the filtered traces
-filtered_traces = []
-
-# Iterate over each event in the data
-for event_data in coinc_traces:
-    filtered_event = []
-    # Iterate over each channel in the event
-    for trace_ch_data_arr in event_data:
-        # Define the butterworth filter parameters
-        passband = [50 * units.MHz, 1000 * units.MHz] 
-        order = 2
-        
-        # Apply the butterworth filter
-        filtered_trace = butterworth_filter_trace(trace_ch_data_arr, sampling_rate_hz, passband, order)
-        
-        filtered_event.append(filtered_trace)
-        
-    filtered_traces.append(filtered_event)
-    
-# Convert the list of filtered traces to a numpy array
-filtered_data = np.array(filtered_traces)
-
-# Create the new filename
-new_filename = 'filtered_coinc_traces.npy'
-output_path = os.path.join(output_dir, new_filename)
-
-# Save the filtered data to the new file
-np.save(output_path, filtered_data)
-print(f"Saved filtered data to {output_path}")
-
-print(f"All files processed successfully! {filtered_data.shape}")
+    spectrum = np.fft.rfft(trace)
+    frequencies = np.fft.rfftfreq(n_samples, d=1/sampling_frequency)
+    filtered_spectrum = apply_butterworth(spectrum, frequencies, passband, sampling_frequency, order)
+    return np.fft.irfft(filtered_spectrum, n_samples)
 
 def plot_and_save_event_traces(traces, output_dir, n_channels=4):
     """
-    Plot and save each event individually, displaying `n_channels` traces for each event.
-    
-    Parameters
-    ----------
-    traces: np.array
-        The filtered traces array (N events, 4 channels, 256 samples)
-    output_dir: str
-        Directory to save the plots
-    n_channels: int
-        The number of channels per event (default is 4)
+    Plot the first few events for visual inspection.
     """
-    # Check if output directory exists, if not create it
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    # Iterate over each event
-    i = 0
-    for event_idx in range(traces.shape[0]):
-        i += 1
-        if i > 4:
-            break
-        # Create subplots (1 row, n_channels columns)
+    for event_idx in range(min(4, traces.shape[0])):
         fig, axes = plt.subplots(1, n_channels, figsize=(12, 3), sharex=True)
-        
-        # Loop through each channel and plot
+
         for ch_idx in range(n_channels):
-            ax = axes[ch_idx] if n_channels > 1 else axes  # Handle case with single channel
+            ax = axes[ch_idx] if n_channels > 1 else axes
             ax.plot(traces[event_idx, ch_idx], label=f'Channel {ch_idx+1}')
             ax.set_ylabel('Amplitude')
-            ax.set_title(f'Event {event_idx+1} - Channel {ch_idx+1}')
+            ax.set_title(f'Event {event_idx+1} - Ch {ch_idx+1}')
             ax.legend(loc='best')
-        
-        # Set xlabel only once for the whole figure
+
         plt.xlabel('Time (samples)')
         plt.tight_layout()
-
-        # Save the plot as an image file
-        plot_filename = f'event_{event_idx}_traces.png'
-        plot_path = os.path.join(output_dir, plot_filename)
+        plot_path = os.path.join(output_dir, f'event_{event_idx}_traces.png')
         plt.savefig(plot_path)
-        plt.close()  # Close the plot to avoid memory issues for large datasets
-
+        plt.close()
         print(f"Saved plot for Event {event_idx} to {plot_path}")
 
+def load_all_coincidence_traces(pkl_path):
+    with open(pkl_path, "rb") as f:
+        coinc_dict = pickle.load(f)
 
-plot_and_save_event_traces(filtered_data, output_dir)
-print(filtered_data[0])
+    all_traces = []
+    metadata = {}
+    idx = 0
+    for master_id, master_data in coinc_dict.items():
+        for station_id, station_dict in master_data['stations'].items():
+            traces = station_dict.get('Traces')
+            if traces is None or len(traces) == 0:
+                continue
+            traces = np.array(traces)
+            n_traces = len(traces)
+
+            for i in range(n_traces):
+                all_traces.append(traces[i])
+                metadata[idx] = {
+                    'master_id': master_id,
+                    'station_id': station_id,
+                    'index': station_dict['indices'][i],
+                    'event_id': station_dict['event_ids'][i],
+                    'SNR': station_dict['SNR'][i],
+                    'ChiRCR': station_dict['ChiRCR'][i],
+                    'Chi2016': station_dict['Chi2016'][i],
+                    'ChiBad': station_dict['ChiBad'][i],
+                    'Zen': station_dict['Zen'][i],
+                    'Azi': station_dict['Azi'][i],
+                    'Times': station_dict['Times'][i],
+                    'PolAngle': station_dict['PolAngle'][i],
+                    'PolAngleErr': station_dict['PolAngleErr'][i],
+                    'ExpectedPolAngle': station_dict['ExpectedPolAngle'][i],
+                }
+                idx += 1
+
+    X = np.stack(all_traces, axis=0)
+    return coinc_dict, X, metadata
+
+# ---------------- Main Script ----------------
+
+pkl_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl'
+output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc'
+updated_pkl_path = os.path.join(output_dir, "filtered_coinc.pkl")
+
+sampling_rate_hz = 2 * units.MHz
+passband = [0.05 * units.MHz, 0.5 * units.MHz]  # 50 kHz – 500 kHz
+order = 2
+
+print("Loading PKL...")
+coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path)
+print(f"Loaded {coinc_traces.shape[0]} traces.")
+
+filtered_traces = []
+for event_data in coinc_traces:
+    filtered_event = []
+    for trace_ch in event_data:
+        filtered_event.append(
+            butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order)
+        )
+    filtered_traces.append(filtered_event)
+
+filtered_traces = np.array(filtered_traces)
+print(f"Filtering complete. Shape: {filtered_traces.shape}")
+
+# Add filtered traces back into original dict
+idx = 0
+for master_id, master_data in coinc_dict.items():
+    for station_id, station_dict in master_data['stations'].items():
+        traces = station_dict.get('Traces')
+        if traces is None or len(traces) == 0:
+            continue
+        n_traces = len(traces)
+        station_dict['Filtered_Traces'] = filtered_traces[idx:idx+n_traces]
+        idx += n_traces
+
+# Save updated PKL
+os.makedirs(output_dir, exist_ok=True)
+with open(updated_pkl_path, "wb") as f:
+    pickle.dump(coinc_dict, f)
+print(f"Updated PKL saved to {updated_pkl_path}")
+
+# Plot first few filtered traces
+plot_and_save_event_traces(filtered_traces, output_dir)

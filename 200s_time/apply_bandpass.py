@@ -132,6 +132,7 @@ def plot_and_save_event_traces(traces, output_dir, n_channels=4):
     # Iterate over each event
     i = 0
     for event_idx in range(traces.shape[0]):
+        i += 1
         if i > 4:
             break
         # Create subplots (1 row, n_channels columns)
@@ -159,3 +160,4 @@ def plot_and_save_event_traces(traces, output_dir, n_channels=4):
 
 
 plot_and_save_event_traces(filtered_data, output_dir)
+print(filtered_data[0])

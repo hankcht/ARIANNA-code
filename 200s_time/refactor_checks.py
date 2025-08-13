@@ -205,7 +205,7 @@ def main():
     print(f"Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
 
     pkl_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl"
-    coinc_dict, all_coincidence_events, _ = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
+    coinc_dict, all_coincidence_events, metadata = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
     print(f"Loaded {len(all_coincidence_events)} coincidence traces.")
 
     all_2016_backlobes = np.array(all_2016_backlobes)
@@ -232,6 +232,17 @@ def main():
 
     plot_histogram(prob_backlobe, prob_coincidence, amp, timestamp=model_timestamp, prefix=prefix)
 
+    print(prob_backlobe)
+
+    indices = [149, 169, 199]
+    for idx in indices:
+        print(metadata[idx]["master_id"])
+        print(metadata[idx]["Times"])
+
+
 if __name__ == "__main__":
     main()
+
+
+
 

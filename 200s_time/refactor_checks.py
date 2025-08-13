@@ -192,7 +192,7 @@ def plot_histogram(prob_2016, prob_coincidence, amp, timestamp, prefix):
     plt.close()
 
 
-def main():
+if __name__ == "__main__":
     config = load_config()
     amp = config['amp']
 
@@ -232,16 +232,12 @@ def main():
 
     plot_histogram(prob_backlobe, prob_coincidence, amp, timestamp=model_timestamp, prefix=prefix)
 
-    print(prob_backlobe)
+    # print(prob_backlobe)
 
-    indices = [149, 169, 199]
-    for idx in indices:
-        print(metadata[idx]["master_id"])
-        print(metadata[idx]["Times"])
-
-
-if __name__ == "__main__":
-    main()
+    # indices = [149, 169, 199]
+    # for idx in indices:
+    #     print(metadata[idx]["master_id"])
+    #     print(metadata[idx]["Times"])
 
 
 

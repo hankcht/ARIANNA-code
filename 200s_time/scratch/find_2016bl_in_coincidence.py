@@ -29,12 +29,12 @@ def plot_2016_matches(X, metadata, path_to_2016_events, plot_dir):
             save_path = os.path.join(plot_dir, save_name)
 
             print(f"Plotting match: idx={idx}, station={info['station_id']}, master_id={info['master_id']}")
-            pT(
-                traces=X[idx],
-                title=f"BL Match: idx={idx}, station={info['station_id']}, time={coinc_time}",
-                saveLoc=save_path,
-                sampling_rate=2
-            )
+            # pT(
+            #     traces=X[idx],
+            #     title=f"BL Match: idx={idx}, station={info['station_id']}, time={coinc_time}",
+            #     saveLoc=save_path,
+            #     sampling_rate=2
+            # )
 
 
 if __name__ == '__main__':

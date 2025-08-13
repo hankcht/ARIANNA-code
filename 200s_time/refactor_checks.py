@@ -100,7 +100,7 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
 
     return np.stack(arrays, axis=0), metadata
 
-def load_all_coincidence_traces(pkl_path, trace_key="Traces"):
+def load_all_coincidence_traces(pkl_path, trace_key):
     """
     Load coincidence traces from a PKL file.
 
@@ -109,9 +109,7 @@ def load_all_coincidence_traces(pkl_path, trace_key="Traces"):
     pkl_path : str
         Path to the PKL file.
     trace_key : str, optional
-        Key in each station dictionary from which to load traces.
-        Usually "Traces" or "Filtered_Traces".
-        Default is "Traces".
+        Key in each station dictionary from which to load traces. "Traces" or "Filtered_Traces".
 
     Returns
     -------
@@ -204,11 +202,11 @@ def main():
     template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))
     coinc_dict, all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
 
-    print(f"[INFO] Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
+    print(f"Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
 
     pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
     all_coincidence_events, _ = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
-    print(f"[INFO] Loaded {len(all_coincidence_events)} coincidence traces.")
+    print(f"Loaded {len(all_coincidence_events)} coincidence traces.")
 
     all_2016_backlobes = np.array(all_2016_backlobes)
     all_coincidence_events = np.array(all_coincidence_events)

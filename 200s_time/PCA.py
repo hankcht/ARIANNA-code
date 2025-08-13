@@ -150,8 +150,8 @@ if __name__ == "__main__":
     rcr_sim, backlobe_sim = load_sim(path, RCR_path, backlobe_path, amp)
 
     from refactor_checks import load_all_coincidence_traces, load_2016_backlobe_templates
-    pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
-    all_coincidence_events, _ = load_all_coincidence_traces(pkl_path)
+    pkl_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl"
+    all_coincidence_events, _ = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
 
     template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
     template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))

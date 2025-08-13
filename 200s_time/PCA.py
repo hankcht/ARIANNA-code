@@ -210,7 +210,7 @@ for combo in input_combinations:
         label_idx += 1
 
     labels = np.array(label_list)
-    plot_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/'
+    plot_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/pca/'
     out_prefix = f'{plot_path}pca_{"_".join(str(all_possible_inputs[i]) for i in combo)}'
 
     # Define region filter parameters (optional)

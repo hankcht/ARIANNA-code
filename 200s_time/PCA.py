@@ -57,7 +57,7 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
             circle = plt.Circle(region_filter['center'], region_filter['radius'], color='red', fill=False, linestyle='--', linewidth=2)
             plt.gca().add_patch(circle)
         palette = sns.color_palette('viridis', n_colors=len(unique_labels))
-        sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=labels, palette=palette, hue_order=unique_labels, alpha=0.8, s=50, edgecolor='w')
+        sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=labels, palette=palette, hue_order=unique_labels, alpha=0.8, s=50, edgecolor='k', linewidth=0.5)
         plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
         plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)')
         handles, plot_labels = plt.gca().get_legend_handles_labels()
@@ -74,6 +74,10 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
         palette = sns.color_palette('viridis', n_colors=len(unique_labels))
         label_to_color = {label: palette[i] for i, label in enumerate(unique_labels)}
 
+        counts = {label: np.sum(labels == label) for label in unique_labels}
+        max_count = max(counts.values())
+        alpha_map = {label: 0.4 if counts[label] == max_count else 1.0 for label in unique_labels}
+
         # Define different POVs you want to save images for
         povs = [(30, -60), (0, 0), (0, 90), (90, -90)]
 
@@ -81,14 +85,15 @@ def run_pca(X_list, labels, label_names, out_prefix, n_components=2, input_shape
             fig = plt.figure(figsize=(10, 8))
             ax = fig.add_subplot(111, projection='3d')
 
-            for i in unique_labels:
+            for label in unique_labels:
+                mask = labels == label
                 ax.scatter(
-                    X_pca[labels == i, 0],
-                    X_pca[labels == i, 1],
-                    X_pca[labels == i, 2],
-                    color=label_to_color[i],
-                    label=label_names[i],
-                    alpha=0.7, s=50, edgecolor='w'
+                    X_pca[mask, 0], X_pca[mask, 1], X_pca[mask, 2],
+                    color=label_to_color[label],
+                    label=label_names[label],
+                    alpha=alpha_map[label],
+                    s=50,
+                    edgecolor='k', linewidth=0.5
                 )
 
             ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)')
@@ -183,19 +188,19 @@ for combo in input_combinations:
 
         if input_type == 'sim_rcr':
             X = data['training_rcr']
-            label = 'sim RCR'
+            label = f'sim RCR {len(X)}'
 
         elif input_type == 'sim_bl':
             X = backlobe_sim
-            label = 'sim Backlobe'
+            label = f'sim Backlobe {len(X)}'
 
         elif input_type == 'data_bl_2016':
             X = data['data_backlobe_traces2016']
-            label = 'data Backlobe 2016'
+            label = f'data Backlobe 2016 {len(X)}'
 
         elif input_type == 'data_bl_rcr':
             X = data['data_backlobe_tracesRCR']
-            label = 'data Backlobe RCR'
+            label = f'data Backlobe RCR {len(X)}'
 
         elif input_type == 'confirmed_2016_bl':
             X = all_2016_backlobes

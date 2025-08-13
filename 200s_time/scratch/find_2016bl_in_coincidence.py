@@ -28,7 +28,7 @@ def plot_2016_matches(X, metadata, path_to_2016_events, plot_dir):
             save_name = f"BLmatch_idx{idx}_Stn{info['station_id']}_Master{info['master_id']}_Time{coinc_time}.png"
             save_path = os.path.join(plot_dir, save_name)
 
-            print(f"Plotting match: idx={idx}, station={info['station_id']}, master_id={info['master_id']}")
+            print(f"Plotting match: idx={idx}, station={info['station_id']}, master_id={info['master_id'],}, time={coinc_time}")
             # pT(
             #     traces=X[idx],
             #     title=f"BL Match: idx={idx}, station={info['station_id']}, time={coinc_time}",

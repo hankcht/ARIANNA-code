@@ -529,6 +529,7 @@ if __name__ == "__main__":
     sim_rcr_730 = np.load('/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/7.30.25/200s/all_traces_200s_RCR_part0_50000events.npy', allow_pickle=True)
     print(f'number of traces is {len(sim_rcr_730)}')
     sim_rcr_730 = np.array(sim_rcr_730)
+    print(f'shape is {sim_rcr_730.shape}')
 
     for i in range(5):
         saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png'

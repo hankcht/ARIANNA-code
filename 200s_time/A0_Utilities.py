@@ -526,17 +526,13 @@ def load_coincidence_pkl(master_id, argument, station_id,
 
 if __name__ == "__main__":
 
-    # plot filtered coincidence events
-    conic_traces = np.load('/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc_traces.npy')
-    print(f'number of traces is {len(conic_traces)}')
-    conic_traces = np.array(conic_traces)
-    
-    station_Data = np.load('/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/testFiltering/5.20.25_Station30_Traces_fileID43_48evts_Part0_filtered.npy')
-
+    sim_rcr_730 = np.load('/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/7.30.25/200s/all_traces_200s_RCR_part0_50000events.npy')
+    print(f'number of traces is {len(sim_rcr_730)}')
+    sim_rcr_730 = np.array(sim_rcr_730)
 
     for i in range(5):
-        saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/ryans_filtered_data_event_{i}.png'
-        pT(station_Data[i], f'filtered coincidence event, index: {i}', saveLoc)
+        saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png'
+        pT(sim_rcr_730[i], f'7/30 sim RCR event, index: {i}', saveLoc)
 
 
 

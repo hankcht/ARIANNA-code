@@ -39,6 +39,6 @@ def plot_2016_matches(X, metadata, path_to_2016_events, plot_dir):
 
 if __name__ == '__main__':
 
-    X, metadata = load_all_coincidence_traces("/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl")
+    coinc_dict, X, metadata = load_all_coincidence_traces("/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl", "Traces")
     path_to_2016_events = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
     plot_2016_matches(X, metadata, path_to_2016_events, plot_dir="/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/")

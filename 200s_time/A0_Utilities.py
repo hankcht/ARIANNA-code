@@ -530,6 +530,7 @@ if __name__ == "__main__":
     print(f'number of traces is {len(sim_rcr_730)}')
     sim_rcr_730 = np.array(sim_rcr_730)
     print(f'shape is {sim_rcr_730.shape}')
+    print(sim_rcr_730[0:2])
 
     for i in range(5):
         saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png'

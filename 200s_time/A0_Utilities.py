@@ -528,6 +528,7 @@ if __name__ == "__main__":
 
     sim_rcr_730 = np.load('/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/7.30.25/200s/all_traces_200s_RCR_part0_50000events.npy', allow_pickle=True)
     print(f'number of traces is {len(sim_rcr_730)}')
+    print(sim_rcr_730[0])
     print(type(sim_rcr_730[0]))
     print(len(sim_rcr_730[0]))
     print([type(ch) for ch in sim_rcr_730[0]])

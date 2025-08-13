@@ -157,57 +157,61 @@ if __name__ == "__main__":
     template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
 
-    all_possible_types = ['sim_rcr', 'sim_bl', 'data_bl_2016', 'data_bl_rcr', 'confirmed_2016_bl', 'coincidence'] # list of all types of data I want to examine
-    input_types = [ 'confirmed_2016_bl']
+    all_possible_inputs = {
+                            0: 'sim_rcr',
+                            1: 'sim_bl',
+                            2: 'data_bl_2016',
+                            3: 'data_bl_rcr',
+                            4: 'confirmed_2016_bl',
+                            5: 'coincidence'
+                        } # list of all types of data I want to examine
+    input_combinations = [
+                            (0,),                 # only sim_rcr
+                            (0, 1)
+                        ]
     n_components = 3  # Change to 3 for 3D
 
+for combo in input_combinations:
     X_list = []
     label_list = []
     label_names = {}
     label_idx = 0
 
-    if 'sim_rcr' in input_types:
-        training_rcr = data['training_rcr']
-        X_list.append(training_rcr)
-        label_list.extend([label_idx]*len(training_rcr))
-        label_names[label_idx] = 'sim RCR'
-        label_idx += 1
+    for idx in combo:
+        input_type = all_possible_inputs[idx]
 
-    if 'sim_bl' in input_types:
-        X_list.append(backlobe_sim)
-        label_list.extend([label_idx]*len(backlobe_sim))
-        label_names[label_idx] = 'sim Backlobe'
-        label_idx += 1
+        if input_type == 'sim_rcr':
+            X = data['training_rcr']
+            label = 'sim RCR'
 
-    if 'data_bl_2016' in input_types:
-        X_data_bl_2016 = data['data_backlobe_traces2016']
-        X_list.append(X_data_bl_2016)
-        label_list.extend([label_idx]*len(X_data_bl_2016))
-        label_names[label_idx] = 'data Backlobe 2016'
-        label_idx += 1
+        elif input_type == 'sim_bl':
+            X = backlobe_sim
+            label = 'sim Backlobe'
 
-    if 'data_bl_rcr' in input_types:
-        X_data_bl_rcr = data['data_backlobe_tracesRCR']
-        X_list.append(X_data_bl_rcr)
-        label_list.extend([label_idx]*len(X_data_bl_rcr))
-        label_names[label_idx] = 'data Backlobe RCR'
-        label_idx += 1
-    
-    if 'confirmed_2016_bl' in input_types:
-        X_list.append(all_2016_backlobes)
-        label_list.extend([label_idx]*len(all_2016_backlobes))
-        label_names[label_idx] = f'2016 Backlobes {len(all_2016_backlobes)}'
-        label_idx += 1
+        elif input_type == 'data_bl_2016':
+            X = data['data_backlobe_traces2016']
+            label = 'data Backlobe 2016'
 
-    if 'coincidence' in input_types:
-        X_list.append(all_coincidence_events)
-        label_list.extend([label_idx]*len(all_coincidence_events))
-        label_names[label_idx] = f'coincidence events f{len(all_coincidence_events)}'
+        elif input_type == 'data_bl_rcr':
+            X = data['data_backlobe_tracesRCR']
+            label = 'data Backlobe RCR'
+
+        elif input_type == 'confirmed_2016_bl':
+            X = all_2016_backlobes
+            label = f'2016 Backlobes {len(X)}'
+
+        elif input_type == 'coincidence':
+            X = all_coincidence_events
+            label = f'coincidence events {len(X)}'
+
+        X_list.append(X)
+        label_list.extend([label_idx] * len(X))
+        label_names[label_idx] = label
         label_idx += 1
 
     labels = np.array(label_list)
     plot_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/tests/'
-    out_prefix = f'{plot_path}pca_{"_".join(input_types)}'
+    out_prefix = f'{plot_path}pca_{"_".join(str(all_possible_inputs[i]) for i in combo)}'
 
     # Define region filter parameters (optional)
     use_region_filter = False

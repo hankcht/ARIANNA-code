@@ -200,12 +200,12 @@ def main():
 
     template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
     template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))
-    coinc_dict, all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
+    all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
 
     print(f"Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
 
     pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
-    all_coincidence_events, _ = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
+    coinc_dict, all_coincidence_events, _ = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
     print(f"Loaded {len(all_coincidence_events)} coincidence traces.")
 
     all_2016_backlobes = np.array(all_2016_backlobes)

@@ -532,9 +532,9 @@ if __name__ == "__main__":
     print(sim_rcr_730.shape)
     print(sim_rcr_730[0:2])
 
-    # for i in range(5):
-    #     saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png'
-    #     pT(sim_rcr_730[i], f'7/30 sim RCR event, index: {i}', saveLoc)
+    for i in range(5):
+        saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png'
+        pT(sim_rcr_730[i], f'7/30 sim RCR event, index: {i}', saveLoc)
 
 
 

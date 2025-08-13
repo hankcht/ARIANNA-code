@@ -204,7 +204,7 @@ def main():
 
     print(f"Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
 
-    pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
+    pkl_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl"
     coinc_dict, all_coincidence_events, _ = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
     print(f"Loaded {len(all_coincidence_events)} coincidence traces.")
 

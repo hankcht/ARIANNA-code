@@ -202,9 +202,14 @@ eventWriter.begin(output_filename)
 
 preAmpVrms_per_channel = {}
 
+
+event_count = 0 # for debugging
+
 # Start simulation
 for evt, iE, x, y in readCoREAS.run(detector=det, ray_type='by_depth', layer_depth=-576*units.m, layer_dB=0, attenuation_model='MB_freq', output_mode=2):
     logger.info("processing event {:d} with id {:d}".format(iE, evt.get_id()))
+    event_count += 1 # for debugging
+
 
     # for station in evt.get_stations():
 
@@ -290,6 +295,7 @@ for evt, iE, x, y in readCoREAS.run(detector=det, ray_type='by_depth', layer_dep
     # When checking events in nur, now check if station.has_triggered()
     # eventWriter.run(evt, det)
 
+print(f"Total input events: {event_count}") # for debugging
 
 nevents = eventWriter.end()
 print("Finished processing, {} events".format(nevents))

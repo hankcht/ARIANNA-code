@@ -530,17 +530,24 @@ def load_coincidence_pkl(master_id, argument, station_id,
 
 if __name__ == "__main__":
 
-    sim_rcr_730 = np.load('/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/7.30.25/200s/all_traces_200s_RCR_part0_50000events.npy', allow_pickle=True)
-    print(f'number of traces is {len(sim_rcr_730)}')
+    sim_rcr_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/7.30.25/200s/all_traces_200s_RCR_part0_50000events.npy', allow_pickle=True)
+    sim_bl_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedBacklobes/7.30.25/200s/all_traces_200s_part0_50000events.npy', allow_pickle=True)
     print(sim_rcr_730[0])
     print(type(sim_rcr_730[0]))
     print(sim_rcr_730.shape)
     print([np.shape(ch) for ch in sim_rcr_730[0]])
 
+    print(sim_bl_730[0])
+    print(type(sim_bl_730[0]))
+    print(sim_bl_730.shape)
+    print([np.shape(ch) for ch in sim_bl_730[0]])
 
-    for i in range(5):
-        saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png'
-        pT(sim_rcr_730[i], f'7/30 sim RCR event, index: {i}', saveLoc)
+
+    for i in range(10,15):
+        rcr_saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png'
+        bl_saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_bl_{i}.png'
+        pT(sim_rcr_730[i], f'7/30 sim RCR event, index: {i}', rcr_saveLoc)
+        pT(sim_bl_730[i], f'7/30 sim RCR event, index: {i}', bl_saveLoc)
 
 
 

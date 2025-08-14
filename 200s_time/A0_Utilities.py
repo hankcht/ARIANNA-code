@@ -530,24 +530,60 @@ def load_coincidence_pkl(master_id, argument, station_id,
 
 if __name__ == "__main__":
 
-    sim_rcr_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/7.30.25/200s/all_traces_200s_RCR_part0_50000events.npy', allow_pickle=True)
+    sim_rcr_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/7.30.25/200s/all_traces_200s_RCR_part0_50000events.npy', allow_pickle=True) 
     sim_bl_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedBacklobe/7.30.25/200s/all_traces_200s_part0_50000events.npy', allow_pickle=True)
-    print(sim_rcr_730[0])
-    print(type(sim_rcr_730[0]))
-    print(sim_rcr_730.shape)
-    print([np.shape(ch) for ch in sim_rcr_730[0]])
+    def plot_time_and_freq(traces, save_path=None, title_prefix="Event"):
+        """
+        Plot time and frequency domain for a single event's 4-channel traces.
+        
+        traces: shape (4, N) array-like, each row is a channel waveform.
+        save_path: where to save the figure (if None, just shows it).
+        title_prefix: prefix for the plot title.
+        """
+        num_channels = traces.shape[0]
+        num_samples = traces.shape[1]
+        dt = 0.5e-9  # 0.5 ns in seconds
+        fs = 1 / dt  # Sampling frequency in Hz
+        
+        # Time axis in ns
+        t_ns = np.arange(num_samples) * (dt * 1e9)
+        
+        # Frequency axis in GHz (only positive freqs)
+        freqs_GHz = np.fft.rfftfreq(num_samples, d=dt) / 1e9
+        
+        fig, axes = plt.subplots(num_channels, 2, figsize=(12, 2.5 * num_channels))
+        
+        for ch in range(num_channels):
+            # Time domain
+            axes[ch, 0].plot(t_ns, traces[ch], lw=1)
+            axes[ch, 0].set_ylabel(f"Ch {ch}")
+            axes[ch, 0].set_xlabel("Time [ns]")
+            axes[ch, 0].set_title(f"{title_prefix} - Ch {ch} (Time Domain)")
+            
+            # Frequency domain magnitude
+            fft_vals = np.fft.rfft(traces[ch])
+            mag = np.abs(fft_vals)
+            
+            axes[ch, 1].plot(freqs_GHz, mag, lw=1)
+            axes[ch, 1].set_xlabel("Frequency [GHz]")
+            axes[ch, 1].set_title(f"Ch {ch} (Frequency Domain)")
+        
+        plt.tight_layout()
+        if save_path:
+            plt.savefig(save_path, dpi=300)
+            plt.close()
+        else:
+            plt.show()
 
-    print(sim_bl_730[0])
-    print(type(sim_bl_730[0]))
-    print(sim_bl_730.shape)
-    print([np.shape(ch) for ch in sim_bl_730[0]])
 
-
-    for i in range(10,15):
-        rcr_saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png'
-        bl_saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_bl_{i}.png'
-        pT(sim_rcr_730[i], f'7/30 sim RCR event, index: {i}', rcr_saveLoc)
-        pT(sim_bl_730[i], f'7/30 sim RCR event, index: {i}', bl_saveLoc)
+    # Example usage:
+    for i in range(10, 15):
+        plot_time_and_freq(np.array(sim_rcr_730[i]), 
+                        save_path=f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png", 
+                        title_prefix=f"Sim RCR {i}")
+        plot_time_and_freq(np.array(sim_bl_730[i]), 
+                        save_path=f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_bl_{i}.png", 
+                        title_prefix=f"Sim Backlobe {i}")
 
 
 

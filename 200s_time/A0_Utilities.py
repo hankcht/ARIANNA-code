@@ -532,23 +532,21 @@ if __name__ == "__main__":
 
     sim_rcr_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/7.30.25/200s/all_traces_200s_RCR_part0_50000events.npy', allow_pickle=True) 
     sim_bl_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedBacklobe/7.30.25/200s/all_traces_200s_part0_50000events.npy', allow_pickle=True)
+
     def plot_time_and_freq(traces, save_path=None, title_prefix="Event"):
         """
-        Plot time and frequency domain for a single event's 4-channel traces.
-        
-        traces: shape (4, N) array-like, each row is a channel waveform.
-        save_path: where to save the figure (if None, just shows it).
-        title_prefix: prefix for the plot title.
+        traces: shape (4, N) array-like, or list of 4 arrays.
         """
-        num_channels = traces.shape[0]
-        num_samples = traces.shape[1]
-        dt = 0.5e-9  # 0.5 ns in seconds
-        fs = 1 / dt  # Sampling frequency in Hz
+        # Ensure we have a clean (4, N) float array
+        traces = np.stack(traces)
+        
+        num_channels, num_samples = traces.shape
+        dt = 0.5e-9  # 0.5 ns
+        fs = 1 / dt  # Hz
         
         # Time axis in ns
         t_ns = np.arange(num_samples) * (dt * 1e9)
-        
-        # Frequency axis in GHz (only positive freqs)
+        # Frequency axis in GHz
         freqs_GHz = np.fft.rfftfreq(num_samples, d=dt) / 1e9
         
         fig, axes = plt.subplots(num_channels, 2, figsize=(12, 2.5 * num_channels))
@@ -560,7 +558,7 @@ if __name__ == "__main__":
             axes[ch, 0].set_xlabel("Time [ns]")
             axes[ch, 0].set_title(f"{title_prefix} - Ch {ch} (Time Domain)")
             
-            # Frequency domain magnitude
+            # Frequency domain
             fft_vals = np.fft.rfft(traces[ch])
             mag = np.abs(fft_vals)
             
@@ -576,14 +574,15 @@ if __name__ == "__main__":
             plt.show()
 
 
-    # Example usage:
+    # Usage
     for i in range(10, 15):
-        plot_time_and_freq(np.array(sim_rcr_730[i]), 
+        plot_time_and_freq(sim_rcr_730[i], 
                         save_path=f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png", 
                         title_prefix=f"Sim RCR {i}")
-        plot_time_and_freq(np.array(sim_bl_730[i]), 
+        plot_time_and_freq(sim_bl_730[i], 
                         save_path=f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_bl_{i}.png", 
                         title_prefix=f"Sim Backlobe {i}")
+
 
 
 

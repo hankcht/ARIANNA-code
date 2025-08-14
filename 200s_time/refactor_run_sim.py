@@ -35,3 +35,4 @@ for iF in range(len(file_range)-1):
     cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A00.py {output_folder}{output_filename}_files{lower_file:.0f}-{upper_file:.0f}_{n_cores}cores.nur {n_cores} --loc {loc} --min_file {lower_file:.0f} --max_file {upper_file:.0f} --sim_amp {amp} --amp_type {amp_type} --add_noise {add_noise} --distance {distance} --depthLayer {depthLayer} --dB {dB}'
 
     SlurmJob.RunMultipleJobs(cmd, jobName=f'simulation')
+    break

@@ -322,7 +322,11 @@ def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_chan
     print(f'printing')
     # Important Clarification: In our actual experiment, we receive one data point per 0.5ns, so our duration of 128ns gives 256 data points
     # it is different from here where I organize one data point to one ns and make the total time 256ns (these two are mathematically identical)
-    x = np.linspace(1, int(256 / sampling_rate), num=256)
+    # x = np.linspace(1, int(256 / sampling_rate), num=256)
+
+    trace_len = len(traces[0])  
+    x = np.linspace(1, trace_len / sampling_rate, num=trace_len)
+
     x_freq = np.fft.rfftfreq(len(x), d=(1 / sampling_rate * units.GHz)) / units.MHz
 
     fig, axs = plt.subplots(nrows=4, ncols=2, figsize=(6, 5), sharex=False)
@@ -533,11 +537,10 @@ if __name__ == "__main__":
     print(sim_rcr_730.shape)
     print([np.shape(ch) for ch in sim_rcr_730[0]])
 
-    print(sim_rcr_730.shape) 
 
-    # for i in range(5):
-    #     saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png'
-    #     pT(sim_rcr_730[i], f'7/30 sim RCR event, index: {i}', saveLoc)
+    for i in range(5):
+        saveLoc = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png'
+        pT(sim_rcr_730[i], f'7/30 sim RCR event, index: {i}', saveLoc)
 
 
 

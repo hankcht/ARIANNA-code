@@ -530,11 +530,9 @@ if __name__ == "__main__":
     print(f'number of traces is {len(sim_rcr_730)}')
     print(sim_rcr_730[0])
     print(type(sim_rcr_730[0]))
-    print(len(sim_rcr_730[0]))
-    print([type(ch) for ch in sim_rcr_730[0]])
+    print(sim_rcr_730.shape)
     print([np.shape(ch) for ch in sim_rcr_730[0]])
 
-    sim_rcr_730 = np.array([np.stack(ch_list) for ch_list in sim_rcr_730])
     print(sim_rcr_730.shape) 
 
     # for i in range(5):

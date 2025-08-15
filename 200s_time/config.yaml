@@ -14,6 +14,7 @@ noise_rms_100s: 20.0
 # note: When I start making my own sim, the events will be saved locally to base folder /pub/tangch3/ARIANNA/DeepLearning/simulated_events  
 base_sim_rcr_folder: "/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/"                        # example subfolder: ./200s/5.28.25/
 sim_rcr_date: "5.28.25"
+noise_enabled: True
 base_sim_backlobe_folder: "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/simulatedBacklobes/" # example subfolder: ./200s_10.25.24/
 sim_backlobe_date: "10.25.24"
 

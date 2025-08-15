@@ -531,8 +531,8 @@ def load_coincidence_pkl(master_id, argument, station_id,
 
 if __name__ == "__main__":
 
-    sim_rcr_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/7.30.25/200s/all_traces_200s_RCR_part0_50000events.npy', allow_pickle=True) 
-    sim_bl_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedBacklobe/7.30.25/200s/all_traces_200s_part0_50000events.npy', allow_pickle=True)
+    sim_rcr_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/8.14.25/200s/all_traces_200s_RCR_part0_4473events.npy', allow_pickle=True) 
+    sim_bl_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedBacklobe/8.14.25/200s/all_traces_200s_part0_11239events.npy', allow_pickle=True)
 
     def plot_time_and_freq(traces, save_path=None, title_prefix="Event"):
         """
@@ -578,10 +578,10 @@ if __name__ == "__main__":
     # Usage
     for i in range(10, 15):
         plot_time_and_freq(sim_rcr_730[i], 
-                        save_path=f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_rcr_{i}.png", 
+                        save_path=f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_rcr_{i}.png", 
                         title_prefix=f"Sim RCR {i}")
         plot_time_and_freq(sim_bl_730[i], 
-                        save_path=f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_730_sim_bl_{i}.png", 
+                        save_path=f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_bl_{i}.png", 
                         title_prefix=f"Sim Backlobe {i}")
 
 

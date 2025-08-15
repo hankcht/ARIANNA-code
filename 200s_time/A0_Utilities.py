@@ -534,51 +534,18 @@ if __name__ == "__main__":
     sim_rcr_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/8.14.25/200s/all_traces_200s_RCR_part0_4473events.npy', allow_pickle=True) 
     sim_bl_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedBacklobe/8.14.25/200s/all_traces_200s_part0_11239events.npy', allow_pickle=True)
 
-    def plot_time_and_freq(traces, save_path=None, title_prefix="Event"):
-        """
-        traces: shape (4, N) array-like, or list of 4 arrays.
-        """
-        # Ensure we have a clean (4, N) float array
-        traces = np.stack(traces)
-        
-        num_channels, num_samples = traces.shape
-        dt = 0.5e-9  # 0.5 ns
-        fs = 1 / dt  # Hz
-        
-        # Time axis in ns
-        t_ns = np.arange(num_samples) * (dt * 1e9)
-        # Frequency axis in GHz
-        freqs_GHz = np.fft.rfftfreq(num_samples, d=dt) / 1e9
-        
-        fig, axes = plt.subplots(num_channels, 2, figsize=(12, 2.5 * num_channels))
-        
-        for ch in range(num_channels):
-            # Time domain
-            axes[ch, 0].plot(t_ns, traces[ch], lw=1)
-            axes[ch, 0].set_ylabel(f"Ch {ch}")
-            axes[ch, 0].set_xlabel("Time [ns]")
-            axes[ch, 0].set_title(f"{title_prefix} - Ch {ch} (Time Domain)")
-            
-            # Frequency domain
-            fft_vals = np.fft.rfft(traces[ch])
-            mag = np.abs(fft_vals)
-            
-            axes[ch, 1].plot(freqs_GHz, mag, lw=1)
-            axes[ch, 1].set_xlabel("Frequency [GHz]")
-            axes[ch, 1].set_title(f"Ch {ch} (Frequency Domain)")
-        
-        plt.tight_layout()
-        if save_path:
-            plt.savefig(save_path, dpi=300)
-            plt.close()
-        else:
-            plt.show()
-
+    config = load_config()
+    from refactor_train_and_run import load_and_prep_data_for_training
+    data = load_and_prep_data_for_training(config)
+    sim_rcr_all = data['sim_rcr_all']
 
     # Usage
-    for i in range(10, 15):
+    for i in range(0, 15):
         pT(sim_rcr_730[i], 'test plot 8/14 sim RCR', f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_rcr_{i}.png")
         pT(sim_bl_730[i], 'test plot 8/14 sim BL', f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_bl_{i}.png")
+        pT(sim_rcr_all[i], 'test plot 5/28 sim BL', f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_528_sim_rcr_{i}.png")
+
+
 
 
 

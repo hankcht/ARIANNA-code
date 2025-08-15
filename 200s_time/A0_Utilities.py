@@ -186,6 +186,7 @@ def load_data(type, amp_type, station_id):
 
         return Circled_data_SNR, Circled_data_Chi, Circled_data_Traces, Circled_data_UNIX
     
+    
     if type == 'new_chi_above_curve':
         print(f'loading {type} data')        
         Above_curve_data_folder =  f'/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/5000evt'

@@ -577,12 +577,8 @@ if __name__ == "__main__":
 
     # Usage
     for i in range(10, 15):
-        plot_time_and_freq(sim_rcr_730[i], 
-                        save_path=f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_rcr_{i}.png", 
-                        title_prefix=f"Sim RCR {i}")
-        plot_time_and_freq(sim_bl_730[i], 
-                        save_path=f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_bl_{i}.png", 
-                        title_prefix=f"Sim Backlobe {i}")
+        pT(sim_rcr_730[i], 'test plot 8/14 sim RCR', f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_rcr_{i}.png")
+        pT(sim_bl_730[i], 'test plot 8/14 sim BL', f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_bl_{i}.png")
 
 
 

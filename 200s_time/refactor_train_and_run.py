@@ -30,7 +30,7 @@ def load_and_prep_data_for_training(config):
 
     print(f"Loading data for amplifier type: {amp}")
 
-    sim_rcr = load_sim_rcr(sim_folder, noise_enabled=False, filter_enabled=True, amp=amp)
+    sim_rcr = load_sim_rcr(sim_folder, noise_enabled=config['noise_enabled'], filter_enabled=True, amp=amp)
 
     backlobe_data = {'snr': [], 'chi2016': [], 'chiRCR': [], 'traces2016': [], 'tracesRCR': [], 'unix': []}
     for s_id in station_ids:

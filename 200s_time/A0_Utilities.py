@@ -540,9 +540,10 @@ if __name__ == "__main__":
     sim_rcr_all = data['sim_rcr_all']
 
     # Usage
-    for i in range(0, 15):
-        pT(sim_rcr_730[i], 'test plot 8/14 sim RCR', f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_rcr_{i}.png")
-        pT(sim_bl_730[i], 'test plot 8/14 sim BL', f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_bl_{i}.png")
+    indices = [2917, 2926, 4075, 4343] 
+    for i in indices:
+        # pT(sim_rcr_730[i], 'test plot 8/14 sim RCR', f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_rcr_{i}.png")
+        # pT(sim_bl_730[i], 'test plot 8/14 sim BL', f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_814_sim_bl_{i}.png")
         pT(sim_rcr_all[i], 'test plot 5/28 sim BL', f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_528_sim_rcr_{i}.png")
 
 

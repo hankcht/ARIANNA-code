@@ -326,4 +326,4 @@ def main(enable_sim_bl_814):
     print("Script finished successfully.")
 
 if __name__ == "__main__":
-    main(enable_sim_bl_814=False)
+    main(enable_sim_bl_814=True)

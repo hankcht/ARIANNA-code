@@ -33,7 +33,7 @@ def load_and_prep_data_for_training(config):
     sim_rcr = load_sim_rcr(sim_folder, noise_enabled=config['noise_enabled'], filter_enabled=True, amp=amp) # currently loads 5.28.25 from config
     # add 8.14.25 sim RCR
     sim_rcr_814 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/8.14.25/200s/all_traces_200s_RCR_part0_4473events.npy') 
-    sim_rcr = np.vstack(sim_rcr, sim_rcr_814)
+    sim_rcr = np.vstack([sim_rcr, sim_rcr_814])
 
     backlobe_data = {'snr': [], 'chi2016': [], 'chiRCR': [], 'traces2016': [], 'tracesRCR': [], 'unix': []}
     for s_id in station_ids:

@@ -38,6 +38,7 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None):
 
         match = pattern.search(fname)
         if match:
+            print(match)
             timestamp = match.group(1)
             model_time = datetime.strptime(timestamp, '%m.%d.%y_%H-%M').timestamp()
             diff = now - model_time

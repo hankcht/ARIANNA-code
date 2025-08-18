@@ -276,7 +276,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     plt.close()
 
 
-def main():
+def main(enable_sim_bl_814):
     
     config = load_config()
     amp = config['amp']
@@ -292,6 +292,9 @@ def main():
     data = load_and_prep_data_for_training(config)
     training_rcr = data['training_rcr']
     training_backlobe = data['training_backlobe']
+    if enable_sim_bl_814:
+        training_backlobe = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedBacklobe/8.14.25/200s/all_traces_200s_part0_11239events.npy')
+
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
     
@@ -305,26 +308,22 @@ def main():
     print(f'Model saved to: {model_save_path}')
 
     # Save training history & plots
-    save_and_plot_training_history(
-        history, config['base_model_path'], config['base_plot_path'], timestamp, amp, config)
+    save_and_plot_training_history(history, config['base_model_path'], config['base_plot_path'], timestamp, amp, config)
 
-    # Evaluate & plot network output histogram
+    # Evaluate & plot network output histogram ON RCR-like TRACES!
     prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \
         evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all, config['output_cut_value'])
 
     plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency, config, timestamp)
 
     # Plotting individual traces if needed 
-    # indices = np.where(prob_backlobe.flatten() > config['output_cut_value'])[0]
-    # for index in indices:
-    #     plot_traces_save_path = os.path.join(config['network_output_plot_path'],
-    #                                          f'test_new_data_BL_{amp}_{index}.png')
-    #     pT(data['data_backlobe_all'][index],
-    #        f'Backlobe Trace {index} (Output > {config["output_cut_value"]:.2f})',
-    #        plot_traces_save_path)
-    #     print(f"Saved trace plot for Backlobe event {index} to {plot_traces_save_path}")
+    indices = np.where(prob_backlobe.flatten() > config['output_cut_value'])[0]
+    for index in indices:
+        plot_traces_save_path = os.path.join(config['base_plot_path'], 'traces', f'{timestamp}_plot_pot_rcr_{amp}_{index}.png')
+        pT(data['data_backlobe_tracesRCR'][index], f'Backlobe Trace {index} (Output > {config["output_cut_value"]:.2f})', plot_traces_save_path)
+        print(f"Saved trace plot for Backlobe event {index} to {plot_traces_save_path}")
 
     print("Script finished successfully.")
 
 if __name__ == "__main__":
-    main()
+    main(enable_sim_bl_814=False)

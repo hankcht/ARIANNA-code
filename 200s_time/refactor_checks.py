@@ -54,7 +54,7 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None):
         prefix = 'DANN'
     else:
         custom_objects = None
-        prefix = 'CNN'
+        prefix = 'CNN_checks'
 
     if best_file:
         model_path = os.path.join(base_model_path, best_file)
@@ -185,7 +185,7 @@ def plot_histogram(prob_2016, prob_coincidence, amp, timestamp, prefix):
 
     config = load_config()
     filename = config['histogram_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix)
-    out_path = os.path.join(config['base_plot_path'], filename)
+    out_path = os.path.join(config['base_plot_path'], 'network_output', filename)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
     plt.savefig(out_path)

@@ -169,7 +169,7 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     plt.ylabel('Loss')
     plt.title('Training vs Validation Loss')
     plt.legend()
-    loss_plot_file = os.path.join(plot_path, 'loss', config['loss_plot_filename_template'].format(timestamp=timestamp, amp=amp))
+    loss_plot_file = os.path.join(plot_path, 'loss', config['loss_plot_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
     plt.savefig(loss_plot_file)
     plt.close()
     print(f'Loss plot saved to: {loss_plot_file}')

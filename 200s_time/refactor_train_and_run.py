@@ -285,7 +285,7 @@ def main():
     # Ensure all paths inside 'refactor' folder
     config['network_output_plot_path'] = os.path.join(config['base_plot_path'], 'Network_Output')
 
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
     print(f"Starting CNN training at {timestamp} for {amp} amplifier.")
 
     # Data load & prep

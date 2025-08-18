@@ -290,7 +290,7 @@ def main():
     training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
-    return 
+    
     # Train model
     model, history = train_cnn_model(training_rcr, training_backlobe, config)
     print('------> Training is Done!')

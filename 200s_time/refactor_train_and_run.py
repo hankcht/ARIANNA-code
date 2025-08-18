@@ -151,6 +151,8 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
         amp (str): Amplifier type for plot filenames.
         config (dict): Configuration dictionary.
     """
+    prefix = config['prefix']
+
     os.makedirs(model_path, exist_ok=True)
     os.makedirs(plot_path, exist_ok=True)
 
@@ -180,7 +182,7 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     plt.ylabel('Accuracy')
     plt.title('Training vs Validation Accuracy')
     plt.legend()
-    accuracy_plot_file = os.path.join(plot_path, 'accuracy', config['accuracy_plot_filename_template'].format(timestamp=timestamp, amp=amp))
+    accuracy_plot_file = os.path.join(plot_path, 'accuracy', config['accuracy_plot_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
     plt.savefig(accuracy_plot_file)
     plt.close()
     print(f'Accuracy plot saved to: {accuracy_plot_file}')
@@ -232,6 +234,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
         timestamp (str): Timestamp for filename.
     """
     amp = config['amp']
+    prefix = config['prefix']
     output_cut_value = config['output_cut_value']
     train_cut = config['train_cut']
     plot_path = os.path.join(config['base_plot_path'], 'network_output')
@@ -267,7 +270,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     ax.annotate('RCR', xy=(1.0, -0.1), xycoords='axes fraction', ha='right', va='center', fontsize=12, color='red')
     plt.subplots_adjust(left=0.15, right=0.85, bottom=0.15, top=0.9)
 
-    hist_file = os.path.join(plot_path, config['histogram_filename_template'].format(timestamp=timestamp, amp=amp))
+    hist_file = os.path.join(plot_path, config['histogram_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
     print(f'saving {hist_file}')
     plt.savefig(hist_file)
     plt.close()
@@ -277,6 +280,7 @@ def main():
     
     config = load_config()
     amp = config['amp']
+    prefix = config['prefix']
 
     # Ensure all paths inside 'refactor' folder
     config['network_output_plot_path'] = os.path.join(config['base_plot_path'], 'Network_Output')
@@ -296,7 +300,7 @@ def main():
     print('------> Training is Done!')
 
     # Save model
-    model_save_path = os.path.join(config['base_model_path'], config['model_filename_template'].format(timestamp=timestamp, amp=amp))
+    model_save_path = os.path.join(config['base_model_path'], config['model_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
     model.save(model_save_path)
     print(f'Model saved to: {model_save_path}')
 

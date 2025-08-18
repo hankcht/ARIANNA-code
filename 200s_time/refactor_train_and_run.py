@@ -306,7 +306,7 @@ def main():
 
     # Save training history & plots
     save_and_plot_training_history(
-        history, config['model_path'], config['base_plot_path'], timestamp, amp, config)
+        history, config['base_model_path'], config['base_plot_path'], timestamp, amp, config)
 
     # Evaluate & plot network output histogram
     prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \

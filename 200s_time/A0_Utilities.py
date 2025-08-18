@@ -534,6 +534,7 @@ if __name__ == "__main__":
 
     sim_rcr_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/8.14.25/200s/all_traces_200s_RCR_part0_4473events.npy') 
     print(sim_rcr_730.shape)
+    
 
 
 

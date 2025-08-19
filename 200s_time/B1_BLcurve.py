@@ -513,10 +513,12 @@ if __name__ == "__main__":
 
 
         Above_curve_data = list(filter(lambda p: p[1] >= get_curve_y(curve_x, curve_y, p[0]), zip(All_SNRs, All_Chi, range(len(All_SNRs)))))
+        
         if len(Above_curve_data) == 3:
-            Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = Above_curve_data
+            Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = list(zip(*Above_curve_data)) 
         else:
             print(f"Expected 3 values, but got {len(Above_curve_data)} at station {station_id}")
+
         plot_BL_curve(Above_curve_data_x)
 
         if param == '2016':

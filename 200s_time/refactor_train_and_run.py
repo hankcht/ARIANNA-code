@@ -71,7 +71,7 @@ def load_and_prep_data_for_training(config):
         'sim_rcr_all': sim_rcr,
         'data_backlobe_traces2016': backlobe_traces_2016,
         'data_backlobe_tracesRCR': backlobe_traces_rcr,
-        'data_backlobe_unix_all': np.array(backlobe_data['unix']),
+        'data_backlobe_unix2016_all': np.array(backlobe_data['unix2016']),
         'data_backlobe_chi2016_all': np.array(backlobe_data['chi2016']),
         'rcr_non_training_indices': rcr_non_training_indices,
         'bl_non_training_indices': bl_non_training_indices

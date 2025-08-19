@@ -455,7 +455,7 @@ if __name__ == "__main__":
     }
 
     def saveabovecurve_info(All_data_Traces, All_data_UNIX, param):
-        above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/5000evt'
+        above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/10000evt_8.19.25'
         if param == 'Chi2016':
             param_name = '2016'
         elif param == 'ChiRCR':
@@ -463,16 +463,16 @@ if __name__ == "__main__":
         else:
             return
 
-        np.save(f'{above_curve_folder}/Stn{station_id}_SNR_above.npy', Above_curve_data_x)
+        np.save(f'{above_curve_folder}/Stn{station_id}_SNR{param_name}_above.npy', Above_curve_data_x)
         np.save(f'{above_curve_folder}/Stn{station_id}_Chi{param_name}_above.npy', Above_curve_data_y)
 
         above_curve_data_Traces = [All_data_Traces[i] for i in Above_curve_data_index]
         np.save(f'{above_curve_folder}/Stn{station_id}_Traces{param_name}_above.npy', above_curve_data_Traces)
 
         above_curve_data_UNIX = [All_data_UNIX[i] for i in Above_curve_data_index]
-        np.save(f'{above_curve_folder}/Stn{station_id}_UNIX_above.npy', above_curve_data_UNIX)
+        np.save(f'{above_curve_folder}/Stn{station_id}_UNIX{param_name}_above.npy', above_curve_data_UNIX)
 
-        print('Above Curve files SAVED')
+        print(f'Above Curve files SAVED {len(above_curve_data_UNIX)} events')
 
     find_curve_func = curve_functions.get(args.station)
     print(curve_functions.get(args.station))
@@ -539,9 +539,9 @@ if __name__ == "__main__":
             plt.close()
             return
 
-        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
+        # plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
         
-        # saveabovecurve_info(All_Traces, All_UNIX, param)
+        saveabovecurve_info(All_Traces, All_UNIX, param)
 
     # # --- Now I want data above the BL curve we defined above ---
     # # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x

@@ -208,14 +208,14 @@ if __name__ == "__main__":
     def find_curve_13(curve_x) -> list:
         curve_y = []
         x1, y1 = 4.75, 0.5
-        x2, y2 = 30, 0.7
-        x3, y3 = 40, 0.8
-        # x4, y4 = 32, 0.8
+        x2, y2 = 20, 0.7
+        x3, y3 = 30, 0.7
+        x4, y4 = 40, 0.8
 
         log_x1 = np.log10(x1)
         log_x2 = np.log10(x2)
         log_x3 = np.log10(x3)
-        # log_x4 = np.log10(x4)
+        log_x4 = np.log10(x4)
 
         for x in curve_x:
             if x <= x1:
@@ -230,20 +230,20 @@ if __name__ == "__main__":
                 C = y2 - m * log_x2
                 y = m * np.log10(x) + C
                 curve_y.append(y)
-            # elif x3 < x <= x4:
-            #     m = (y4 - y3) / (log_x4 - log_x3)
-            #     C = y3 - m * log_x3
-            #     y = m * np.log10(x) + C
-            #     curve_y.append(y)
+            elif x3 < x <= x4:
+                m = (y4 - y3) / (log_x4 - log_x3)
+                C = y3 - m * log_x3
+                y = m * np.log10(x) + C
+                curve_y.append(y)
             else:
-                curve_y.append(y3) 
+                curve_y.append(y4) 
 
         return curve_y
 
     def find_curve_14(curve_x):
         curve_y = []
         x1, y1 = 4.5, 0.5
-        x2, y2 = 30, 0.55
+        x2, y2 = 30, 0.6
         x3, y3 = 20, 0.675
         x4, y4 = 40, 0.625
 
@@ -278,8 +278,8 @@ if __name__ == "__main__":
     def find_curve_15(curve_x):
         curve_y = []
         x1, y1 = 5, 0.5
-        x2, y2 = 30, 0.775
-        x3, y3 = 40, 0.84
+        x2, y2 = 11, 0.7
+        x3, y3 = 30, 0.775
         x4, y4 = 40, 0.84
 
         log_x1 = np.log10(x1)
@@ -300,11 +300,11 @@ if __name__ == "__main__":
                 C = y2 - m * log_x2
                 y = m * np.log10(x) + C
                 curve_y.append(y)
-            # elif x3 < x <= x4:
-            #     m = (y4 - y3) / (log_x4 - log_x3)
-            #     C = y3 - m * log_x3
-            #     y = m * np.log10(x) + C
-            #     curve_y.append(y)
+            elif x3 < x <= x4:
+                m = (y4 - y3) / (log_x4 - log_x3)
+                C = y3 - m * log_x3
+                y = m * np.log10(x) + C
+                curve_y.append(y)
             else:
                 curve_y.append(y3)
 
@@ -315,7 +315,7 @@ if __name__ == "__main__":
         x1, y1 = 3.75, 0.5
         x2, y2 = 6, 0.65
         x3, y3 = 10, 0.7
-        x4, y4 = 20, 0.725
+        x4, y4 = 20, 0.75
         
 
         log_x1 = np.log10(x1)
@@ -385,7 +385,7 @@ if __name__ == "__main__":
         curve_y = []
         x1, y1 = 4, 0.4
         # x2, y2 = 10, 0.65
-        x2, y2 = 11, 0.65
+        x2, y2 = 10, 0.6
         x3, y3 = 20, 0.77
 
         log_x1 = np.log10(x1)
@@ -419,7 +419,7 @@ if __name__ == "__main__":
         curve_y = []
         x1, y1 = 4, 0.4
         x2, y2 = 7, 0.625
-        x3, y3 = 17, 0.75
+        x3, y3 = 17, 0.725
 
         log_x1 = np.log10(x1)
         log_x2 = np.log10(x2)
@@ -513,7 +513,10 @@ if __name__ == "__main__":
 
 
         Above_curve_data = list(filter(lambda p: p[1] >= get_curve_y(curve_x, curve_y, p[0]), zip(All_SNRs, All_Chi, range(len(All_SNRs)))))
-        Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = list(zip(*Above_curve_data)) 
+        if len(Above_curve_data) == 3:
+            Above_curve_data_x, Above_curve_data_y, Above_curve_data_index = Above_curve_data
+        else:
+            print(f"Expected 3 values, but got {len(Above_curve_data)} at station {station_id}")
         plot_BL_curve(Above_curve_data_x)
 
         if param == '2016':

@@ -489,7 +489,7 @@ if __name__ == "__main__":
 
     # --- load data ---
     # data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
-    plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning'
+    plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/snr_chi/10000evt_8.19.25'
     os.makedirs(plot_output_folder, exist_ok=True)  
 
     parameters = ['ChiRCR', 'Chi2016'] # to plot both Chi2016 and ChiRCR  
@@ -533,15 +533,15 @@ if __name__ == "__main__":
             plt.tick_params(axis='x', which='minor', bottom=True)
             plt.grid(visible=True, which='both', axis='both') 
             plt.title(f'Station {station_id} - SNR vs. Chi (Events: {len(All_SNRs):,})')
-            print(f'Saving {plot_folder}/{extraname}Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
+            print(f'Saving {plot_folder}/{extraname}Stn{station_id}_SNR-{param}_All{if_sim}.png')
             # plt.scatter(sim_SNRs, sim_Chi, c=sim_weights, cmap=cmap, alpha=0.9, norm=matplotlib.colors.LogNorm())
-            plt.savefig(f'{plot_folder}/{extraname}Stn{station_id}_SNR-Chi{param}_All{if_sim}.png')
+            plt.savefig(f'{plot_folder}/{extraname}Stn{station_id}_SNR-{param}_All{if_sim}.png')
             plt.close()
             return
 
-        # plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
+        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
         
-        saveabovecurve_info(All_Traces, All_UNIX, param)
+        # saveabovecurve_info(All_Traces, All_UNIX, param)
 
     # # --- Now I want data above the BL curve we defined above ---
     # # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x

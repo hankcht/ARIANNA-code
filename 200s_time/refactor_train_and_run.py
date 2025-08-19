@@ -35,7 +35,7 @@ def load_and_prep_data_for_training(config):
     sim_rcr_814 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/8.14.25/200s/all_traces_200s_RCR_part0_4473events.npy') 
     sim_rcr = np.vstack([sim_rcr, sim_rcr_814])
 
-    backlobe_data = {'snr': [], 'chi2016': [], 'chiRCR': [], 'traces2016': [], 'tracesRCR': [], 'unix': []}
+    backlobe_data = {'snr2016': [], 'snrRCR': [], 'chi2016': [], 'chiRCR': [], 'traces2016': [], 'tracesRCR': [], 'unix2016': [], 'unixRCR': []}
     for s_id in station_ids:
         snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
         backlobe_data['snr2016'].extend(snr2016)

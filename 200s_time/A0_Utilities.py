@@ -189,15 +189,18 @@ def load_data(type, amp_type, station_id):
     
     if type == 'new_chi_above_curve':
         print(f'loading {type} data')        
-        Above_curve_data_folder =  f'/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/5000evt'
-        Above_curve_data_SNR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_SNR_above.npy')
+        Above_curve_data_folder =  f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/10000evt_8.19.25'
+        Above_curve_data_SNR2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_SNR2016_above.npy')
+        Above_curve_data_SNRRCR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_SNRRCR_above.npy')
         Above_curve_data_Chi2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_Chi2016_above.npy')
         Above_curve_data_ChiRCR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_ChiRCR_above.npy')
         Above_curve_data_Traces2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_Traces2016_above.npy')
         Above_curve_data_TracesRCR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_TracesRCR_above.npy')
-        Above_curve_data_UNIX = np.load(f'{Above_curve_data_folder}/Stn{station_id}_UNIX_above.npy')
+        Above_curve_data_UNIX2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_UNIX2016_above.npy')
+        Above_curve_data_UNIXRCR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_UNIXRCR_above.npy')
 
-        return Above_curve_data_SNR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR, Above_curve_data_Traces2016, Above_curve_data_TracesRCR, Above_curve_data_UNIX
+        return Above_curve_data_SNR2016, Above_curve_data_SNRRCR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR,\
+               Above_curve_data_Traces2016, Above_curve_data_TracesRCR, Above_curve_data_UNIX2016, Above_curve_data_UNIXRCR
 
 def load_sim(path, RCR_path, backlobe_path, amp):
     RCR_files = []

@@ -53,7 +53,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     return
 
 
-def main(jobName, multi_run=False):
+def main(multi_run):
     if multi_run:
         # --- Run multiple stations ---
         stations = [13, 15, 18, 14, 17, 19, 30]

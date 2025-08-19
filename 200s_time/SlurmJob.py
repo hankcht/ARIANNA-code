@@ -67,7 +67,7 @@ def main(jobName, multi_run=False):
 
             cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/B1_BLcurve.py {station_id}'
             # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'
-            RunMultipleJobs(cmd, jobName='genericBatchJob')
+            RunMultipleJobs(cmd, jobName='BLcurve')
     else:
         cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py'
         # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'
@@ -75,8 +75,8 @@ def main(jobName, multi_run=False):
 
 
 if __name__ == "__main__":
-    # multi_run = False
-    # main(multi_run)
+    multi_run = True
+    main(multi_run)
 
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run.py'
     # RunMultipleJobs(cmd, jobName='train_and_run')
@@ -88,9 +88,6 @@ if __name__ == "__main__":
     # RunMultipleJobs(cmd, jobName='test')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/apply_bandpass.py'
     # RunMultipleJobs(cmd, jobName='bandpass')
-    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/B1_BLcurve.py'
-    RunMultipleJobs(cmd, jobName='BLcurve')
-
 
 # Set parameters
 single_file = False # If True, we run each nur file individually (See DO4B1)

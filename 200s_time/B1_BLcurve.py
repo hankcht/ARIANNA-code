@@ -349,8 +349,8 @@ if __name__ == "__main__":
     def find_curve_18(curve_x):
         curve_y = []
         x1, y1 = 4, 0.5
-        x2, y2 = 5, 0.8
-        x3, y3 = 20, 0.8
+        x2, y2 = 5, 0.6
+        x3, y3 = 20, 0.6
         x4, y4 = 30, 0.8
 
         log_x1 = np.log10(x1)

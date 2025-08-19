@@ -76,7 +76,7 @@ def main(jobName, multi_run=False):
 
 if __name__ == "__main__":
     multi_run = True
-    main(multi_run)
+    main(multi_run=multi_run)
 
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run.py'
     # RunMultipleJobs(cmd, jobName='train_and_run')

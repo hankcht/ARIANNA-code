@@ -580,7 +580,7 @@ if __name__ == "__main__":
     
     data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/testFiltering/'
     s_id = 17
-    data = load_520_data(s_id, '', data_folder, single_load=False)
+    data = load_520_data_filtered(s_id, '', data_folder, single_load=False)
 
     # not actually traces2016, it's all traces
     traces = data['Traces']

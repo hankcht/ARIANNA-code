@@ -539,9 +539,9 @@ if __name__ == "__main__":
     amp = config['amp']
 
     # snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
-    def load_520_data_filtered(station_id, param, data_folder, date_filter="5.20.25", single_load = True):
+    def load_520_data_filtered(station_id, param, data_folder, date_filter="5.20.25", single_load=True):
         '''
-        quick load function for 5/20 after nosie cut data with very specific filenames
+        quick load function for 5/20 after noise cut data with very specific filenames
         from: '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
         param: Azi, Chi2016, ChiRCR, ChiBad, EventIDs, MaxAmplitude, SNR, Times, Traces, Zen
         '''
@@ -549,12 +549,16 @@ if __name__ == "__main__":
             pattern = os.path.join(data_folder, f"{date_filter}_Station{station_id}_{param}*")
             matched_files = sorted(glob.glob(pattern))
 
-            data_list = [np.load(f, allow_pickle=True) for f in matched_files]
-
-            if not data_list:
+            if not matched_files:
                 print(f"No files found for Station {station_id}, Parameter '{param}'")
                 return None
-
+            
+            data_list = [np.load(f, allow_pickle=True) for f in matched_files]
+            
+            if not data_list:
+                print(f"No data loaded from files matching pattern: {pattern}")
+                return None
+            
             data = np.concatenate(data_list, axis=0).squeeze()
             return data
         else:
@@ -564,19 +568,75 @@ if __name__ == "__main__":
             Times_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_Times*")))
             Traces_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_Traces*")))
 
+            print(f"Found SNR files: {SNR_files}")
+            print(f"Found Chi2016 files: {Chi2016_files}")
+            print(f"Found ChiRCR files: {ChiRCR_files}")
+            print(f"Found Times files: {Times_files}")
+            print(f"Found Traces files: {Traces_files}")
+
+            if not SNR_files:
+                print(f"No SNR files found for Station {station_id}")
+                return None
+            if not Chi2016_files:
+                print(f"No Chi2016 files found for Station {station_id}")
+                return None
+            if not ChiRCR_files:
+                print(f"No ChiRCR files found for Station {station_id}")
+                return None
+            if not Times_files:
+                print(f"No Times files found for Station {station_id}")
+                return None
+            if not Traces_files:
+                print(f"No Traces files found for Station {station_id}")
+                return None
+
+            # Load data from the files
             SNR_list = [np.load(f, allow_pickle=True) for f in SNR_files]
             Chi2016_list = [np.load(f, allow_pickle=True) for f in Chi2016_files]
             ChiRCR_list = [np.load(f, allow_pickle=True) for f in ChiRCR_files]
             Times_list = [np.load(f, allow_pickle=True) for f in Times_files]
             Traces_list = [np.load(f, allow_pickle=True) for f in Traces_files]
 
-            SNRs = np.concatenate(SNR_list, axis=0).squeeze()
-            Chi2016 = np.concatenate(Chi2016_list, axis=0).squeeze()
-            ChiRCR = np.concatenate(ChiRCR_list, axis=0).squeeze()
-            Times = np.concatenate(Times_list, axis=0).squeeze()
-            Traces = np.concatenate(Traces_list, axis=0).squeeze()
+            # Check if any lists are empty
+            if not SNR_list:
+                print(f"SNR_list is empty for Station {station_id}")
+            if not Chi2016_list:
+                print(f"Chi2016_list is empty for Station {station_id}")
+            if not ChiRCR_list:
+                print(f"ChiRCR_list is empty for Station {station_id}")
+            if not Times_list:
+                print(f"Times_list is empty for Station {station_id}")
+            if not Traces_list:
+                print(f"Traces_list is empty for Station {station_id}")
+
+            # Concatenate data if lists are not empty
+            if SNR_list:
+                SNRs = np.concatenate(SNR_list, axis=0).squeeze()
+            else:
+                SNRs = None
+
+            if Chi2016_list:
+                Chi2016 = np.concatenate(Chi2016_list, axis=0).squeeze()
+            else:
+                Chi2016 = None
+
+            if ChiRCR_list:
+                ChiRCR = np.concatenate(ChiRCR_list, axis=0).squeeze()
+            else:
+                ChiRCR = None
+
+            if Times_list:
+                Times = np.concatenate(Times_list, axis=0).squeeze()
+            else:
+                Times = None
+
+            if Traces_list:
+                Traces = np.concatenate(Traces_list, axis=0).squeeze()
+            else:
+                Traces = None
 
             return {'SNR': SNRs, 'Chi2016': Chi2016, 'ChiRCR': ChiRCR, 'Times': Times, 'Traces': Traces}
+
     
     data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/testFiltering/'
     s_id = 17

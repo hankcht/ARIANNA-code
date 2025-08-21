@@ -535,9 +535,14 @@ def load_coincidence_pkl(master_id, argument, station_id,
 if __name__ == "__main__":
     print()
 
-    sim_rcr_730 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/8.14.25/200s/all_traces_200s_RCR_part0_4473events.npy') 
-    print(sim_rcr_730.shape)
-    
+    config = load_config()
+    amp = config['amp']
+    s_id = 14
+    snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
+    import random as rd
+    random_events = rd.sample(traces2016, 10)
+    for event in random_events:
+        pT(event, f'test plot data from stn {s_id}', '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/')    
 
 
 

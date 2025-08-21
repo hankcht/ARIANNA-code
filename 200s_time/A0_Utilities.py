@@ -537,7 +537,7 @@ if __name__ == "__main__":
 
     config = load_config()
     amp = config['amp']
-    s_id = 14
+    s_id = 17
     snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
     import random as rd
     random_events_idx = np.random.choice(traces2016.shape[0], size=10, replace=False)

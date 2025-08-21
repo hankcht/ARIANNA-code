@@ -542,8 +542,8 @@ if __name__ == "__main__":
     import random as rd
     random_events_idx = np.random.choice(traces2016.shape[0], size=10, replace=False)
     random_events = traces2016[random_events_idx]
-    for event in random_events:
-        pT(event, f'test plot data from stn {s_id}', '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/')    
+    for idx, event in zip(random_events_idx, random_events):
+        pT(event, f'test plot data from stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_data_{idx}.png')    
 
 
 

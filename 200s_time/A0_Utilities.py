@@ -540,7 +540,7 @@ if __name__ == "__main__":
     s_id = 14
     snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
     import random as rd
-    random_events = rd.sample(traces2016, 10)
+    random_events = np.random.choice(traces2016.shape[0], size=10, replace=False)
     for event in random_events:
         pT(event, f'test plot data from stn {s_id}', '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/')    
 

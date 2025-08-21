@@ -543,7 +543,7 @@ if __name__ == "__main__":
     
     data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/testFiltering/'
     s_id = 30
-    data = np.load(f'5.20.25_Station{s_id}_Traces_fileID67_315331evts_Part0_filtered.npy', read_pickle=True)
+    data = np.load(f'5.20.25_Station{s_id}_Traces_fileID67_315331evts_Part0_filtered.npy', allow_pickle=True)
 
     # not actually traces2016, it's all traces
     traces = data

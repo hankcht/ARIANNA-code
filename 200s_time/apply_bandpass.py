@@ -46,7 +46,7 @@ if __name__ == '__main__':
     passband = [0.05 * units.MHz, 0.5 * units.MHz]  # 50 kHz – 500 kHz
     order = 2
 
-    stations = [13,14,15,18,17,19,30]
+    stations = [14] # 13,14,15,18,17,19,30
     for s_id in stations:
         if s_id in [13, 15, 18]:
             amp = '100s'
@@ -79,6 +79,12 @@ if __name__ == '__main__':
         filtered_traces_rcr = np.array(filtered_traces_rcr)
         print(f"RCR Filtering complete. {s_id} Shape: {filtered_traces_rcr.shape}")
 
+        from A0_Utilities import pT
+        indices = [202, 510, 648, 763, 879]
+        for index in indices:
+            pT(filtered_event_2016[index], f'plot filtered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_filtered_data_{s_id}_{index}.png')
+
+
     # # Save updated files
     # os.makedirs(output_dir, exist_ok=True)
     # with open(updated_pkl_path, "wb") as f:
@@ -86,42 +92,5 @@ if __name__ == '__main__':
     # print(f"Updated PKL saved to {updated_pkl_path}")
 
 
-    # from A0_Utilities import pT
-
-    # coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(updated_pkl_path, "Filtered_Traces")
-    # coinc_traces = np.array(coinc_traces)
-    # print(coinc_traces.shape)
-
-
-    # rough draft, clean up later
-    config = load_config()
-
-    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/bandpass_on_all_data'
-
-    sampling_rate_hz = 2 * units.MHz
-    passband = [0.05 * units.MHz, 0.5 * units.MHz]  # 50 kHz – 500 kHz
-    order = 2
-
-    stations = [13,14,15,18,17,19,30]
-    for s_id in stations:
-        if s_id in [13, 15, 18]:
-            amp = '100s'
-        elif s_id in [14, 17, 19, 30]:
-            amp = '200s'
-        else:
-            print(f'wrong station {s_id}')
-
-        snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
-        traces2016 = np.array(traces2016)
-        tracesRCR = np.array(tracesRCR)
-        print(f"Loaded {traces2016.shape[0]} traces.")
-
-        filtered_traces_2016 = []
-        for event_data_2016 in traces2016:
-            filtered_event_2016 = []
-            for trace_ch in event_data_2016:
-                filtered_event_2016.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
-            filtered_traces_2016.append(filtered_event_2016)
-
-        filtered_traces_2016 = np.array(filtered_traces_2016)
-        print(f"Filtering complete. Shape: {filtered_traces_2016.shape}")
+    
+    

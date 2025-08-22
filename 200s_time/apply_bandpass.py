@@ -82,7 +82,7 @@ if __name__ == '__main__':
         from A0_Utilities import pT
         indices = [202, 510, 648, 763, 879]
         for index in indices:
-            pT(filtered_event_2016[index], f'plot filtered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_filtered_data_{s_id}_{index}.png')
+            pT(filtered_traces_2016[index], f'plot filtered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_filtered_data_{s_id}_{index}.png')
 
 
     # # Save updated files

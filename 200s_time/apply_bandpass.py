@@ -87,18 +87,13 @@ if __name__ == '__main__':
         np.save(f'{output_dir}Stn{s_id}_TracesRCR_above_filtered.npy', filtered_traces_rcr)
 
 
-        testfilteredtraces2016 = np.load(f'{output_dir}Stn{s_id}_Traces2016_above_filtered.npy')
-        from A0_Utilities import pT
-        indices = [202, 510, 648, 763, 879]
-        for index in indices:
-            pT(testfilteredtraces2016[index], f'plot filtered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/822plot_filtered_data_{s_id}_{index}.png')
+        # testfilteredtraces2016 = np.load(f'{output_dir}Stn{s_id}_Traces2016_above_filtered.npy')
+        # from A0_Utilities import pT
+        # indices = [202, 510, 648, 763, 879]
+        # for index in indices:
+        #     pT(testfilteredtraces2016[index], f'plot filtered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/822plot_filtered_data_{s_id}_{index}.png')
 
 
-    # # Save updated files
-    # os.makedirs(output_dir, exist_ok=True)
-    # with open(updated_pkl_path, "wb") as f:
-    #     pickle.dump(coinc_dict, f)
-    # print(f"Updated PKL saved to {updated_pkl_path}")
 
 
     

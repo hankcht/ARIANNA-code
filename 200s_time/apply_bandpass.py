@@ -36,45 +36,54 @@ def butterworth_filter_trace(trace, sampling_frequency, passband, order=8):
     return np.fft.irfft(filtered_spectrum, n_samples)
 
 if __name__ == '__main__':
-    pkl_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl'
-    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc'
-    updated_pkl_path = os.path.join(output_dir, "filtered_coinc.pkl")
+    from A0_Utilities import load_config, load_data
+    # rough draft, clean up later
+    config = load_config()
+
+    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/bandpass_on_all_data'
 
     sampling_rate_hz = 2 * units.MHz
     passband = [0.05 * units.MHz, 0.5 * units.MHz]  # 50 kHz – 500 kHz
     order = 2
 
-    print("Loading PKL...")
-    from refactor_checks import load_all_coincidence_traces
-    coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path)
-    print(f"Loaded {coinc_traces.shape[0]} traces.")
+    stations = [13,14,15,18,17,19,30]
+    for s_id in stations:
+        if s_id in [13, 15, 18]:
+            amp = '100s'
+        elif s_id in [14, 17, 19, 30]:
+            amp = '200s'
+        else:
+            print(f'wrong station {s_id}')
 
-    filtered_traces = []
-    for event_data in coinc_traces:
-        filtered_event = []
-        for trace_ch in event_data:
-            filtered_event.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
-        filtered_traces.append(filtered_event)
+        snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
+        traces2016 = np.array(traces2016)
+        tracesRCR = np.array(tracesRCR)
+        print(f"Loaded {traces2016.shape[0]} traces.")
 
-    filtered_traces = np.array(filtered_traces)
-    print(f"Filtering complete. Shape: {filtered_traces.shape}")
+        filtered_traces_2016 = []
+        for event_data_2016 in traces2016:
+            filtered_event_2016 = []
+            for trace_ch in event_data_2016:
+                filtered_event_2016.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
+            filtered_traces_2016.append(filtered_event_2016)
 
-    # Add filtered traces back into original dict
-    idx = 0
-    for master_id, master_data in coinc_dict.items():
-        for station_id, station_dict in master_data['stations'].items():
-            traces = station_dict.get('Traces')
-            if traces is None or len(traces) == 0:
-                continue
-            n_traces = len(traces)
-            station_dict['Filtered_Traces'] = filtered_traces[idx:idx+n_traces]
-            idx += n_traces
+        filtered_traces_rcr = []
+        for event_data_rcr in tracesRCR:
+            filtered_event_rcr = []
+            for trace_ch in event_data_rcr:
+                filtered_event_rcr.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
+            filtered_traces_rcr.append(filtered_event_rcr)
 
-    # Save updated pickle
-    os.makedirs(output_dir, exist_ok=True)
-    with open(updated_pkl_path, "wb") as f:
-        pickle.dump(coinc_dict, f)
-    print(f"Updated PKL saved to {updated_pkl_path}")
+        filtered_traces_2016 = np.array(filtered_traces_2016)
+        print(f"2016 Filtering complete. {s_id} Shape: {filtered_traces_2016.shape}")
+        filtered_traces_rcr = np.array(filtered_traces_rcr)
+        print(f"RCR Filtering complete. {s_id} Shape: {filtered_traces_rcr.shape}")
+
+    # # Save updated files
+    # os.makedirs(output_dir, exist_ok=True)
+    # with open(updated_pkl_path, "wb") as f:
+    #     pickle.dump(coinc_dict, f)
+    # print(f"Updated PKL saved to {updated_pkl_path}")
 
 
     # from A0_Utilities import pT
@@ -84,3 +93,35 @@ if __name__ == '__main__':
     # print(coinc_traces.shape)
 
 
+    # rough draft, clean up later
+    config = load_config()
+
+    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/bandpass_on_all_data'
+
+    sampling_rate_hz = 2 * units.MHz
+    passband = [0.05 * units.MHz, 0.5 * units.MHz]  # 50 kHz – 500 kHz
+    order = 2
+
+    stations = [13,14,15,18,17,19,30]
+    for s_id in stations:
+        if s_id in [13, 15, 18]:
+            amp = '100s'
+        elif s_id in [14, 17, 19, 30]:
+            amp = '200s'
+        else:
+            print(f'wrong station {s_id}')
+
+        snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
+        traces2016 = np.array(traces2016)
+        tracesRCR = np.array(tracesRCR)
+        print(f"Loaded {traces2016.shape[0]} traces.")
+
+        filtered_traces_2016 = []
+        for event_data_2016 in traces2016:
+            filtered_event_2016 = []
+            for trace_ch in event_data_2016:
+                filtered_event_2016.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
+            filtered_traces_2016.append(filtered_event_2016)
+
+        filtered_traces_2016 = np.array(filtered_traces_2016)
+        print(f"Filtering complete. Shape: {filtered_traces_2016.shape}")

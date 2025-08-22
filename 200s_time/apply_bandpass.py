@@ -80,11 +80,11 @@ if __name__ == '__main__':
 
         filtered_traces_2016 = np.array(filtered_traces_2016)
         print(f"2016 Filtering complete. {s_id} Shape: {filtered_traces_2016.shape}")
-        np.save(filtered_traces_2016, f'{output_dir}Stn{s_id}_Traces2016_above_filtered.npy')
+        np.save(f'{output_dir}Stn{s_id}_Traces2016_above_filtered.npy', filtered_traces_2016)
 
         filtered_traces_rcr = np.array(filtered_traces_rcr)
         print(f"RCR Filtering complete. {s_id} Shape: {filtered_traces_rcr.shape}")
-        np.save(filtered_traces_rcr, f'{output_dir}Stn{s_id}_TracesRCR_above_filtered.npy')
+        np.save(f'{output_dir}Stn{s_id}_TracesRCR_above_filtered.npy', filtered_traces_rcr)
 
 
         testfilteredtraces2016 = np.load(f'{output_dir}Stn{s_id}_Traces2016_above_filtered.npy')

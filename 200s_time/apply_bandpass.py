@@ -50,7 +50,7 @@ if __name__ == '__main__':
     passband = [0.05 * units.MHz, 0.5 * units.MHz]  # 50 kHz – 500 kHz
     order = 2
 
-    stations = [14] # 13,14,15,18,17,19,30
+    stations = [13,14,15,18,17,19,30] 
     for s_id in stations:
         if s_id in [13, 15, 18]:
             amp = '100s'

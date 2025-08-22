@@ -25,15 +25,19 @@ def apply_butterworth(spectrum, frequencies, passband, sampling_frequency, order
     w, h = signal.freqz(b, a, worN=len(frequencies), fs=sampling_frequency) # Calculate the frequency response of the filter
     return spectrum * h
 
-def butterworth_filter_trace(trace, sampling_frequency, passband, order=8):
+def butterworth_filter_trace(trace, fs, passband, order=4):
     """
     Filters a time-domain trace with a digital Butterworth filter.
     """
-    n_samples = len(trace)
-    spectrum = np.fft.rfft(trace)
-    frequencies = np.fft.rfftfreq(n_samples, d=1/sampling_frequency)
-    filtered_spectrum = apply_butterworth(spectrum, frequencies, passband, sampling_frequency, order)
-    return np.fft.irfft(filtered_spectrum, n_samples)
+    x = trace - np.mean(trace)
+    # Design in SOS for numerical stability; use fs to avoid manual normalization
+    sos = signal.butter(order, [passband[0], passband[1]],
+                        btype='bandpass', fs=fs, output='sos')
+
+    # Zero-phase filtering with end padding to suppress edge artifacts
+    y = signal.sosfiltfilt(sos, x, padtype='even')   # or padtype='odd'
+    return y
+
 
 if __name__ == '__main__':
     from A0_Utilities import load_config, load_data

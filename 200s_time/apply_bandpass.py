@@ -44,7 +44,7 @@ if __name__ == '__main__':
     # rough draft, clean up later
     config = load_config()
 
-    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/10000evt_8.19.25/'
+    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/5000evt_8.22.25/'
 
     sampling_rate_hz = 2 * units.MHz
     passband = [0.05 * units.MHz, 0.5 * units.MHz]  # 50 kHz – 500 kHz
@@ -87,11 +87,11 @@ if __name__ == '__main__':
         # np.save(f'{output_dir}Stn{s_id}_TracesRCR_above_filtered.npy', filtered_traces_rcr)
 
 
-        testfilteredtraces2016 = np.load(f'{output_dir}Stn{s_id}_Traces2016_above_filtered.npy')
+        # testfilteredtraces2016 = np.load(f'{output_dir}Stn{s_id}_Traces2016_above_filtered.npy')
         from A0_Utilities import pT
         indices = [202, 510, 648, 763, 879]
         for index in indices:
-            pT(testfilteredtraces2016[index], f'plot filtered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/822plot_filtered_data_{s_id}_{index}.png')
+            pT(filtered_traces_2016[index], f'plot filtered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/822plot_filtered_data_{s_id}_{index}.png')
 
 
 

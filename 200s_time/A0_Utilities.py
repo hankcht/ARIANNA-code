@@ -194,8 +194,8 @@ def load_data(type, amp_type, station_id):
         Above_curve_data_SNRRCR = [] # np.load(f'{Above_curve_data_folder}/Stn{station_id}_SNRRCR_above.npy')
         Above_curve_data_Chi2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_Chi2016_above.npy')
         Above_curve_data_ChiRCR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_ChiRCR_above.npy')
-        Above_curve_data_Traces2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_Traces2016_above.npy') # _filtered
-        Above_curve_data_TracesRCR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_TracesRCR_above.npy') # _filtered
+        Above_curve_data_Traces2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_Traces2016_above_filtered.npy') # 
+        Above_curve_data_TracesRCR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_TracesRCR_above_filtered.npy') # 
         Above_curve_data_UNIX2016 = [] # np.load(f'{Above_curve_data_folder}/Stn{station_id}_UNIX2016_above.npy')
         Above_curve_data_UNIXRCR = [] # np.load(f'{Above_curve_data_folder}/Stn{station_id}_UNIXRCR_above.npy')
 

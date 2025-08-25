@@ -90,10 +90,10 @@ if __name__ == '__main__':
         testfilteredtraces2016 = np.load(f'{output_dir}Stn{s_id}_Traces2016_above_filtered.npy')
         print(f'LOADING NEW SAVED FROM {output_dir}Stn{s_id}_Traces2016_above_filtered.npy')
         from A0_Utilities import pT
-        indices = [202, 510, 648, 763, 879]
+        indices = [49,57,68,70,100]
         for index in indices:
             pT(testfilteredtraces2016[index], f'plot filtered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/1000plot_filtered_data_{s_id}_{index}.png')
-
+            pT(traces2016[index], f'plot unfiltered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/1000plot_unfiltered_data_{s_id}_{index}.png')
 
 
 

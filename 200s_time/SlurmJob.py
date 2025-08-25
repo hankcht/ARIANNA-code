@@ -84,10 +84,10 @@ if __name__ == "__main__":
     # RunMultipleJobs(cmd, jobName='checks')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/PCA.py'
     # RunMultipleJobs(cmd, jobName='test')
-    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
-    RunMultipleJobs(cmd, jobName='test')
-    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/scratch/apply_bandpass_on_coinc.py'
-    # RunMultipleJobs(cmd, jobName='bandpass')
+    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
+    # RunMultipleJobs(cmd, jobName='test')
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/scratch/apply_bandpass_on_coinc.py'
+    RunMultipleJobs(cmd, jobName='bandpass')
 
 # Set parameters
 single_file = False # If True, we run each nur file individually (See DO4B1)

@@ -49,7 +49,7 @@ if __name__ == '__main__':
     sys.path.append(parent_dir)
 
     from refactor_checks import load_all_coincidence_traces
-    coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
+    coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, "Traces")
     print(f"Loaded {coinc_traces.shape[0]} traces.")
 
     filtered_traces = []

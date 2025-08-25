@@ -537,7 +537,7 @@ def load_coincidence_pkl(master_id, argument, station_id,
 if __name__ == "__main__":
     print()
 
-    trace_type = 'Traces'
+    trace_type = 'Filtered_Traces'
     pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl'
 
     from refactor_checks import load_all_coincidence_traces

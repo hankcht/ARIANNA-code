@@ -5,7 +5,6 @@ import argparse
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from icecream import ic
 
 import NuRadioReco
 from NuRadioReco.utilities import units
@@ -504,7 +503,7 @@ if __name__ == "__main__":
         # All_Chi = np.load(f'{data_directory}/station{station_id}_all_Chi{param}.npy')
 
         All_Chi = data[param]
-        ic(f'number of all data is {len(All_SNRs)} and {len(All_Chi)}')
+        print(f'number of all data is {len(All_SNRs)} and {len(All_Chi)}')
 
 
         Above_curve_data = list(filter(lambda p: p[1] >= get_curve_y(curve_x, curve_y, p[0]), zip(All_SNRs, All_Chi, range(len(All_SNRs)))))

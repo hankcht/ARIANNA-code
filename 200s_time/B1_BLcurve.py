@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-import NuRadioReco
+# import NuRadioReco
 from NuRadioReco.utilities import units
 from NuRadioReco.utilities.io_utilities import read_pickle
 

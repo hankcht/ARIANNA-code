@@ -56,7 +56,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
 def main(multi_run):
     if multi_run:
         # --- Run multiple stations ---
-        stations = [19, 30]
+        stations = [13, 15, 18, 14, 17, 19, 30]
         for station_id in stations:
             if station_id in [14, 17, 19, 30]:
                 amp = '200s'
@@ -75,8 +75,8 @@ def main(multi_run):
 
 
 if __name__ == "__main__":
-    multi_run = True
-    main(multi_run=multi_run)
+    # multi_run = True
+    # main(multi_run=multi_run)
 
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run.py' 
     # RunMultipleJobs(cmd, jobName='train_and_run') # check if the above curve is filtered!
@@ -86,8 +86,8 @@ if __name__ == "__main__":
     # RunMultipleJobs(cmd, jobName='test')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A0_Utilities.py'
     # RunMultipleJobs(cmd, jobName='test')
-    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/scratch/apply_bandpass_on_coinc.py'
-    # RunMultipleJobs(cmd, jobName='bandpass')
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/apply_bandpass.py'
+    RunMultipleJobs(cmd, jobName='bandpass')
 
 # Set parameters
 single_file = False # If True, we run each nur file individually (See DO4B1)

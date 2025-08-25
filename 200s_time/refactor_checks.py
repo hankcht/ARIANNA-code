@@ -156,8 +156,8 @@ def load_all_coincidence_traces(pkl_path, trace_key):
                 }
                 idx += 1
 
-    X = np.stack(all_traces, axis=0)
-    return coinc_dict, X, metadata
+    all_Traces = np.stack(all_traces, axis=0)
+    return coinc_dict, all_Traces, metadata
 
 
 def plot_histogram(prob_2016, prob_coincidence, amp, timestamp, prefix):

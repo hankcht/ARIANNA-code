@@ -533,9 +533,9 @@ if __name__ == "__main__":
             plt.close()
             return
 
-        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
+        # plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
         
-        # saveabovecurve_info(All_Traces, All_UNIX, param)
+        saveabovecurve_info(All_Traces, All_UNIX, param)
 
 
 

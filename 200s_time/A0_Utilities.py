@@ -537,26 +537,15 @@ def load_coincidence_pkl(master_id, argument, station_id,
 if __name__ == "__main__":
     print()
 
-    config = load_config()
-    amp = config['amp']
+    trace_type = 'Traces'
+    pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl'
 
-    # snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
-
-    
-    data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/testFiltering/'
-    s_id = 30
-    data = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/testFiltering/5.20.25_Station{s_id}_Traces_fileID67_315331evts_Part0_filtered.npy', allow_pickle=True)
-
-    # not actually traces2016, it's all traces
-    traces = data
-    print(len(traces))
-
-    import random as rd
-    random_events_idx = np.random.choice(traces.shape[0], size=10, replace=False)
-    random_events = traces[random_events_idx]
-    for idx, event in zip(random_events_idx, random_events):
-        pT(event, f'test plot filtered data from stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_plot_filtered_data_{s_id}_{idx}.png')    
-
+    from refactor_checks import load_all_coincidence_traces
+    coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, trace_key=trace_type) 
+    coinc_traces = np.array(coinc_traces)
+    print(coinc_traces.shape)
+    for i in np.arange(15,30):
+        pT(coinc_traces[i], f"test plot old coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/825_plot_coinc_{i}.png')
 
 
 

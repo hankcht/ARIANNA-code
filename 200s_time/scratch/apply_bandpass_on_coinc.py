@@ -1,4 +1,4 @@
-import os
+import os, sys
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
@@ -45,6 +45,9 @@ if __name__ == '__main__':
     order = 2
 
     print("Loading PKL...")
+    parent_dir = os.path.dirname(os.path.dirname(__file__))
+    sys.path.append(parent_dir)
+
     from refactor_checks import load_all_coincidence_traces
     coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path)
     print(f"Loaded {coinc_traces.shape[0]} traces.")

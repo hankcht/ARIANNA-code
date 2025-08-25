@@ -207,15 +207,14 @@ if __name__ == "__main__":
     # define BL curves
     def find_curve_13(curve_x) -> list:
         curve_y = []
-        x1, y1 = 4.75, 0.5
-        x2, y2 = 20, 0.7
-        x3, y3 = 30, 0.7
-        x4, y4 = 40, 0.8
+        x1, y1 = 4.5, 0.5
+        x2, y2 = 9, 0.66
+        x3, y3 = 20, 0.8
 
         log_x1 = np.log10(x1)
         log_x2 = np.log10(x2)
         log_x3 = np.log10(x3)
-        log_x4 = np.log10(x4)
+        # log_x4 = np.log10(x4)
 
         for x in curve_x:
             if x <= x1:
@@ -230,27 +229,25 @@ if __name__ == "__main__":
                 C = y2 - m * log_x2
                 y = m * np.log10(x) + C
                 curve_y.append(y)
-            elif x3 < x <= x4:
-                m = (y4 - y3) / (log_x4 - log_x3)
-                C = y3 - m * log_x3
-                y = m * np.log10(x) + C
-                curve_y.append(y)
+            # elif x3 < x <= x4:
+            #     m = (y4 - y3) / (log_x4 - log_x3)
+            #     C = y3 - m * log_x3
+            #     y = m * np.log10(x) + C
+            #     curve_y.append(y)
             else:
-                curve_y.append(y4) 
+                curve_y.append(y3) 
 
         return curve_y
 
     def find_curve_14(curve_x):
         curve_y = []
         x1, y1 = 4.5, 0.5
-        x2, y2 = 30, 0.6
-        x3, y3 = 20, 0.675
-        x4, y4 = 40, 0.625
+        x2, y2 = 23, 0.8
 
         log_x1 = np.log10(x1)
         log_x2 = np.log10(x2)
-        log_x3 = np.log10(x3)
-        log_x4 = np.log10(x4)
+        # log_x3 = np.log10(x3)
+        # log_x4 = np.log10(x4)
 
         for x in curve_x:
             if x <= x1:
@@ -278,8 +275,8 @@ if __name__ == "__main__":
     def find_curve_15(curve_x):
         curve_y = []
         x1, y1 = 5, 0.5
-        x2, y2 = 11, 0.65
-        x3, y3 = 30, 0.775
+        x2, y2 = 10, 0.685
+        x3, y3 = 20, 0.78
         x4, y4 = 40, 0.84
 
         log_x1 = np.log10(x1)
@@ -312,10 +309,10 @@ if __name__ == "__main__":
 
     def find_curve_17(curve_x):
         curve_y = []
-        x1, y1 = 3.75, 0.5
-        x2, y2 = 6, 0.65
-        x3, y3 = 10, 0.7
-        x4, y4 = 20, 0.75
+        x1, y1 = 4, 0.5
+        x2, y2 = 4.5, 0.6
+        x3, y3 = 10, 0.75
+        x4, y4 = 23, 0.8
         
 
         log_x1 = np.log10(x1)
@@ -348,10 +345,43 @@ if __name__ == "__main__":
 
     def find_curve_18(curve_x):
         curve_y = []
-        x1, y1 = 4, 0.5
-        x2, y2 = 5, 0.6
-        x3, y3 = 20, 0.6
-        x4, y4 = 30, 0.8
+        x1, y1 = 5, 0.6
+        x2, y2 = 30, 0.8
+
+        log_x1 = np.log10(x1)
+        log_x2 = np.log10(x2)
+        # log_x3 = np.log10(x3)
+        # log_x4 = np.log10(x4)
+
+        for x in curve_x:
+            if x <= x1:
+                curve_y.append(y1)
+            elif x1 < x <= x2:
+                m = (y2 - y1) / (log_x2 - log_x1)
+                C = y1 - m * log_x1
+                y = m * np.log10(x) + C
+                curve_y.append(y)
+            # elif x2 < x <= x3:
+            #     m = (y3 - y2) / (log_x3 - log_x2)
+            #     C = y2 - m * log_x2
+            #     y = m * np.log10(x) + C
+            #     curve_y.append(y)
+            # elif x3 < x <= x4:
+            #     m = (y4 - y3) / (log_x4 - log_x3)
+            #     C = y3 - m * log_x3
+            #     y = m * np.log10(x) + C
+            #     curve_y.append(y)
+            else:
+                curve_y.append(y2) 
+
+        return curve_y
+
+    def find_curve_19(curve_x):
+        curve_y = []
+        x1, y1 = 4.7, 0.5
+        x2, y2 = 10, 0.65
+        x3, y3 = 16, 0.7
+        x4, y4 = 20, 0.77
 
         log_x1 = np.log10(x1)
         log_x2 = np.log10(x2)
@@ -371,55 +401,20 @@ if __name__ == "__main__":
                 C = y2 - m * log_x2
                 y = m * np.log10(x) + C
                 curve_y.append(y)
-            # elif x3 < x <= x4:
-            #     m = (y4 - y3) / (log_x4 - log_x3)
-            #     C = y3 - m * log_x3
-            #     y = m * np.log10(x) + C
-            #     curve_y.append(y)
-            else:
-                curve_y.append(y3) 
-
-        return curve_y
-
-    def find_curve_19(curve_x):
-        curve_y = []
-        x1, y1 = 4, 0.4
-        # x2, y2 = 10, 0.65
-        x2, y2 = 10, 0.55
-        x3, y3 = 20, 0.77
-
-        log_x1 = np.log10(x1)
-        log_x2 = np.log10(x2)
-        log_x3 = np.log10(x3)
-        # log_x4 = np.log10(x4)
-
-        for x in curve_x:
-            if x <= x1:
-                curve_y.append(y1)
-            elif x1 < x <= x2:
-                m = (y2 - y1) / (log_x2 - log_x1)
-                C = y1 - m * log_x1
+            elif x3 < x <= x4:
+                m = (y4 - y3) / (log_x4 - log_x3)
+                C = y3 - m * log_x3
                 y = m * np.log10(x) + C
                 curve_y.append(y)
-            elif x2 < x <= x3:
-                m = (y3 - y2) / (log_x3 - log_x2)
-                C = y2 - m * log_x2
-                y = m * np.log10(x) + C
-                curve_y.append(y)
-            # elif x3 < x <= x4:
-            #     m = (y4 - y3) / (log_x4 - log_x3)
-            #     C = y3 - m * log_x3
-            #     y = m * np.log10(x) + C
-            #     curve_y.append(y)
             else:
-                curve_y.append(y3)  
+                curve_y.append(y4)  
         return curve_y
 
     def find_curve_30(curve_x):
         curve_y = []
-        x1, y1 = 4, 0.4
-        x2, y2 = 7, 0.625
-        x3, y3 = 17, 0.775
+        x1, y1 = 4.5, 0.53
+        x2, y2 = 10, 0.72
+        x3, y3 = 20, 0.8
 
         log_x1 = np.log10(x1)
         log_x2 = np.log10(x2)
@@ -455,7 +450,7 @@ if __name__ == "__main__":
     }
 
     def saveabovecurve_info(All_data_Traces, All_data_UNIX, param):
-        above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/10000evt_8.19.25'
+        above_curve_folder = '/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/1000evt_8.25.25'
         if param == 'Chi2016':
             param_name = '2016'
         elif param == 'ChiRCR':
@@ -489,7 +484,7 @@ if __name__ == "__main__":
 
     # --- load data ---
     # data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
-    plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/snr_chi/10000evt_8.19.25'
+    plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/snr_chi/1000evt_8.25.25'
     os.makedirs(plot_output_folder, exist_ok=True)  
 
     parameters = ['ChiRCR', 'Chi2016'] # to plot both Chi2016 and ChiRCR  
@@ -539,9 +534,13 @@ if __name__ == "__main__":
             plt.close()
             return
 
-        # plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
+        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
         
-        saveabovecurve_info(All_Traces, All_UNIX, param)
+        # saveabovecurve_info(All_Traces, All_UNIX, param)
+
+
+
+
 
     # # --- Now I want data above the BL curve we defined above ---
     # # returns a list of points where the y value of the blob is greater than the y value of the curve at the blob's x

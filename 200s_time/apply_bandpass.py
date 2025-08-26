@@ -1,4 +1,5 @@
-import os, glob
+import os
+from glob import glob
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
@@ -50,8 +51,8 @@ if __name__ == '__main__':
     passband = [0.05 * units.MHz, 0.5 * units.MHz]  # 50 kHz – 500 kHz
     order = 2
 
-    
-    template_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates'
+    amp='200s'
+    template_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/'
     from refactor_checks import load_2016_backlobe_templates
     template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)

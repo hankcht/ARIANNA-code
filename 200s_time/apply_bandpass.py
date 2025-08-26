@@ -90,12 +90,25 @@ if __name__ == '__main__':
     all_filtered_traces_2016 = np.concatenate([filtered_traces_2016_200s, filtered_traces_2016_100s])
     print(all_filtered_traces_2016.shape)
 
+    from A0_Utilities import pT
+    i=0
+    for original_path, filtered_trace in zip(template_paths, all_filtered_traces_2016):
+        filename = os.path.basename(original_path) 
+        
+        filtered_filename = f"filtered_{filename}"  
+        
+        filtered_path = os.path.join(output_dir, filtered_filename)
+        
+        print(f'saving to {filtered_path}')
+        np.save(filtered_path, filtered_trace)
+        pT(filtered_trace, f'plot filtered 2016 confirmed', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/826_confirmed_bl_{i}.png')
+        i += 1
 
-    # testfilteredtraces2016 = np.load(f'{output_dir}Stn_Traces2016_above_filtered.npy')
+    testfilteredtraces2016 = np.load(f'{output_dir}Stn_Traces2016_above_filtered.npy')
     # print(f'LOADING NEW SAVED FROM {output_dir}Stn_Traces2016_above_filtered.npy')
-    # from A0_Utilities import pT
+    # 
     # for index in range(5):
-    #     pT(filtered_traces_2016[index], f'plot filtered 2016 confirmed', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/826_confirmed_bl_{index}.png')
+    #     
             
 
 

@@ -90,6 +90,7 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
                 index = len(arrays) - 1
 
                 plot_filename = f"Event2016_Stn{station_id}_{unix_timestamp}_Chi{chi}_SNR{snr}.png"
+                print(f'loading {plot_filename}')
 
                 metadata[index] = {
                     "station": station_id,

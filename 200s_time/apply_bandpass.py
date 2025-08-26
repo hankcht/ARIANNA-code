@@ -51,26 +51,44 @@ if __name__ == '__main__':
     passband = [0.05 * units.GHz, 0.99 * units.GHz]  # 50 MHz – 500 MHz
     order = 2
 
-    amp='200s'
+
     template_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/'
     from refactor_checks import load_2016_backlobe_templates
     template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))
-    all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
-    all_2016_backlobes = np.array(all_2016_backlobes)
-    print(f"Loaded {all_2016_backlobes.shape[0]} traces.")
+
+
+    all_2016_backlobes_200s, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type='200s')
+    all_2016_backlobes_200s = np.array(all_2016_backlobes_200s)
+    print(f"Loaded {all_2016_backlobes_200s.shape[0]} traces.")
     print(template_paths)
 
-    filtered_traces_2016 = []
-    for event_data_2016 in all_2016_backlobes:
-        filtered_event_2016 = []
-        for trace_ch in event_data_2016:
-            filtered_event_2016.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
-        filtered_traces_2016.append(filtered_event_2016)
+    filtered_traces_2016_200s = []
+    for event_data_2016_200s in all_2016_backlobes_200s:
+        filtered_event_2016_200s = []
+        for trace_ch in event_data_2016_200s:
+            filtered_event_2016_200s.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
+        filtered_traces_2016_200s.append(filtered_event_2016_200s)
 
-    filtered_traces_2016 = np.array(filtered_traces_2016)
-    print(f"2016 Filtering complete. Shape: {filtered_traces_2016.shape}")
+    filtered_traces_2016_200s = np.array(filtered_traces_2016_200s)
+    print(f"2016 Filtering complete. Shape: {filtered_traces_2016_200s.shape}")
 
+    all_2016_backlobes_100s, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type='100s')
+    all_2016_backlobes_100s = np.array(all_2016_backlobes_100s)
+    print(f"Loaded {all_2016_backlobes_100s.shape[0]} traces.")
+    print(template_paths)
 
+    filtered_traces_2016_100s = []
+    for event_data_2016_100s in all_2016_backlobes_100s:
+        filtered_event_2016_100s = []
+        for trace_ch in event_data_2016_100s:
+            filtered_event_2016_100s.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
+        filtered_traces_2016_100s.append(filtered_event_2016_100s)
+
+    filtered_traces_2016_100s = np.array(filtered_traces_2016_100s)
+    print(f"2016 Filtering complete. Shape: {filtered_traces_2016_100s.shape}")
+
+    all_filtered_traces_2016 = np.concatenate([filtered_traces_2016_200s, filtered_traces_2016_100s])
+    print(all_filtered_traces_2016.shape)
 
 
     # testfilteredtraces2016 = np.load(f'{output_dir}Stn_Traces2016_above_filtered.npy')

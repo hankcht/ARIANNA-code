@@ -44,7 +44,7 @@ if __name__ == '__main__':
     output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc'
     updated_pkl_path = os.path.join(output_dir, "filtered_coinc.pkl")
 
-    sampling_rate_hz = 2 * units.MHz
+    sampling_rate_hz = 2 * units.GHz
     passband = [0.05 * units.GHz, 0.99 * units.GHz]  # 50 MHz – 990 MHz
     order = 2
 

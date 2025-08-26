@@ -189,7 +189,7 @@ def load_data(type, amp_type, station_id):
     
     if type == 'new_chi_above_curve':
                
-        Above_curve_data_folder =  f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/5000evt_8.22.25'
+        Above_curve_data_folder =  f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/10000evt_8.19.25'
         Above_curve_data_SNR2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_SNR2016_above.npy')
         Above_curve_data_SNRRCR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_SNRRCR_above.npy')
         Above_curve_data_Chi2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_Chi2016_above.npy')

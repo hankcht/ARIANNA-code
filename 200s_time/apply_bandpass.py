@@ -58,6 +58,7 @@ if __name__ == '__main__':
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
     all_2016_backlobes = np.array(all_2016_backlobes)
     print(f"Loaded {all_2016_backlobes.shape[0]} traces.")
+    print(template_paths)
 
     filtered_traces_2016 = []
     for event_data_2016 in all_2016_backlobes:
@@ -68,19 +69,7 @@ if __name__ == '__main__':
 
     filtered_traces_2016 = np.array(filtered_traces_2016)
     print(f"2016 Filtering complete. Shape: {filtered_traces_2016.shape}")
-    template_paths = np.array(template_paths)
-    for idx, (original_path, filtered_trace) in enumerate(zip(template_paths, filtered_traces_2016)):
-        match = re.search(r'Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', original_path)
-        if match:
-            station_id = int(match.group(1))
-            if station_id in [14, 17, 19, 30]:  # only '200s' stations
-                unix_timestamp = match.group(2)
-                chi = match.group(3)
-                snr = match.group(4)
-                filtered_filename = f"filtered_Event2016_Stn{station_id}_{unix_timestamp}_Chi{chi}_SNR{snr}.npy"
-                filtered_path = os.path.join(output_dir, filtered_filename)
-                print(f"Saving filtered trace to: {filtered_path}")
-                np.save(filtered_path, filtered_trace)
+
 
 
 

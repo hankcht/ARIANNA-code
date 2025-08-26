@@ -1,4 +1,4 @@
-import os
+import os, re
 from glob import glob
 import pickle
 import numpy as np
@@ -69,19 +69,18 @@ if __name__ == '__main__':
     filtered_traces_2016 = np.array(filtered_traces_2016)
     print(f"2016 Filtering complete. Shape: {filtered_traces_2016.shape}")
     template_paths = np.array(template_paths)
-
-    for original_path, filtered_trace in zip(template_paths, filtered_traces_2016):
-        filename = os.path.basename(original_path) 
-        
-        # Add 'filtered_' prefix
-        filtered_filename = f"filtered_{filename}"  
-        
-        # Construct full path to save
-        filtered_path = os.path.join(output_dir, filtered_filename)
-        
-        # Save the filtered trace as a NumPy array
-        print(f'saving to {filtered_path}')
-        np.save(filtered_path, filtered_trace)
+    for idx, (original_path, filtered_trace) in enumerate(zip(template_paths, filtered_traces_2016)):
+        match = re.search(r'Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', original_path)
+        if match:
+            station_id = int(match.group(1))
+            if station_id in [14, 17, 19, 30]:  # only '200s' stations
+                unix_timestamp = match.group(2)
+                chi = match.group(3)
+                snr = match.group(4)
+                filtered_filename = f"filtered_Event2016_Stn{station_id}_{unix_timestamp}_Chi{chi}_SNR{snr}.npy"
+                filtered_path = os.path.join(output_dir, filtered_filename)
+                print(f"Saving filtered trace to: {filtered_path}")
+                np.save(filtered_path, filtered_trace)
 
 
 

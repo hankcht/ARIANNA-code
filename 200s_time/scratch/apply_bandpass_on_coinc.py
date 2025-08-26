@@ -45,7 +45,7 @@ if __name__ == '__main__':
     updated_pkl_path = os.path.join(output_dir, "filtered_coinc.pkl")
 
     sampling_rate_hz = 2 * units.MHz
-    passband = [0.05 * units.MHz, 0.5 * units.MHz]  # 50 kHz – 500 kHz
+    passband = [0.05 * units.GHz, 0.99 * units.GHz]  # 50 MHz – 990 MHz
     order = 2
 
     print("Loading PKL...")
@@ -84,8 +84,10 @@ if __name__ == '__main__':
     print(f"Updated PKL saved to {updated_pkl_path}")
 
 
-    # from A0_Utilities import pT
+    from A0_Utilities import pT
 
-    # coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(updated_pkl_path, "Filtered_Traces")
-    # coinc_traces = np.array(coinc_traces)
-    # print(coinc_traces.shape)
+    coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(updated_pkl_path, "Filtered_Traces")
+    coinc_traces = np.array(coinc_traces)
+    print(coinc_traces.shape)
+
+    pT(coinc_traces[10], 'test plot coinc', '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/826coin.png')

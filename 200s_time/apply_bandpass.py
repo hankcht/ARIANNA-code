@@ -48,7 +48,7 @@ if __name__ == '__main__':
     output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/5000evt_8.22.25/'
 
     sampling_rate_hz = 2 * units.GHz
-    passband = [0.05 * units.GHz, 0.99 * units.GHz]  # 50 MHz – 500 MHz
+    passband = [0.05 * units.GHz, 0.99 * units.GHz]  # 50 MHz – 990 MHz
     order = 2
 
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
         for index in indices:
             pT(testfilteredtraces2016[index], f'plot filtered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/5000826plot_filtered_data_{s_id}_{index}.png')
             
-
+    # --- apply filter for confirmed BL ---
 
     # template_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/'
     # from refactor_checks import load_2016_backlobe_templates

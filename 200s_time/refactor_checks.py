@@ -199,7 +199,7 @@ if __name__ == "__main__":
 
     model, model_timestamp, prefix = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="CNN")
 
-    template_dir = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates"
+    template_dir = "/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates"
     template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
 

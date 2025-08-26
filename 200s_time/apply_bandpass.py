@@ -1,4 +1,4 @@
-import os
+import os, glob
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
@@ -44,14 +44,40 @@ if __name__ == '__main__':
     # rough draft, clean up later
     config = load_config()
 
-    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/1000evt_8.25.25/'
+    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/'
 
     sampling_rate_hz = 2 * units.MHz
     passband = [0.05 * units.MHz, 0.5 * units.MHz]  # 50 kHz – 500 kHz
     order = 2
 
+    
+    template_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates'
+    from refactor_checks import load_2016_backlobe_templates
+    template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))
+    all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
+    all_2016_backlobes = np.array(all_2016_backlobes)
+    print(f"Loaded {all_2016_backlobes.shape[0]} traces.")
+
+    filtered_traces_2016 = []
+    for event_data_2016 in all_2016_backlobes:
+        filtered_event_2016 = []
+        for trace_ch in event_data_2016:
+            filtered_event_2016.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
+        filtered_traces_2016.append(filtered_event_2016)
+
+    filtered_traces_2016 = np.array(filtered_traces_2016)
+    print(f"2016 Filtering complete. Shape: {filtered_traces_2016.shape}")
+
+    # testfilteredtraces2016 = np.load(f'{output_dir}Stn_Traces2016_above_filtered.npy')
+    # print(f'LOADING NEW SAVED FROM {output_dir}Stn_Traces2016_above_filtered.npy')
+    from A0_Utilities import pT
+    for index in range(5):
+        pT(filtered_traces_2016[index], f'plot filtered 2016 confirmed', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/826_confirmed_bl_{index}.png')
+            
+
     stations = [13,14,15,18,17,19,30] 
     for s_id in stations:
+        break
         if s_id in [13, 15, 18]:
             amp = '100s'
         elif s_id in [14, 17, 19, 30]:
@@ -59,32 +85,33 @@ if __name__ == '__main__':
         else:
             print(f'wrong station {s_id}')
 
-        snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
-        traces2016 = np.array(traces2016)
-        tracesRCR = np.array(tracesRCR)
-        print(f"Loaded {traces2016.shape[0]} traces.")
 
-        filtered_traces_2016 = []
-        for event_data_2016 in traces2016:
-            filtered_event_2016 = []
-            for trace_ch in event_data_2016:
-                filtered_event_2016.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
-            filtered_traces_2016.append(filtered_event_2016)
+        # snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
+        # traces2016 = np.array(traces2016)
+        # tracesRCR = np.array(tracesRCR)
+        # print(f"Loaded {traces2016.shape[0]} traces.")
 
-        filtered_traces_rcr = []
-        for event_data_rcr in tracesRCR:
-            filtered_event_rcr = []
-            for trace_ch in event_data_rcr:
-                filtered_event_rcr.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
-            filtered_traces_rcr.append(filtered_event_rcr)
+        # filtered_traces_2016 = []
+        # for event_data_2016 in traces2016:
+        #     filtered_event_2016 = []
+        #     for trace_ch in event_data_2016:
+        #         filtered_event_2016.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
+        #     filtered_traces_2016.append(filtered_event_2016)
+
+        # filtered_traces_rcr = []
+        # for event_data_rcr in tracesRCR:
+        #     filtered_event_rcr = []
+        #     for trace_ch in event_data_rcr:
+        #         filtered_event_rcr.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
+        #     filtered_traces_rcr.append(filtered_event_rcr)
 
         filtered_traces_2016 = np.array(filtered_traces_2016)
         print(f"2016 Filtering complete. {s_id} Shape: {filtered_traces_2016.shape}")
         np.save(f'{output_dir}Stn{s_id}_Traces2016_above_filtered.npy', filtered_traces_2016)
 
-        filtered_traces_rcr = np.array(filtered_traces_rcr)
-        print(f"RCR Filtering complete. {s_id} Shape: {filtered_traces_rcr.shape}")
-        np.save(f'{output_dir}Stn{s_id}_TracesRCR_above_filtered.npy', filtered_traces_rcr)
+        # filtered_traces_rcr = np.array(filtered_traces_rcr)
+        # print(f"RCR Filtering complete. {s_id} Shape: {filtered_traces_rcr.shape}")
+        # np.save(f'{output_dir}Stn{s_id}_TracesRCR_above_filtered.npy', filtered_traces_rcr)
 
 
         testfilteredtraces2016 = np.load(f'{output_dir}Stn{s_id}_Traces2016_above_filtered.npy')
@@ -93,8 +120,7 @@ if __name__ == '__main__':
         indices = [49,57,68,70,100]
         for index in indices:
             pT(testfilteredtraces2016[index], f'plot filtered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/1000plot_filtered_data_{s_id}_{index}.png')
-            pT(traces2016[index], f'plot unfiltered 2016 above cuvre stn {s_id}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/1000plot_unfiltered_data_{s_id}_{index}.png')
-
+            
 
 
     

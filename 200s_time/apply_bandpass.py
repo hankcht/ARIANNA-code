@@ -45,7 +45,7 @@ if __name__ == '__main__':
     # rough draft, clean up later
     config = load_config()
 
-    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/10000evt_8.19.25/'
+    output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/5000evt_8.22.25/'
 
     sampling_rate_hz = 2 * units.GHz
     passband = [0.05 * units.GHz, 0.99 * units.GHz]  # 50 MHz – 500 MHz

@@ -48,7 +48,7 @@ if __name__ == '__main__':
     output_dir = '/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/'
 
     sampling_rate_hz = 2 * units.GHz
-    passband = [0.05 * units.GHz, 1.0 * units.GHz]  # 50 MHz – 500 MHz
+    passband = [0.05 * units.GHz, 0.99 * units.GHz]  # 50 MHz – 500 MHz
     order = 2
 
     amp='200s'

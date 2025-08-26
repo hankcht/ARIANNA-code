@@ -68,13 +68,32 @@ if __name__ == '__main__':
 
     filtered_traces_2016 = np.array(filtered_traces_2016)
     print(f"2016 Filtering complete. Shape: {filtered_traces_2016.shape}")
+    template_paths = np.array(template_paths)
+
+    for original_path, filtered_trace in zip(template_paths, filtered_traces_2016):
+        filename = os.path.basename(original_path) 
+        
+        # Add 'filtered_' prefix
+        filtered_filename = f"filtered_{filename}"  
+        
+        # Construct full path to save
+        filtered_path = os.path.join(output_dir, filtered_filename)
+        
+        # Save the filtered trace as a NumPy array
+        print(f'saving to {filtered_path}')
+        np.save(filtered_path, filtered_trace)
+
+
 
     # testfilteredtraces2016 = np.load(f'{output_dir}Stn_Traces2016_above_filtered.npy')
     # print(f'LOADING NEW SAVED FROM {output_dir}Stn_Traces2016_above_filtered.npy')
-    from A0_Utilities import pT
-    for index in range(5):
-        pT(filtered_traces_2016[index], f'plot filtered 2016 confirmed', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/826_confirmed_bl_{index}.png')
+    # from A0_Utilities import pT
+    # for index in range(5):
+    #     pT(filtered_traces_2016[index], f'plot filtered 2016 confirmed', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/826_confirmed_bl_{index}.png')
             
+
+
+
 
     stations = [13,14,15,18,17,19,30] 
     for s_id in stations:

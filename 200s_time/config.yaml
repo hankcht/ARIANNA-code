@@ -6,6 +6,7 @@ station_ids_200s: [14, 17, 19, 30]
 station_ids_100s: [13, 15, 18]
 
 loading_data_type: "new_chi_above_curve"
+num_above_curve_events: 1000
 
 noise_rms_200s: 22.53  # units.mV will be applied in code
 noise_rms_100s: 20.0
@@ -28,10 +29,11 @@ rcr_multi_template_date: "3.29.25"
 # --- Station data ---
 coincidence_events_path: "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl"
 
-1000_above_curve_data_folder: "/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/" # will add subfolders by date created
-5000_above_curve_data_folder: "/pub/tangch3/ARIANNA/DeepLearning/AboveCurve_data/new_chi/5000evt/" 
+1000_above_curve_data_folder: "/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/1000evt_8.25.25/" 
+5000_above_curve_data_folder: "/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/5000evt_8.22.25/" 
+10000_above_curve_data_folder: "/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/10000evt_8.19.25/"
 
-all_station_data: "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/" # not raw, passed noise cuts
+all_station_data: "/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_data/5.20.25/" # not raw, passed noise cuts
 
 
 # --- Neural Net Training Inputs & Outputs

@@ -122,9 +122,10 @@ def getMaxSNR(traces, noiseRMS):
 
     return max(SNRs)
 
-def load_data(type, amp_type, station_id):
+def load_data(config, amp_type, station_id):
 
-    data_folder = f'/pub/tangch3/ARIANNA/DeepLearning/{type}'
+    data_folder = f'/pub/tangch3/ARIANNA/DeepLearning/{type}' # not changing this yet for backwards compatibility
+    type = config['loading_data_type']
 
     if type == 'All_data':
         print(f'using {type} files')
@@ -188,18 +189,28 @@ def load_data(type, amp_type, station_id):
     
     
     if type == 'new_chi_above_curve':
-               
-        Above_curve_data_folder =  f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/5000evt_8.22.25'
+
+        num_events = config['num_above_curve_events']
+
+        if num_events == 1000:
+            Above_curve_data_folder =  config["1000_above_curve_data_folder"]
+        elif num_events == 5000:
+            Above_curve_data_folder =  config["5000_above_curve_data_folder"]
+        elif num_events == 10000:
+            Above_curve_data_folder =  config["10000_above_curve_data_folder"]
+        else:
+            print(f'{num_events} number of events not found')
+
         Above_curve_data_SNR2016 = [] #np.load(f'{Above_curve_data_folder}/Stn{station_id}_SNR2016_above.npy')
         Above_curve_data_SNRRCR = [] #np.load(f'{Above_curve_data_folder}/Stn{station_id}_SNRRCR_above.npy')
         Above_curve_data_Chi2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_Chi2016_above.npy')
         Above_curve_data_ChiRCR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_ChiRCR_above.npy')
-        Above_curve_data_Traces2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_Traces2016_above.npy') # _filtered
-        Above_curve_data_TracesRCR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_TracesRCR_above.npy') # _filtered
+        Above_curve_data_Traces2016 = np.load(f'{Above_curve_data_folder}/Stn{station_id}_Traces2016_above.npy_filtered') # 
+        Above_curve_data_TracesRCR = np.load(f'{Above_curve_data_folder}/Stn{station_id}_TracesRCR_above.npy_filtered') # 
         Above_curve_data_UNIX2016 = [] #np.load(f'{Above_curve_data_folder}/Stn{station_id}_UNIX2016_above.npy')
         Above_curve_data_UNIXRCR = [] #np.load(f'{Above_curve_data_folder}/Stn{station_id}_UNIXRCR_above.npy')
 
-        print(f'loaded {type} data from {Above_curve_data_folder}') 
+        print(f'loaded {num_events}evt {type} data from {Above_curve_data_folder}') 
 
         return Above_curve_data_SNR2016, Above_curve_data_SNRRCR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR,\
                Above_curve_data_Traces2016, Above_curve_data_TracesRCR, Above_curve_data_UNIX2016, Above_curve_data_UNIXRCR
@@ -537,15 +548,26 @@ def load_coincidence_pkl(master_id, argument, station_id,
 if __name__ == "__main__":
     print()
 
-    trace_type = 'Filtered_Traces'
-    pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl'
+    config = load_config()
+    amp = config['amp']
+    num = config["num_above_curve_events"]
+    station_id = 19
+    Above_curve_data_SNR2016, Above_curve_data_SNRRCR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR,\
+               Above_curve_data_Traces2016, Above_curve_data_TracesRCR, Above_curve_data_UNIX2016, Above_curve_data_UNIXRCR = load_data(config, amp_type=amp, station_id=station_id)
 
-    from refactor_checks import load_all_coincidence_traces
-    coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, trace_key=trace_type) 
-    coinc_traces = np.array(coinc_traces)
-    print(coinc_traces.shape)
-    for i in np.arange(15,30):
-        pT(coinc_traces[i], f"test plot old coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/825_plot_coinc_{i}.png')
+    save_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other"
+    for i in range(4):
+        pT(Above_curve_data_Traces2016[i], f'check filter index {i}', os.path.join(save_path, f"827_{num}evt_{i}.png"))
+
+    # trace_type = 'Filtered_Traces'
+    # pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl'
+
+    # from refactor_checks import load_all_coincidence_traces
+    # coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, trace_key=trace_type) 
+    # coinc_traces = np.array(coinc_traces)
+    # print(coinc_traces.shape)
+    # for i in np.arange(15,30):
+    #     pT(coinc_traces[i], f"test plot old coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/825_plot_coinc_{i}.png')
 
 
 

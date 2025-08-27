@@ -560,7 +560,7 @@ if __name__ == "__main__":
     #     pT(Above_curve_data_Traces2016[i], f'check filter index {i}', os.path.join(save_path, f"827_{num}evt_{i}.png"))
 
     trace_type = 'Filtered_Traces'
-    pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/coincidence_events/filtered_coinc.pkl'
+    pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/coincidence_events/6.11.25_CoincidenceDatetimes_with_all_params_recalcZenAzi_calcPol.pkl'
 
     from refactor_checks import load_all_coincidence_traces
     coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, trace_key=trace_type) 

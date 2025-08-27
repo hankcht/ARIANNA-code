@@ -124,8 +124,8 @@ def getMaxSNR(traces, noiseRMS):
 
 def load_data(config, amp_type, station_id):
 
-    data_folder = f'/pub/tangch3/ARIANNA/DeepLearning/{type}' # not changing this yet for backwards compatibility
     type = config['loading_data_type']
+    data_folder = f'/pub/tangch3/ARIANNA/DeepLearning/{type}' # not changing this yet for backwards compatibility
 
     if type == 'All_data':
         print(f'using {type} files')

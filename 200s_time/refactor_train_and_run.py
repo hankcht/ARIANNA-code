@@ -37,7 +37,7 @@ def load_and_prep_data_for_training(config):
 
     backlobe_data = {'snr2016': [], 'snrRCR': [], 'chi2016': [], 'chiRCR': [], 'traces2016': [], 'tracesRCR': [], 'unix2016': [], 'unixRCR': []}
     for s_id in station_ids:
-        snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
+        snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config, amp_type=amp, station_id=s_id)
         backlobe_data['snr2016'].extend(snr2016)
         backlobe_data['snrRCR'].extend(snrRCR)
         backlobe_data['chi2016'].extend(chi2016)

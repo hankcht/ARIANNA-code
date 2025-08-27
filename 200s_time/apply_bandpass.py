@@ -63,7 +63,7 @@ if __name__ == '__main__':
             print(f'wrong station {s_id}')
 
 
-        snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config['loading_data_type'], amp_type=amp, station_id=s_id)
+        snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config, amp_type=amp, station_id=s_id)
         traces2016 = np.array(traces2016)
         tracesRCR = np.array(tracesRCR)
         print(f"Loaded {traces2016.shape[0]} traces.")

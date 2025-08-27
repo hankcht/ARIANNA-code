@@ -6,7 +6,7 @@ station_ids_200s: [14, 17, 19, 30]
 station_ids_100s: [13, 15, 18]
 
 loading_data_type: "new_chi_above_curve"
-num_above_curve_events: 10000
+num_above_curve_events: 5000
 
 noise_rms_200s: 22.53  # units.mV will be applied in code
 noise_rms_100s: 20.0

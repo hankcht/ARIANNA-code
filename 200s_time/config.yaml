@@ -50,7 +50,7 @@ verbose_fit: 2
 model_filename_template: "{timestamp}_{amp}_{prefix}_model_2Layer.h5"
 
 # Evaluation
-output_cut_value: 0.6
+output_cut_value: 0.9
 history_filename_template: "{timestamp}_{amp}_{prefix}_model_2Layer_history.pkl"
 loss_plot_filename_template: "{timestamp}_{amp}_{prefix}_loss_plot_2Layer.png"
 accuracy_plot_filename_template: "{timestamp}_{amp}_{prefix}_accuracy_plot_2Layer.png"

@@ -548,26 +548,26 @@ def load_coincidence_pkl(master_id, argument, station_id,
 if __name__ == "__main__":
     print()
 
-    config = load_config()
-    amp = config['amp']
-    num = config["num_above_curve_events"]
-    station_id = 19
-    Above_curve_data_SNR2016, Above_curve_data_SNRRCR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR,\
-               Above_curve_data_Traces2016, Above_curve_data_TracesRCR, Above_curve_data_UNIX2016, Above_curve_data_UNIXRCR = load_data(config, amp_type=amp, station_id=station_id)
+    # config = load_config()
+    # amp = config['amp']
+    # num = config["num_above_curve_events"]
+    # station_id = 19
+    # Above_curve_data_SNR2016, Above_curve_data_SNRRCR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR,\
+    #            Above_curve_data_Traces2016, Above_curve_data_TracesRCR, Above_curve_data_UNIX2016, Above_curve_data_UNIXRCR = load_data(config, amp_type=amp, station_id=station_id)
 
-    save_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other"
-    for i in range(4):
-        pT(Above_curve_data_Traces2016[i], f'check filter index {i}', os.path.join(save_path, f"827_{num}evt_{i}.png"))
+    # save_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other"
+    # for i in range(4):
+    #     pT(Above_curve_data_Traces2016[i], f'check filter index {i}', os.path.join(save_path, f"827_{num}evt_{i}.png"))
 
-    # trace_type = 'Filtered_Traces'
-    # pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl'
+    trace_type = 'Filtered_Traces'
+    pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/coincidence_events/filtered_coinc.pkl'
 
-    # from refactor_checks import load_all_coincidence_traces
-    # coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, trace_key=trace_type) 
-    # coinc_traces = np.array(coinc_traces)
-    # print(coinc_traces.shape)
-    # for i in np.arange(15,30):
-    #     pT(coinc_traces[i], f"test plot old coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/825_plot_coinc_{i}.png')
+    from refactor_checks import load_all_coincidence_traces
+    coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, trace_key=trace_type) 
+    coinc_traces = np.array(coinc_traces)
+    print(coinc_traces.shape)
+    for i in np.arange(15,30):
+        pT(coinc_traces[i], f"test plot old coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/827_plot_coinc_{i}.png')
 
 
 

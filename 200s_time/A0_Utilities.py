@@ -576,7 +576,7 @@ if __name__ == "__main__":
     template_paths = sorted(glob(os.path.join(template_dir, "filtered_Event2016_Stn*.npy"))) # using filtered confirmed BL
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
 
-    for i in np.arange(15,20):
+    for i in np.arange(5):
         pT(all_2016_backlobes[i], f"test plot 2016 BL index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/827_plot_2016BL_{i}.png')
 
 

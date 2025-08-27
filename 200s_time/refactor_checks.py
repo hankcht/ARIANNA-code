@@ -76,7 +76,7 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
     metadata = {}
 
     for path in file_paths:
-        match = re.search(r'Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', path)
+        match = re.search(r'filtered_Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', path)
         if match:
             station_id = match.group(1)
             unix_timestamp = match.group(2)
@@ -201,13 +201,13 @@ if __name__ == "__main__":
     model, model_timestamp, prefix = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="CNN")
 
     template_dir = "/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/"
-    template_paths = sorted(glob(os.path.join(template_dir, "Event2016_Stn*.npy")))
+    template_paths = sorted(glob(os.path.join(template_dir, "filtered_Event2016_Stn*.npy"))) # using filtered confirmed BL
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
 
     print(f"Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
 
     pkl_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl"
-    coinc_dict, all_coincidence_events, metadata = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
+    coinc_dict, all_coincidence_events, metadata = load_all_coincidence_traces(pkl_path, "Filtered_Traces") # using filtered coincidence 
     print(f"Loaded {len(all_coincidence_events)} coincidence traces.")
 
     all_2016_backlobes = np.array(all_2016_backlobes)

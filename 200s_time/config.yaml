@@ -44,7 +44,7 @@ base_plot_path: "/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/"
 prefix : "CNN"
 train_cut: 4000
 early_stopping_patience: 5
-keras_epochs: 50
+keras_epochs: 100
 keras_batch_size: 64
 verbose_fit: 2
 model_filename_template: "{timestamp}_{amp}_{prefix}_model_2Layer.h5"

@@ -78,6 +78,7 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
     for path in file_paths:
         match = re.search(r'filtered_Event2016_Stn(\d+)_(\d+\.\d+)_Chi(\d+\.\d+)_SNR(\d+\.\d+)\.npy', path)
         if match:
+            print(f'found match {match}')
             station_id = match.group(1)
             unix_timestamp = match.group(2)
             chi = match.group(3)
@@ -90,7 +91,6 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
                 index = len(arrays) - 1
 
                 plot_filename = f"Event2016_Stn{station_id}_{unix_timestamp}_Chi{chi}_SNR{snr}.png"
-                print(f'loading {plot_filename}')
 
                 metadata[index] = {
                     "station": station_id,

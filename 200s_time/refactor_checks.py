@@ -129,6 +129,8 @@ def load_all_coincidence_traces(pkl_path, trace_key):
     metadata = {}
     idx = 0
 
+    print(f'loading {trace_key}')
+
     for master_id, master_data in coinc_dict.items():
         for station_id, station_dict in master_data['stations'].items():
             traces = station_dict.get(trace_key)

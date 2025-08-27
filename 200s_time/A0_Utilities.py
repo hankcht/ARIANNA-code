@@ -563,6 +563,7 @@ if __name__ == "__main__":
     # pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/coincidence_events/filtered_coinc.pkl'
 
     from refactor_checks import load_all_coincidence_traces, load_2016_backlobe_templates
+    from glob import glob
     # coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, trace_key=trace_type) 
     # coinc_traces = np.array(coinc_traces)
     # print(coinc_traces.shape)

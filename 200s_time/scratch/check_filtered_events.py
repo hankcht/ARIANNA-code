@@ -17,7 +17,7 @@ save_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other"
 for i in range(4):
     pT(Above_curve_data_Traces2016[i], f'check filter index {i}', os.path.join(save_path, f"827_{num}evt_{i}.png"))
 
-trace_type = 'Traces'
+trace_type = 'Filtered_Traces'
 pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/coincidence_events/filtered_coinc.pkl'
 
 from refactor_checks import load_all_coincidence_traces, load_2016_backlobe_templates

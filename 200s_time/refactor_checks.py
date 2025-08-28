@@ -230,14 +230,13 @@ if __name__ == "__main__":
     if config['if_dann']:
         prob_backlobe, _ = model.predict(all_2016_backlobes)
         prob_coincidence, _ = model.predict(all_coincidence_events)
-        prob_coincidence_rcr, _ = model.predict(all_coincidence_events[1297])
     else:
         prob_backlobe = model.predict(all_2016_backlobes)
         prob_coincidence = model.predict(all_coincidence_events)
-        rcr_evt = all_coincidence_events[1297]
-        rcr_evt = np.array(rcr_evt)
-        print(rcr_evt.shape)
-        prob_coincidence_rcr = model.predict(rcr_evt)
+
+        sample = all_coincidence_events[1297]
+        sample = np.expand_dims(sample, axis=0)
+        prob_coincidence_rcr = model.predict(sample)
 
     prob_backlobe = prob_backlobe.flatten()
     prob_coincidence = prob_coincidence.flatten()

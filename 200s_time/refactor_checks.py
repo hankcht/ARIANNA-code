@@ -234,8 +234,8 @@ if __name__ == "__main__":
     else:
         prob_backlobe = model.predict(all_2016_backlobes)
         prob_coincidence = model.predict(all_coincidence_events)
-        print(all_coincidence_events[1297].shape)
-        prob_coincidence_rcr = model.predict(all_coincidence_events[1297])
+        input_data = np.expand_dims(all_coincidence_events[1297], axis=-1)
+        prob_coincidence_rcr = model.predict(input_data[1297])
 
     prob_backlobe = prob_backlobe.flatten()
     prob_coincidence = prob_coincidence.flatten()

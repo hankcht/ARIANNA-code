@@ -183,7 +183,7 @@ def plot_histogram(prob_2016, prob_coincidence, rob_coincidence_rcr, amp, timest
     max_overall_hist = max(np.max(hist_values_2016), np.max(hist_values_coincidence))
     plt.ylim(7*1e-1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
 
-    plt.text(0.05, 0.95, f'Coincidence RCR network Output is: {prob_coincidence_rcr:.2f}',
+    plt.text(0.05, 0.95, f'Coincidence RCR network Output is: {prob_coincidence_rcr.item():.2f}',
              fontsize=12, verticalalignment='top', transform=plt.gca().transAxes,
              bbox=dict(facecolor='white', alpha=0.7, edgecolor='gray'))
     plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=14)
@@ -234,17 +234,14 @@ if __name__ == "__main__":
         prob_backlobe = model.predict(all_2016_backlobes)
         prob_coincidence = model.predict(all_coincidence_events)
 
-        sample = all_coincidence_events[1298]
-        sample = np.expand_dims(sample, axis=0)
-        prob_coincidence_rcr = model.predict(sample)
+        prob_coincidence_rcr = model.predict(np.expand_dims(all_coincidence_events[1297], axis=0))
 
     prob_backlobe = prob_backlobe.flatten()
     prob_coincidence = prob_coincidence.flatten()
     prob_coincidence_rcr = prob_coincidence_rcr.flatten()
     print(f'Coincidence RCR network Output is: {prob_coincidence_rcr}')
-    np.set_printoptions(threshold=np.inf) 
-    np.set_printoptions(suppress=True, precision=3)
-    print(prob_coincidence[1290:1300])
+
+    print(prob_coincidence_rcr)
 
     plot_histogram(prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
 

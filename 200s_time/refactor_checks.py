@@ -234,7 +234,7 @@ if __name__ == "__main__":
         prob_backlobe = model.predict(all_2016_backlobes)
         prob_coincidence = model.predict(all_coincidence_events)
 
-        sample = all_coincidence_events[1297]
+        sample = all_coincidence_events[1298]
         sample = np.expand_dims(sample, axis=0)
         prob_coincidence_rcr = model.predict(sample)
 
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     prob_coincidence = prob_coincidence.flatten()
     prob_coincidence_rcr = prob_coincidence_rcr.flatten()
     print(f'Coincidence RCR network Output is: {prob_coincidence_rcr}')
-    print(prob_coincidence[1297])
+    print(prob_coincidence[1298])
 
     plot_histogram(prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
 

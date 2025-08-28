@@ -243,7 +243,7 @@ if __name__ == "__main__":
     prob_coincidence_rcr = prob_coincidence_rcr.flatten()
     print(f'Coincidence RCR network Output is: {prob_coincidence_rcr}')
     np.set_printoptions(threshold=np.inf) 
-    print(prob_coincidence[1200:1300])
+    print(prob_coincidence)
 
     plot_histogram(prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
 

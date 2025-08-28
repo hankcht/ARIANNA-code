@@ -163,7 +163,7 @@ def load_all_coincidence_traces(pkl_path, trace_key):
     return coinc_dict, all_Traces, metadata
 
 
-def plot_histogram(prob_2016, prob_coincidence, amp, timestamp, prefix):
+def plot_histogram(prob_2016, prob_coincidence, rob_coincidence_rcr, amp, timestamp, prefix):
     
     plt.figure(figsize=(8, 6))
     bins = 20
@@ -183,6 +183,9 @@ def plot_histogram(prob_2016, prob_coincidence, amp, timestamp, prefix):
     max_overall_hist = max(np.max(hist_values_2016), np.max(hist_values_coincidence))
     plt.ylim(7*1e-1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
 
+    plt.text(0.05, 0.95, f'Coincidence RCR network Output is: {prob_coincidence_rcr:.2f}',
+             fontsize=12, verticalalignment='top', transform=plt.gca().transAxes,
+             bbox=dict(facecolor='white', alpha=0.7, edgecolor='gray'))
     plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=14)
     plt.legend(loc='upper left', fontsize=12)
 
@@ -227,14 +230,17 @@ if __name__ == "__main__":
     if config['if_dann']:
         prob_backlobe, _ = model.predict(all_2016_backlobes)
         prob_coincidence, _ = model.predict(all_coincidence_events)
+        prob_coincidence_rcr, _ = model.predict(all_coincidence_events[1297])
     else:
         prob_backlobe = model.predict(all_2016_backlobes)
         prob_coincidence = model.predict(all_coincidence_events)
+        prob_coincidence_rcr = model.predict(all_coincidence_events[1297])
 
     prob_backlobe = prob_backlobe.flatten()
     prob_coincidence = prob_coincidence.flatten()
+    print(f'Coincidence RCR network Output is: {prob_coincidence_rcr}')
 
-    plot_histogram(prob_backlobe, prob_coincidence, amp, timestamp=model_timestamp, prefix=prefix)
+    plot_histogram(prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
 
     # print(prob_backlobe)
 

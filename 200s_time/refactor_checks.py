@@ -183,7 +183,7 @@ def plot_histogram(prob_2016, prob_coincidence, rob_coincidence_rcr, amp, timest
     max_overall_hist = max(np.max(hist_values_2016), np.max(hist_values_coincidence))
     plt.ylim(7*1e-1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
 
-    plt.text(0.05, 0.95, f'Coincidence RCR network Output is: {prob_coincidence_rcr.item():.2f}',
+    plt.text(0.05, 0.85, f'Coincidence RCR network Output is: {prob_coincidence_rcr.item():.2f}',
              fontsize=12, verticalalignment='top', transform=plt.gca().transAxes,
              bbox=dict(facecolor='white', alpha=0.7, edgecolor='gray'))
     plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=14)

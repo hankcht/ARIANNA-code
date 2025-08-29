@@ -94,18 +94,14 @@ def loadMultipleTemplates(series, date='3.29.25', addSingle=False):
         for filename in os.listdir(templates_2016_location):
             if filename.startswith("Event"):
                 print(f'loading {filename}')
-                # temp = np.load(os.path.join(templates_2016_location, filename))
-                # # Only use the channel of highest amplitude
-                # max_temp = [0]
-                # for t in temp:
-                #     if max(np.abs(t)) > max(max_temp):
-                #         max_temp = t
-                # key = filename.split('_')[1]
-                # template_series_RCR[key] = max_temp
                 temp = np.load(os.path.join(templates_2016_location, filename))
+                # Only use the channel of highest amplitude
+                max_temp = [0]
+                for t in temp:
+                    if max(np.abs(t)) > max(max_temp):
+                        max_temp = t
                 key = filename.split('_')[1]
-                # keep the whole 4-channel trace instead of collapsing
-                template_series_RCR[key] = temp
+                template_series_RCR[key] = max_temp
 
     if addSingle:
         template_series_RCR.append(loadSingleTemplate(series))
@@ -563,7 +559,7 @@ if __name__ == "__main__":
     # print(new_metadata[1297]['ChiRCR'])
     # print(new_metadata[1298]['ChiRCR'])
     # print(new_metadata[1297]['Chi2016'])
-    print(new_metadata[1299]['Chi2016'])
+    # print(new_metadata[1299]['Chi2016'])
 
     coinc_traces = np.array(old_coinc_traces)
     print(coinc_traces.shape)
@@ -579,14 +575,18 @@ if __name__ == "__main__":
     # chiRCR_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_RCR, 2*units.GHz)
     # print((chiRCR_100,chiRCR_200))
 
-    chi2016_200 = getMaxAllChi(coinc_traces[1299], 2*units.GHz, templates_200_2016, 2*units.GHz)
+    # chi2016_200 = getMaxAllChi(coinc_traces[1299], 2*units.GHz, templates_200_2016, 2*units.GHz)
     # chi2016_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_2016, 2*units.GHz)
     # print((chi2016_100,chi2016_200))
-    print(chi2016_200)
+    # print(chi2016_200)
 
     # for i in indices:
     #     pT(coinc_traces[i], f"test plot coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/829_plot_coinc_{i}.png')
 
+    for i in range(20):
+        print(new_metadata[i]['Chi2016'])
+        chi2016_200 = getMaxAllChi(coinc_traces[i], 2*units.GHz, templates_200_2016, 2*units.GHz)
+        print(chi2016_200)
 
 
 

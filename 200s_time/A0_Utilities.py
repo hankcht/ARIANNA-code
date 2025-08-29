@@ -550,22 +550,27 @@ if __name__ == "__main__":
 
     from refactor_checks import load_all_coincidence_traces, load_2016_backlobe_templates
 
-    trace_type = 'Traces'
     pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/coincidence_events/filtered_coinc.pkl'
-    coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, trace_key=trace_type) 
-    coinc_traces = np.array(coinc_traces)
-    print(coinc_traces.shape)
+    old_coinc_dict, old_coinc_traces, old_metadata = load_all_coincidence_traces(pkl_path, trace_key='Traces') 
+    new_coinc_dict, new_coinc_traces, new_metadata = load_all_coincidence_traces(pkl_path, trace_key='Filtered_Traces') 
+    print(old_metadata[1297]['ChiRCR'])
+    print(old_metadata[1298]['ChiRCR'])
+    print(new_metadata[1297]['ChiRCR'])
+    print(new_metadata[1298]['ChiRCR'])
+
+    # coinc_traces = np.array(coinc_traces)
+    # print(coinc_traces.shape)
    
 
-    templates_200_RCR = loadMultipleTemplates(series=200, date='3.29.25')
-    templates_100_RCR = loadMultipleTemplates(series=100, date='3.29.25')
+    # templates_200_RCR = loadMultipleTemplates(series=200, date='3.29.25')
+    # templates_100_RCR = loadMultipleTemplates(series=100, date='3.29.25')
 
 
-    chi_200 = getMaxAllChi(coinc_traces[1298], 2*units.GHz, templates_200_RCR, 2*units.GHz)
-    chi_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_RCR, 2*units.GHz)
+    # chi_200 = getMaxAllChi(coinc_traces[1298], 2*units.GHz, templates_200_RCR, 2*units.GHz)
+    # chi_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_RCR, 2*units.GHz)
 
-    print(chi_200)
-    print(chi_100)
+    # print(chi_200)
+    # print(chi_100)
 
     # for i in indices:
     #     pT(coinc_traces[i], f"test plot coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/829_plot_coinc_{i}.png')

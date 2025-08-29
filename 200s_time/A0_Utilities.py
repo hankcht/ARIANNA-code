@@ -548,7 +548,21 @@ def load_coincidence_pkl(master_id, argument, station_id,
 if __name__ == "__main__":
     print()
 
+    import os, sys
+    import numpy as np
+    from glob import glob
+    from A0_Utilities import load_config, pT, load_data
 
+    from refactor_checks import load_all_coincidence_traces, load_2016_backlobe_templates
+    from glob import glob
+    trace_type = 'Filtered_Traces'
+    pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/coincidence_events/filtered_coinc.pkl'
+    coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, trace_key=trace_type) 
+    coinc_traces = np.array(coinc_traces)
+    print(coinc_traces.shape)
+    indices = [1297, 1298] 
+    for i in indices:
+        pT(coinc_traces[i], f"test plot coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/829_plot_coinc_{i}.png')
 
 
 

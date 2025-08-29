@@ -94,14 +94,18 @@ def loadMultipleTemplates(series, date='3.29.25', addSingle=False):
         for filename in os.listdir(templates_2016_location):
             if filename.startswith("Event"):
                 print(f'loading {filename}')
+                # temp = np.load(os.path.join(templates_2016_location, filename))
+                # # Only use the channel of highest amplitude
+                # max_temp = [0]
+                # for t in temp:
+                #     if max(np.abs(t)) > max(max_temp):
+                #         max_temp = t
+                # key = filename.split('_')[1]
+                # template_series_RCR[key] = max_temp
                 temp = np.load(os.path.join(templates_2016_location, filename))
-                # Only use the channel of highest amplitude
-                max_temp = [0]
-                for t in temp:
-                    if max(np.abs(t)) > max(max_temp):
-                        max_temp = t
                 key = filename.split('_')[1]
-                template_series_RCR[key] = max_temp
+                # keep the whole 4-channel trace instead of collapsing
+                template_series_RCR[key] = temp
 
     if addSingle:
         template_series_RCR.append(loadSingleTemplate(series))

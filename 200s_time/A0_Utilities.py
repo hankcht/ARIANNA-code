@@ -85,20 +85,23 @@ def loadMultipleTemplates(series, date='3.29.25', addSingle=False):
         i = 0
         for filename in os.listdir(template_series_RCR_location):
             if filename.startswith(f'{series}'):
+                print(f'loading {filename}')
                 temp = np.load(os.path.join(template_series_RCR_location, filename))
                 template_series_RCR[i] = temp
                 i += 1
     else:
-        templates_2016_location = f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/templates/confirmed2016Templates/'
+        templates_2016_location = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/'
         for filename in os.listdir(templates_2016_location):
-            temp = np.load(os.path.join(templates_2016_location, filename))
-            # Only use the channel of highest amplitude
-            max_temp = [0]
-            for t in temp:
-                if max(np.abs(t)) > max(max_temp):
-                    max_temp = t
-            key = filename.split('_')[1]
-            template_series_RCR[key] = max_temp
+            if filename.startswith("Event"):
+                print(f'loading {filename}')
+                temp = np.load(os.path.join(templates_2016_location, filename))
+                # Only use the channel of highest amplitude
+                max_temp = [0]
+                for t in temp:
+                    if max(np.abs(t)) > max(max_temp):
+                        max_temp = t
+                key = filename.split('_')[1]
+                template_series_RCR[key] = max_temp
 
     if addSingle:
         template_series_RCR.append(loadSingleTemplate(series))
@@ -553,24 +556,28 @@ if __name__ == "__main__":
     pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/coincidence_events/filtered_coinc.pkl'
     old_coinc_dict, old_coinc_traces, old_metadata = load_all_coincidence_traces(pkl_path, trace_key='Traces') 
     new_coinc_dict, new_coinc_traces, new_metadata = load_all_coincidence_traces(pkl_path, trace_key='Filtered_Traces') 
-    print(old_metadata[1297]['ChiRCR'])
-    print(old_metadata[1298]['ChiRCR'])
-    print(new_metadata[1297]['ChiRCR'])
-    print(new_metadata[1298]['ChiRCR'])
+    # print(old_metadata[1297]['ChiRCR'])
+    # print(old_metadata[1298]['ChiRCR'])
+    # print(new_metadata[1297]['ChiRCR'])
+    # print(new_metadata[1298]['ChiRCR'])
 
-    # coinc_traces = np.array(coinc_traces)
-    # print(coinc_traces.shape)
+    coinc_traces = np.array(old_coinc_traces)
+    print(coinc_traces.shape)
    
 
-    # templates_200_RCR = loadMultipleTemplates(series=200, date='3.29.25')
-    # templates_100_RCR = loadMultipleTemplates(series=100, date='3.29.25')
+    templates_200_RCR = loadMultipleTemplates(series=200, date='3.29.25')
+    templates_100_RCR = loadMultipleTemplates(series=100, date='3.29.25')
+    templates_200_2016 = loadMultipleTemplates(series=200, date='2016')
+    templates_100_2016 = loadMultipleTemplates(series=100, date='2016')
 
 
-    # chi_200 = getMaxAllChi(coinc_traces[1298], 2*units.GHz, templates_200_RCR, 2*units.GHz)
-    # chi_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_RCR, 2*units.GHz)
+    chiRCR_200 = getMaxAllChi(coinc_traces[1298], 2*units.GHz, templates_200_RCR, 2*units.GHz)
+    chiRCR_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_RCR, 2*units.GHz)
+    print((chiRCR_100,chiRCR_200))
 
-    # print(chi_200)
-    # print(chi_100)
+    chi2016_200 = getMaxAllChi(coinc_traces[1298], 2*units.GHz, templates_200_2016, 2*units.GHz)
+    chi2016_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_2016, 2*units.GHz)
+    print((chi2016_100,chi2016_200))
 
     # for i in indices:
     #     pT(coinc_traces[i], f"test plot coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/829_plot_coinc_{i}.png')

@@ -18,11 +18,11 @@ new_coinc_dict, new_coinc_traces, new_metadata = load_all_coincidence_traces(pkl
 # passing condition is  
 
 for index in range(len(new_metadata)):
-    print(len(new_metadata))
+    
     chi2016 = new_metadata[index]['Chi2016']
     chircr = new_metadata[index]['ChiRCR']
     difference = chi2016 - chircr
 
-    print(f'Difference: 2016 {chi2016:.3f} - RCR {chircr:.3f} = {difference:.2f}')
+    print(f'Difference: 2016 {chi2016:.3f} - RCR {chircr:.3f} = {difference:.3f}')
     if index == 1297 or index == 1298:
-        print(f'AWARE Master 578 DIFFERENCE IS {difference:.2f}')
+        print(f'AWARE Master 578 DIFFERENCE IS {difference:.3f}')

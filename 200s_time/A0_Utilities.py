@@ -558,8 +558,8 @@ if __name__ == "__main__":
     new_coinc_dict, new_coinc_traces, new_metadata = load_all_coincidence_traces(pkl_path, trace_key='Filtered_Traces') 
     # print(new_metadata[1297]['ChiRCR'])
     # print(new_metadata[1298]['ChiRCR'])
-    print(new_metadata[1297]['Chi2016'])
-    print(new_metadata[1298]['Chi2016'])
+    # print(new_metadata[1297]['Chi2016'])
+    print(new_metadata[1299]['Chi2016'])
 
     coinc_traces = np.array(old_coinc_traces)
     print(coinc_traces.shape)
@@ -575,7 +575,7 @@ if __name__ == "__main__":
     # chiRCR_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_RCR, 2*units.GHz)
     # print((chiRCR_100,chiRCR_200))
 
-    chi2016_200 = getMaxAllChi(coinc_traces[1298], 2*units.GHz, templates_200_2016, 2*units.GHz)
+    chi2016_200 = getMaxAllChi(coinc_traces[1299], 2*units.GHz, templates_200_2016, 2*units.GHz)
     # chi2016_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_2016, 2*units.GHz)
     # print((chi2016_100,chi2016_200))
     print(chi2016_200)

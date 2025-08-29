@@ -1,7 +1,7 @@
 import os
 import re
 import time
-import glob
+from glob import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors
@@ -71,7 +71,7 @@ def loadSingleTemplate(series):
 
     return templates_RCR
 
-def loadMultipleTemplates(series, date='3.29.25', addSingle=False, bad=False):
+def loadMultipleTemplates(series, date='3.29.25', addSingle=False):
     # Dates - 9.16.24 (noise included), 10.1.24 (no noise)
     #       - 2016 : found backlobe events from 2016
     #       - 3.29.25 : noiseless, 100s and 200s, pruned by-hand for 'good' templates
@@ -81,7 +81,7 @@ def loadMultipleTemplates(series, date='3.29.25', addSingle=False, bad=False):
     # Loads all the templates made for an average energy/zenith
     template_series_RCR = {}
     if not date == '2016':
-        template_series_RCR_location = f'/pub/tangch3/ARIANNA/DeepLearning/RCR_templates/{date}/' 
+        template_series_RCR_location = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/rcr_templates/multi_template/{date}/' 
         i = 0
         for filename in os.listdir(template_series_RCR_location):
             if filename.startswith(f'{series}'):
@@ -548,21 +548,27 @@ def load_coincidence_pkl(master_id, argument, station_id,
 if __name__ == "__main__":
     print()
 
-    import os, sys
-    import numpy as np
-    from glob import glob
-    from A0_Utilities import load_config, pT, load_data
-
     from refactor_checks import load_all_coincidence_traces, load_2016_backlobe_templates
-    from glob import glob
+
     trace_type = 'Filtered_Traces'
     pkl_path = '/pub/tangch3/ARIANNA/DeepLearning/refactor/coincidence_events/filtered_coinc.pkl'
     coinc_dict, coinc_traces, metadata = load_all_coincidence_traces(pkl_path, trace_key=trace_type) 
     coinc_traces = np.array(coinc_traces)
     print(coinc_traces.shape)
-    indices = [1297, 1298] 
-    for i in indices:
-        pT(coinc_traces[i], f"test plot coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/829_plot_coinc_{i}.png')
+   
+
+    templates_200_RCR = loadMultipleTemplates(series=200, date='3.29.25')
+    templates_100_RCR = loadMultipleTemplates(series=100, date='3.29.25')
+
+
+    chi_200 = getMaxAllChi(coinc_traces[1298], 2*units.GHz, templates_200_RCR, 2*units.GHz)
+    chi_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_RCR, 2*units.GHz)
+
+    print(chi_200)
+    print(chi_100)
+
+    # for i in indices:
+    #     pT(coinc_traces[i], f"test plot coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/829_plot_coinc_{i}.png')
 
 
 

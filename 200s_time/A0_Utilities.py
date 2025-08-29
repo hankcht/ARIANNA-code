@@ -560,6 +560,10 @@ if __name__ == "__main__":
     # print(old_metadata[1298]['ChiRCR'])
     # print(new_metadata[1297]['ChiRCR'])
     # print(new_metadata[1298]['ChiRCR'])
+    print(old_metadata[1297]['Chi2016'])
+    print(old_metadata[1298]['Chi2016'])
+    print(new_metadata[1297]['Chi2016'])
+    print(new_metadata[1298]['Chi2016'])
 
     coinc_traces = np.array(old_coinc_traces)
     print(coinc_traces.shape)

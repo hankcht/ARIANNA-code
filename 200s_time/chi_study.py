@@ -56,7 +56,7 @@ for s_id in station_ids:
 
     # Print summary
     print("\n--- Summary ---")
-    print(f'Station {s_id} Total Events: {len(difference)}')
+    print(f'Station {s_id} Total Events: {len(Chi2016)}')
     print(f'Backlobe-like:               {count_backlobe_like}')
     print(f'RCR-like:                    {count_rcr_like}')
     print(f'High Chi but Not Classified: {count_unclassified}')

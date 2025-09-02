@@ -26,7 +26,7 @@ count_unclassified = 0
 count_below_threshold = 0
 
 # Loop through events and apply Chi study criteria
-for index, chi2016, chircr in enumerate(zip(Chi2016, ChiRCR)):
+for index, (chi2016, chircr) in enumerate(zip(Chi2016, ChiRCR)):
     
     difference = chi2016 - chircr
 

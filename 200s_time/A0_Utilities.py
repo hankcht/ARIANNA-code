@@ -561,22 +561,22 @@ if __name__ == "__main__":
     print(coinc_traces.shape)
    
 
-    templates_200_RCR = loadMultipleTemplates(series=200, date='3.29.25')
-    templates_100_RCR = loadMultipleTemplates(series=100, date='3.29.25')
-    templates_200_2016 = loadMultipleTemplates(series=200, date='2016')
-    templates_100_2016 = loadMultipleTemplates(series=100, date='2016')
+    # templates_200_RCR = loadMultipleTemplates(series=200, date='3.29.25')
+    # templates_100_RCR = loadMultipleTemplates(series=100, date='3.29.25')
+    # templates_200_2016 = loadMultipleTemplates(series=200, date='2016')
+    # templates_100_2016 = loadMultipleTemplates(series=100, date='2016')
 
-    print(f'UNFILTERED {(old_metadata[1297]['ChiRCR'],old_metadata[1298]['ChiRCR'])} {(old_metadata[1297]['Chi2016'], old_metadata[1298]['Chi2016'])}')
-    print(f'FILTERED {(new_metadata[1297]['ChiRCR'],new_metadata[1298]['ChiRCR'])} {(new_metadata[1297]['Chi2016'], new_metadata[1298]['Chi2016'])}')
+    # print(f'UNFILTERED {(old_metadata[1297]['ChiRCR'],old_metadata[1298]['ChiRCR'])} {(old_metadata[1297]['Chi2016'], old_metadata[1298]['Chi2016'])}')
+    # print(f'FILTERED {(new_metadata[1297]['ChiRCR'],new_metadata[1298]['ChiRCR'])} {(new_metadata[1297]['Chi2016'], new_metadata[1298]['Chi2016'])}')
 
-    chiRCR_200 = getMaxAllChi(coinc_traces[1298], 2*units.GHz, templates_200_RCR, 2*units.GHz)
-    chiRCR_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_RCR, 2*units.GHz)
+    # chiRCR_200 = getMaxAllChi(coinc_traces[1298], 2*units.GHz, templates_200_RCR, 2*units.GHz)
+    # chiRCR_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_RCR, 2*units.GHz)
 
-    chi2016_200 = getMaxAllChi(coinc_traces[1298], 2*units.GHz, templates_200_2016, 2*units.GHz)
-    chi2016_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_2016, 2*units.GHz)
+    # chi2016_200 = getMaxAllChi(coinc_traces[1298], 2*units.GHz, templates_200_2016, 2*units.GHz)
+    # chi2016_100 = getMaxAllChi(coinc_traces[1297], 2*units.GHz, templates_100_2016, 2*units.GHz)
 
-    print(f'CALCULATED FILTERED {(chiRCR_100, chiRCR_200)} {(chi2016_100, chi2016_200)}')
-    # print(chi2016_200)
+    # print(f'CALCULATED FILTERED {(chiRCR_100, chiRCR_200)} {(chi2016_100, chi2016_200)}')
+    # # print(chi2016_200)
 
     # for i in indices:
     #     pT(coinc_traces[i], f"test plot coinc index {i}", f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/829_plot_coinc_{i}.png')

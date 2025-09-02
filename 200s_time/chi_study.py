@@ -44,10 +44,10 @@ for index in range(len(new_metadata)):
             label = 'Backlobe-like'
             count_backlobe_like += 1
         else:
-            label = 'Unclassified'
+            label = 'High Chi but Not Classified'
             count_unclassified += 1
     else:
-        label = 'Below Threshold'
+        label = 'Below Chi Threshold'
         count_below_threshold += 1
 
     # Log result for this event

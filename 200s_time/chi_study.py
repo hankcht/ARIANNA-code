@@ -16,44 +16,51 @@ from refactor_checks import load_all_coincidence_traces, load_2016_backlobe_temp
 # all_2016_backlobes_100, dict_2016_100 = load_2016_backlobe_templates(template_paths, amp_type='100s')
 
 config = load_config()
-amp = config['amp']
-s_id = 14
-snr2016, snrRCR, Chi2016, ChiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config, amp_type=amp, station_id=s_id) 
 
-count_rcr_like = 0
-count_backlobe_like = 0
-count_unclassified = 0
-count_below_threshold = 0
-
-# Loop through events and apply Chi study criteria
-for index, (chi2016, chircr) in enumerate(zip(Chi2016, ChiRCR)):
-    
-    difference = chi2016 - chircr
-
-    label = None
-    if chi2016 >= 0.5 and chircr >= 0.5:
-        if difference <= -0.09:
-            label = 'RCR-like'
-            count_rcr_like += 1
-        elif difference >= 0.15:
-            label = 'Backlobe-like'
-            count_backlobe_like += 1
-        else:
-            label = 'High Chi but Not Classified'
-            count_unclassified += 1
+station_ids = [13,15,18,14,17,19,30]
+for s_id in station_ids:
+    if s_id in [13,15,18]:
+        amp = '100s'
     else:
-        label = 'Below Chi Threshold'
-        count_below_threshold += 1
+        amp = '200s'
+    print(f'using {amp}')
+    snr2016, snrRCR, Chi2016, ChiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config, amp_type=amp, station_id=s_id) 
 
-    print(f'Index {index} | Chi2016: {chi2016:.3f} | ChiRCR: {chircr:.3f} | Δ: {difference:.3f} | Label: {label}')
+    count_rcr_like = 0
+    count_backlobe_like = 0
+    count_unclassified = 0
+    count_below_threshold = 0
+
+    # Loop through events and apply Chi study criteria
+    for index, (chi2016, chircr) in enumerate(zip(Chi2016, ChiRCR)):
+        
+        difference = chi2016 - chircr
+
+        label = None
+        if chi2016 >= 0.5 and chircr >= 0.5:
+            if difference <= -0.09:
+                label = 'RCR-like'
+                count_rcr_like += 1
+            elif difference >= 0.15:
+                label = 'Backlobe-like'
+                count_backlobe_like += 1
+            else:
+                label = 'High Chi but Not Classified'
+                count_unclassified += 1
+        else:
+            label = 'Below Chi Threshold'
+            count_below_threshold += 1
+
+        # print(f'Index {index} | Chi2016: {chi2016:.3f} | ChiRCR: {chircr:.3f} | Δ: {difference:.3f} | Label: {label}')
 
 
-# Print summary
-print("\n--- Summary ---")
-print(f'Backlobe-like:               {count_backlobe_like}')
-print(f'RCR-like:                    {count_rcr_like}')
-print(f'High Chi but Not Classified: {count_unclassified}')
-print(f'Below Chi Threshold:         {count_below_threshold}')
+    # Print summary
+    print("\n--- Summary ---")
+    print(f'Station: {s_id}')
+    print(f'Backlobe-like:               {count_backlobe_like}')
+    print(f'RCR-like:                    {count_rcr_like}')
+    print(f'High Chi but Not Classified: {count_unclassified}')
+    print(f'Below Chi Threshold:         {count_below_threshold}')
 
 
 

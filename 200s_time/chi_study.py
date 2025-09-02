@@ -36,7 +36,7 @@ for index in range(len(new_metadata)):
     difference = chi2016 - chircr
 
     label = None
-    if chi2016 >= 0.55 and chircr >= 0.55:
+    if chi2016 >= 0.5 and chircr >= 0.5:
         if difference <= -0.09:
             label = 'RCR-like'
             count_rcr_like += 1

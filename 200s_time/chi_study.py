@@ -59,7 +59,7 @@ for index in range(len(new_metadata)):
 
 # Print summary
 print("\n--- Summary ---")
-print(f'Backlobe-like:    {count_backlobe_like}')
-print(f'RCR-like:         {count_rcr_like}')
-print(f'High Chi but Not Classified:     {count_unclassified}')
-print(f'Below Chi Threshold:  {count_below_threshold}')
+print(f'Backlobe-like:               {count_backlobe_like}')
+print(f'RCR-like:                    {count_rcr_like}')
+print(f'High Chi but Not Classified: {count_unclassified}')
+print(f'Below Chi Threshold:         {count_below_threshold}')

@@ -21,8 +21,8 @@ amp = config['amp']
 
 from refactor_train_and_run import load_and_prep_data_for_training, evaluate_model_performance, plot_network_output_histogram
 data = load_and_prep_data_for_training(config)
-training_rcr = data['training_rcr']
-training_backlobe = data['training_backlobe']
+training_rcr = data['sim_rcr_all']
+training_backlobe = data['data_backlobe_traces2016']
 
 
 

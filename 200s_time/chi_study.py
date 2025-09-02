@@ -24,7 +24,12 @@ for s_id in station_ids:
     else:
         amp = '200s'
     print(f'using {amp}')
-    snr2016, snrRCR, Chi2016, ChiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config, amp_type=amp, station_id=s_id) 
+    # snr2016, snrRCR, Chi2016, ChiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config, amp_type=amp, station_id=s_id) 
+
+    data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
+    data = load_520_data(s_id, '', data_folder, single_load=False)
+    Chi2016 = data['Chi2016']
+    ChiRCR = data['ChiRCR']
 
     count_rcr_like = 0
     count_backlobe_like = 0

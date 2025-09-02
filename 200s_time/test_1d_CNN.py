@@ -85,7 +85,10 @@ print(f"Starting CNN training at {timestamp} for {amp} amplifier.")
 sim_rcr_all = data['sim_rcr_all']
 data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
 
+sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
+data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
+
 prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \
-    evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all, config['output_cut_value'], config)
+    evaluate_model_performance(model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)
 
 plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency, config, timestamp)

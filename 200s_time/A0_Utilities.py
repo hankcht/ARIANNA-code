@@ -1,7 +1,7 @@
 import os
 import re
 import time
-from glob import glob
+import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors
@@ -217,6 +217,48 @@ def load_data(config, amp_type, station_id):
 
         return Above_curve_data_SNR2016, Above_curve_data_SNRRCR, Above_curve_data_Chi2016, Above_curve_data_ChiRCR,\
                Above_curve_data_Traces2016, Above_curve_data_TracesRCR, Above_curve_data_UNIX2016, Above_curve_data_UNIXRCR
+
+
+def load_520_data(station_id, param, data_folder, date_filter="5.20.25", single_load = True):
+    '''
+    quick load function for 5/20 after nosie cut data with very specific filenames
+    from: '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
+    param: Azi, Chi2016, ChiRCR, ChiBad, EventIDs, MaxAmplitude, SNR, Times, Traces, Zen
+    '''
+    if single_load:
+        pattern = os.path.join(data_folder, f"{date_filter}_Station{station_id}_{param}*")
+        matched_files = sorted(glob.glob(pattern))
+
+        data_list = [np.load(f, allow_pickle=True) for f in matched_files]
+
+        if not data_list:
+            print(f"No files found for Station {station_id}, Parameter '{param}'")
+            return None
+
+        data = np.concatenate(data_list, axis=0).squeeze()
+        return data
+    else:
+        SNR_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_SNR*")))
+        Chi2016_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_Chi2016*")))
+        ChiRCR_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_ChiRCR*")))
+        Times_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_Times*")))
+        Traces_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_Traces*")))
+
+        SNR_list = [np.load(f, allow_pickle=True) for f in SNR_files]
+        Chi2016_list = [np.load(f, allow_pickle=True) for f in Chi2016_files]
+        ChiRCR_list = [np.load(f, allow_pickle=True) for f in ChiRCR_files]
+        Times_list = [np.load(f, allow_pickle=True) for f in Times_files]
+        Traces_list = [np.load(f, allow_pickle=True) for f in Traces_files]
+
+        SNRs = np.concatenate(SNR_list, axis=0).squeeze()
+        Chi2016 = np.concatenate(Chi2016_list, axis=0).squeeze()
+        ChiRCR = np.concatenate(ChiRCR_list, axis=0).squeeze()
+        Times = np.concatenate(Times_list, axis=0).squeeze()
+        Traces = np.concatenate(Traces_list, axis=0).squeeze()
+
+        return {'SNR': SNRs, 'Chi2016': Chi2016, 'ChiRCR': ChiRCR, 'Times': Times, 'Traces': Traces}
+    
+
 
 def load_sim(path, RCR_path, backlobe_path, amp):
     RCR_files = []
@@ -474,46 +516,6 @@ def deleting():
         for file in files_to_delete:
             os.remove(file)
             print(f'Deleted :{file}')
-
-def load_520_data(station_id, param, data_folder, date_filter="5.20.25", single_load = True):
-    '''
-    quick load function for 5/20 after nosie cut data with very specific filenames
-    from: '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
-    param: Azi, Chi2016, ChiRCR, ChiBad, EventIDs, MaxAmplitude, SNR, Times, Traces, Zen
-    '''
-    if single_load:
-        pattern = os.path.join(data_folder, f"{date_filter}_Station{station_id}_{param}*")
-        matched_files = sorted(glob.glob(pattern))
-
-        data_list = [np.load(f, allow_pickle=True) for f in matched_files]
-
-        if not data_list:
-            print(f"No files found for Station {station_id}, Parameter '{param}'")
-            return None
-
-        data = np.concatenate(data_list, axis=0).squeeze()
-        return data
-    else:
-        SNR_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_SNR*")))
-        Chi2016_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_Chi2016*")))
-        ChiRCR_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_ChiRCR*")))
-        Times_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_Times*")))
-        Traces_files = sorted(glob.glob(os.path.join(data_folder, f"{date_filter}_Station{station_id}_Traces*")))
-
-        SNR_list = [np.load(f, allow_pickle=True) for f in SNR_files]
-        Chi2016_list = [np.load(f, allow_pickle=True) for f in Chi2016_files]
-        ChiRCR_list = [np.load(f, allow_pickle=True) for f in ChiRCR_files]
-        Times_list = [np.load(f, allow_pickle=True) for f in Times_files]
-        Traces_list = [np.load(f, allow_pickle=True) for f in Traces_files]
-
-        SNRs = np.concatenate(SNR_list, axis=0).squeeze()
-        Chi2016 = np.concatenate(Chi2016_list, axis=0).squeeze()
-        ChiRCR = np.concatenate(ChiRCR_list, axis=0).squeeze()
-        Times = np.concatenate(Times_list, axis=0).squeeze()
-        Traces = np.concatenate(Traces_list, axis=0).squeeze()
-
-        return {'SNR': SNRs, 'Chi2016': Chi2016, 'ChiRCR': ChiRCR, 'Times': Times, 'Traces': Traces}
-    
 
 
 def load_coincidence_pkl(master_id, argument, station_id,

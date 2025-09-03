@@ -289,7 +289,7 @@ def main(enable_sim_bl_814):
 
     timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
     print(f"Starting CNN training at {timestamp} for {amp} amplifier.")
-
+    
     # Data load & prep
     data = load_and_prep_data_for_training(config)
     training_rcr = data['training_rcr']

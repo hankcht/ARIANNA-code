@@ -237,6 +237,9 @@ if __name__ == "__main__":
         prob_coincidence = model.predict(all_coincidence_events_transpose)
 
         coinc_rcr = all_coincidence_events[1297]
+        from A0_Utilities import pT
+        pT(coinc_rcr, 'test plot coinc', '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/93_plot_coinc_rcr.png')
+
         coinc_rcr_transpose = coinc_rcr.squeeze(-1).transpose(1, 0)
         prob_coincidence_rcr = model.predict(np.expand_dims(coinc_rcr_transpose, axis=0))
     else:

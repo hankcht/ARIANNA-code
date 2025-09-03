@@ -237,7 +237,7 @@ if __name__ == "__main__":
         prob_coincidence = model.predict(all_coincidence_events_transpose)
 
         coinc_rcr = all_coincidence_events[1297]
-        coinc_rcr_transpose = coinc_rcr.squeeze(-1).transpose(0, 2, 1)
+        coinc_rcr_transpose = coinc_rcr.squeeze(-1).transpose(1, 0)
         prob_coincidence_rcr = model.predict(np.expand_dims(coinc_rcr_transpose, axis=0))
     else:
         prob_backlobe = model.predict(all_2016_backlobes)

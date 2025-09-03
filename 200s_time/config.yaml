@@ -41,7 +41,7 @@ base_model_path: "/pub/tangch3/ARIANNA/DeepLearning/refactor/models/"
 base_plot_path: "/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/"
 
 # Training
-prefix : "CNN"
+prefix : "1D_CNN"
 train_cut: 800
 early_stopping_patience: 5
 keras_epochs: 100

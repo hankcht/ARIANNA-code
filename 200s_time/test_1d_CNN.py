@@ -84,6 +84,7 @@ print(f"Starting CNN training at {timestamp} for {amp} amplifier.")
 
 sim_rcr_all = data['sim_rcr_all']
 data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
+prefix = config['prefix']
 
 sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
 data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)

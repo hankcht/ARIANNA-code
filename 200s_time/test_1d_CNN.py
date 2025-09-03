@@ -19,7 +19,7 @@ amp = config['amp']
 
 
 
-from refactor_train_and_run import load_and_prep_data_for_training, evaluate_model_performance, plot_network_output_histogram
+from refactor_train_and_run import load_and_prep_data_for_training, evaluate_model_performance, plot_network_output_histogram, save_and_plot_training_history
 data = load_and_prep_data_for_training(config)
 training_rcr = data['sim_rcr_all']
 training_backlobe = data['data_backlobe_traces2016']
@@ -87,6 +87,8 @@ data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
 
 sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
 data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
+
+save_and_plot_training_history(history, config['base_model_path'], config['base_plot_path'], timestamp, amp, config)
 
 prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \
     evaluate_model_performance(model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)

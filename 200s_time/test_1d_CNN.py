@@ -88,6 +88,9 @@ data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
 sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
 data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
 
+model_save_path = os.path.join(config['base_model_path'], config['model_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
+model.save(model_save_path)
+print(f'Model saved to: {model_save_path}')
 save_and_plot_training_history(history, config['base_model_path'], config['base_plot_path'], timestamp, amp, config)
 
 prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \

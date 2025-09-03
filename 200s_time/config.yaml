@@ -42,7 +42,7 @@ base_plot_path: "/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/"
 
 # Training
 prefix : "1D_CNN"
-train_cut: 800
+train_cut: 8000
 early_stopping_patience: 5
 keras_epochs: 100
 keras_batch_size: 64

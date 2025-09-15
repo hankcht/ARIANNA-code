@@ -1,7 +1,7 @@
 # config.yaml
 
 # --- General Parameters ---
-amp: "200s"
+amp: "100s"
 station_ids_200s: [14, 17, 19, 30]
 station_ids_100s: [13, 15, 18]
 

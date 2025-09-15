@@ -61,7 +61,7 @@ model.add(Dense(1, activation="sigmoid"))
 
 # Compile
 model.compile(
-     optimizer=Adam(learning_rate=1e-3),
+     optimizer='Adam',
      loss="binary_crossentropy",
      metrics=["accuracy"]
 )
@@ -72,8 +72,8 @@ model.summary()
 history = model.fit(
      x, y,
      validation_split=0.2,
-     epochs=30,
-     batch_size=64
+     epochs=config['keras_epochs'],
+     batch_size=config['keras_batch_size']
 )
 
 timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')

@@ -319,11 +319,11 @@ def main(enable_sim_bl_814):
     plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency, config, timestamp)
 
     # Plotting individual traces if needed 
-    # indices = np.where(prob_backlobe.flatten() > config['output_cut_value'])[0]
-    # for index in indices:
-    #     plot_traces_save_path = os.path.join(config['base_plot_path'], 'traces', f'{timestamp}_plot_pot_rcr_{amp}_{index}.png')
-    #     pT(data['data_backlobe_tracesRCR'][index], f'Backlobe Trace {index} (Output > {config["output_cut_value"]:.2f})', plot_traces_save_path)
-    #     print(f"Saved trace plot for Backlobe event {index} to {plot_traces_save_path}")
+    indices = np.where(prob_backlobe.flatten() > config['output_cut_value'])[0]
+    for index in indices:
+        plot_traces_save_path = os.path.join(config['base_plot_path'], 'traces', f'{timestamp}_plot_pot_rcr_{amp}_{index}.png')
+        pT(data['data_backlobe_tracesRCR'][index], f'Backlobe Trace {index} (Output > {config["output_cut_value"]:.2f})', plot_traces_save_path)
+        print(f"Saved trace plot for Backlobe event {index} to {plot_traces_save_path}")
 
     print("Script finished successfully.")
 

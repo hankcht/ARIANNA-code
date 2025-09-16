@@ -324,7 +324,7 @@ def main(enable_sim_bl_814):
         plot_traces_save_path = os.path.join(config['base_plot_path'], 'traces', f'{timestamp}_plot_pot_rcr_{amp}_{index}.png')
         pT(data['data_backlobe_tracesRCR'][index], f'Backlobe Trace {index} (Output > {config["output_cut_value"]:.2f})', plot_traces_save_path)
         print(f"Saved trace plot for Backlobe event {index} to {plot_traces_save_path}")
-
+         
     print("Script finished successfully.")
 
 if __name__ == "__main__":

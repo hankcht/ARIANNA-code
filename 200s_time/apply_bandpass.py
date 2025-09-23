@@ -6,27 +6,27 @@ import matplotlib.pyplot as plt
 from NuRadioReco.utilities import units
 from scipy import signal
 
-def apply_butterworth(spectrum, frequencies, passband, sampling_frequency, order=8):
-    """
-    Apply a digital Butterworth bandpass filter to a Fourier spectrum.
+# def apply_butterworth(spectrum, frequencies, passband, sampling_frequency, order=8):
+#     """
+#     Apply a digital Butterworth bandpass filter to a Fourier spectrum.
     
-    Parameters:
-    - spectrum: The frequency spectrum (Fourier transform) of the signal to be filtered.
-    - frequencies: Array of frequency values corresponding to the input spectrum.
-    - passband: Tuple (low_freq, high_freq) defining the passband range to retain.
-    - sampling_frequency: The sampling rate of the original signal.
-    - order: The order of the Butterworth filter (default is 8).
+#     Parameters:
+#     - spectrum: The frequency spectrum (Fourier transform) of the signal to be filtered.
+#     - frequencies: Array of frequency values corresponding to the input spectrum.
+#     - passband: Tuple (low_freq, high_freq) defining the passband range to retain.
+#     - sampling_frequency: The sampling rate of the original signal.
+#     - order: The order of the Butterworth filter (default is 8).
     
-    Returns:
-    - The filtered frequency spectrum after applying the Butterworth bandpass filter.
-    """
-    nyquist = sampling_frequency / 2 # Calculate Nyquist frequency
-    norm_passband = [passband[0] / nyquist, passband[1] / nyquist]  # Normalize the passband frequencies by the Nyquist frequency
-    b, a = signal.butter(order, norm_passband, btype="bandpass", analog=False) # bandpass filter
-    w, h = signal.freqz(b, a, worN=len(frequencies), fs=sampling_frequency) # Calculate the frequency response of the filter
-    return spectrum * h
+#     Returns:
+#     - The filtered frequency spectrum after applying the Butterworth bandpass filter.
+#     """
+#     nyquist = sampling_frequency / 2 # Calculate Nyquist frequency
+#     norm_passband = [passband[0] / nyquist, passband[1] / nyquist]  # Normalize the passband frequencies by the Nyquist frequency
+#     b, a = signal.butter(order, norm_passband, btype="bandpass", analog=False) # bandpass filter
+#     w, h = signal.freqz(b, a, worN=len(frequencies), fs=sampling_frequency) # Calculate the frequency response of the filter
+#     return spectrum * h
 
-def butterworth_filter_trace(trace, fs, passband, order=4):
+def filter_trace(trace, fs, passband, order=4):
     """
     Filters a time-domain trace with a digital Butterworth filter.
     """
@@ -72,14 +72,14 @@ if __name__ == '__main__':
         for event_data_2016 in traces2016:
             filtered_event_2016 = []
             for trace_ch in event_data_2016:
-                filtered_event_2016.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
+                filtered_event_2016.append(filter_trace(trace_ch, sampling_rate_hz, passband, order))
             filtered_traces_2016.append(filtered_event_2016)
 
         filtered_traces_rcr = []
         for event_data_rcr in tracesRCR:
             filtered_event_rcr = []
             for trace_ch in event_data_rcr:
-                filtered_event_rcr.append(butterworth_filter_trace(trace_ch, sampling_rate_hz, passband, order))
+                filtered_event_rcr.append(filter_trace(trace_ch, sampling_rate_hz, passband, order))
             filtered_traces_rcr.append(filtered_event_rcr)
 
         filtered_traces_2016 = np.array(filtered_traces_2016)

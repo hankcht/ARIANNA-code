@@ -59,6 +59,6 @@ histogram_filename_template: "{timestamp}_{amp}_{prefix}_histogram.png"
 
 # DANN specific
 if_dann: False # currently used in checks.py to load dann model
-if_1D: True # currently used in checks.py to evaluate transposed events
+if_1D: False # currently used in checks.py to evaluate transposed events
 lambda_adversary: 0.001
 input_shape: [4, 256, 1]

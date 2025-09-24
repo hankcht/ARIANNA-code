@@ -308,6 +308,8 @@ def main(enable_sim_bl_814):
     if enable_sim_bl_814:
         print("Overriding backlobe with sim_bl_814 data (for 200s only).")
         training_backlobe = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedBacklobe/8.14.25/200s/all_traces_200s_part0_11239events.npy')
+    print(f'training_rcr shape is {training_rcr.shape}')
+    print(f'training_backlobe shape is {training_backlobe.shape}')
 
     # Concatenate evaluation data
     sim_rcr_all = np.vstack([data_100s['sim_rcr_all'], data_200s['sim_rcr_all']])

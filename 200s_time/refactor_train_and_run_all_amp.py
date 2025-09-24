@@ -286,32 +286,39 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
 
 
 def main(enable_sim_bl_814):
-    
     config = load_config()
-    amp = config['amp']
     prefix = config['prefix']
 
-    # Ensure all paths inside 'refactor' folder
-    config['network_output_plot_path'] = os.path.join(config['base_plot_path'], 'Network_Output')
+    # Overwrite amp here for clarity
+    config_100s = config.copy()
+    config_100s['amp'] = '100s'
+    config_200s = config.copy()
+    config_200s['amp'] = '200s'
 
     timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
-    print(f"Starting CNN training at {timestamp} for {amp} amplifier.")
-    
-    # Data load & prep
-    data = load_and_prep_data_for_training(config)
-    training_rcr = data['training_rcr']
-    training_backlobe = data['training_backlobe']
+    print(f"Starting CNN training at {timestamp} for all amps")
+
+    # Load both amps
+    data_100s = load_and_prep_data_for_training(config_100s)
+    data_200s = load_and_prep_data_for_training(config_200s)
+
+    # Concatenate training data
+    training_rcr = np.vstack([data_100s['training_rcr'], data_200s['training_rcr']])
+    training_backlobe = np.vstack([data_100s['training_backlobe'], data_200s['training_backlobe']])
     if enable_sim_bl_814:
+        print("Overriding backlobe with sim_bl_814 data (for 200s only).")
         training_backlobe = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedBacklobe/8.14.25/200s/all_traces_200s_part0_11239events.npy')
 
-    sim_rcr_all = data['sim_rcr_all']
-    data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
-    
+    # Concatenate evaluation data
+    sim_rcr_all = np.vstack([data_100s['sim_rcr_all'], data_200s['sim_rcr_all']])
+    data_backlobe_traces_rcr_all = np.vstack([data_100s['data_backlobe_tracesRCR'], data_200s['data_backlobe_tracesRCR']])
+
     # Train model
     model, history = train_cnn_model(training_rcr, training_backlobe, config)
     print('------> Training is Done!')
 
     # Save model
+    amp = 'all_amps' 
     model_save_path = os.path.join(config['base_model_path'], config['model_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
     model.save(model_save_path)
     print(f'Model saved to: {model_save_path}')
@@ -319,7 +326,7 @@ def main(enable_sim_bl_814):
     # Save training history & plots
     save_and_plot_training_history(history, config['base_model_path'], config['base_plot_path'], timestamp, amp, config)
 
-    # Evaluate & plot network output histogram ON RCR-like TRACES!
+    # Evaluate model
     prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \
         evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all, config['output_cut_value'], config)
 

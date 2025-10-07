@@ -332,7 +332,7 @@ def main(enable_sim_bl_814):
     #     pT(data['data_backlobe_tracesRCR'][index], f'Backlobe Trace {index} (Output > {config["output_cut_value"]:.2f})', plot_traces_save_path)
     #     print(f"Saved trace plot for Backlobe event {index} to {plot_traces_save_path}")
          
-    print("Script finished successfully.")
+    print(f"Script finished successfully. Completion for {prefix} ")
 
 if __name__ == "__main__":
     main(enable_sim_bl_814=False)

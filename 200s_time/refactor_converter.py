@@ -110,7 +110,7 @@ def load_station_parameter(parameter_name, date_str, station_id, date_cuts,
         return np.array([])
 
 
-def example_usage():
+def example_usage(station_id):
     """
     Example showing how to use the parameter loader with specific directory paths.
     """
@@ -120,7 +120,7 @@ def example_usage():
     # Fixed paths and dates as specified
     date = '9.1.25'           # Data date
     date_cuts = '9.18.25'     # Cuts date
-    station_id = 18           # CHANGE THIS to desired station (13, 14, 15, 17, 18, 19, 30)
+    station_id = station_id         # CHANGE THIS to desired station (13, 14, 15, 17, 18, 19, 30)
     
     # Specific directory paths as provided
     data_root = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/'
@@ -167,7 +167,8 @@ def example_usage():
 
 if __name__ == '__main__':
     # Run the example
-    traces, times, parameter_dict = example_usage()
+    station_id = 18
+    traces, times, parameter_dict = example_usage(station_id)
     
     # Simple analysis example
     if len(traces) > 0 and len(times) > 0:
@@ -177,8 +178,31 @@ if __name__ == '__main__':
             print(f"Trace dimensions: {traces.shape}")
             print(f"Average trace length: {traces.shape[1] if traces.ndim == 3 else 'Variable'}")
 
-    from A0_Utilities import pT    
-    for i in [1,10,15,30]:
-        pT(traces[i], "test plot trace after 9.18.25 noise cut", f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/10.7.25_plot_9.18.25_noise_cut_trace{i}.png")
+    # from A0_Utilities import pT    
+    # for i in [1,10,15,30]:
+    #     pT(traces[i], "test plot trace after 9.18.25 noise cut", f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/10.7.25_plot_9.18.25_noise_cut_trace{i}.png")
 
-    
+    import matplotlib.pyplot as plt
+    import matplotlib
+    plot_folder = f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/"
+    chi_types = ['Chi2016', 'ChiRCR']
+    SNRbins = np.logspace(0.477, 2, num=80)
+    maxCorrBins = np.arange(0, 1.0001, 0.01)
+
+    for param in chi_types:
+        plt.hist2d(parameter_dict['SNR'], parameter_dict[param], bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+        plt.colorbar()
+        plt.xlim((3, 100))
+        plt.ylim((0, 1))
+        plt.xlabel('SNR')
+        plt.ylabel('Avg Chi Highest Parallel Channels')
+        # plt.legend()
+        plt.xscale('log')
+        plt.tick_params(axis='x', which='minor', bottom=True)
+        plt.grid(visible=True, which='both', axis='both') 
+        plt.title(f'Station {station_id}')
+        print(f'Saving {plot_folder}/10.7.25_All_stn{station_id}.png')
+        plt.savefig(f'{plot_folder}/10.7.25_All_stn{station_id}.png')
+        plt.clf()
+
+        

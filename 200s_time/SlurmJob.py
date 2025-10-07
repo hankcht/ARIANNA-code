@@ -78,12 +78,14 @@ if __name__ == "__main__":
     # multi_run = True
     # main(multi_run=multi_run)
 
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_cconverter.py'
+    RunMultipleJobs(cmd, jobName='converter')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run.py' 
     # RunMultipleJobs(cmd, jobName='train_and_run') # check if the above curve is filtered!
-    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run_all_amp.py' 
-    RunMultipleJobs(cmd, jobName='train_and_run') # check if the above curve is filtered!
-    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py'
-    RunMultipleJobs(cmd, jobName='checks')
+    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run_all_amp.py' 
+    # RunMultipleJobs(cmd, jobName='train_and_run') # check if the above curve is filtered!
+    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py'
+    # RunMultipleJobs(cmd, jobName='checks')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/test_1d_CNN.py'
     # RunMultipleJobs(cmd, jobName='train_and_run')
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/PCA.py'

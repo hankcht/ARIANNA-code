@@ -163,7 +163,7 @@ def load_all_coincidence_traces(pkl_path, trace_key):
     return coinc_dict, all_Traces, metadata
 
 
-def plot_histogram(prob_2016, prob_coincidence, rob_coincidence_rcr, amp, timestamp, prefix):
+def plot_histogram(prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp, prefix):
     
     plt.figure(figsize=(8, 6))
     bins = 20
@@ -228,9 +228,11 @@ if __name__ == "__main__":
         print(f'changed to shape {all_coincidence_events.shape}')
 
     if config['if_dann']:
+        print('DANN Evaluation')
         prob_backlobe, _ = model.predict(all_2016_backlobes)
         prob_coincidence, _ = model.predict(all_coincidence_events)
     elif config['if_1D']:
+        print('1D CNN Evaluation')
         all_2016_backlobes_transpose = all_2016_backlobes.squeeze(-1).transpose(0, 2, 1)
         all_coincidence_events_transpose = all_coincidence_events.squeeze(-1).transpose(0, 2, 1)
         prob_backlobe = model.predict(all_2016_backlobes_transpose)
@@ -243,10 +245,12 @@ if __name__ == "__main__":
         coinc_rcr_transpose = coinc_rcr.squeeze(-1).transpose(1, 0)
         prob_coincidence_rcr = model.predict(np.expand_dims(coinc_rcr_transpose, axis=0))
     else:
+        print('2D CNN Evaluation')
         prob_backlobe = model.predict(all_2016_backlobes)
         prob_coincidence = model.predict(all_coincidence_events)
 
         prob_coincidence_rcr = model.predict(np.expand_dims(all_coincidence_events[1297], axis=0))
+        print(f'coincidence RCR network output: {prob_coincidence_rcr}')
 
     prob_backlobe = prob_backlobe.flatten()
     prob_coincidence = prob_coincidence.flatten()

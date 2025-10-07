@@ -175,14 +175,10 @@ if __name__ == '__main__':
         print(f"Total events loaded: {len(times)}")
         if traces.ndim > 1:
             print(f"Trace dimensions: {traces.shape}")
-            print(f"Average trace length: {traces.shape[1] if traces.ndim == 2 else 'Variable'}")
-        
-        # Example: Find events within a specific time range
-        import datetime
-        example_start = datetime.datetime(2017, 1, 1).timestamp()
-        example_end = datetime.datetime(2018, 1, 1).timestamp()
-        time_mask = (times >= example_start) & (times <= example_end)
-        events_in_range = np.sum(time_mask)
-        print(f"Events in 2017: {events_in_range}")
+            print(f"Average trace length: {traces.shape[1] if traces.ndim == 3 else 'Variable'}")
+
+    from A0_Utilities import pT    
+    for i in [1,10,15,30]:
+        pT(traces[i], "test plot trace after 9.18.25 noise cut", f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/10.7.25_plot_9.18.25_noise_cut_trace{i}.png")
 
     

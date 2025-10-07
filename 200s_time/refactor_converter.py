@@ -15,7 +15,7 @@ MODIFY the file path templates in load_station_parameter() if your structure dif
 import numpy as np
 import os
 import re
-from HRAStationDataAnalysis.C_utils import load_station_events
+from C_utils import load_station_events
 
 
 def build_cuts_path_custom(date_cuts, date_str, station_id, cuts_root):

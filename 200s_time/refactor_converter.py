@@ -201,8 +201,8 @@ if __name__ == '__main__':
         plt.tick_params(axis='x', which='minor', bottom=True)
         plt.grid(visible=True, which='both', axis='both') 
         plt.title(f'Station {station_id}')
-        print(f'Saving {plot_folder}/10.7.25_All_stn{station_id}.png')
-        plt.savefig(f'{plot_folder}/10.7.25_All_stn{station_id}.png')
+        print(f'Saving {plot_folder}10.7.25_All_stn{station_id}_{param}.png')
+        plt.savefig(f'{plot_folder}10.7.25_All_stn{station_id}_{param}.png')
         plt.clf()
 
         

@@ -41,7 +41,8 @@ base_model_path: "/pub/tangch3/ARIANNA/DeepLearning/refactor/models/"
 base_plot_path: "/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/"
 
 # Training
-prefix : "1D_CNN"
+if_1D: False # currently used in checks.py to evaluate transposed events
+prefix : "2D_CNN"
 train_cut: 8000
 early_stopping_patience: 5
 keras_epochs: 100
@@ -59,6 +60,5 @@ histogram_filename_template: "{timestamp}_{amp}_{prefix}_histogram.png"
 
 # DANN specific
 if_dann: False # currently used in checks.py to load dann model
-if_1D: False # currently used in checks.py to evaluate transposed events
 lambda_adversary: 0.001
 input_shape: [4, 256, 1]

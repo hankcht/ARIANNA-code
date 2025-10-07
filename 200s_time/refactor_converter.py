@@ -165,44 +165,40 @@ def example_usage(station_id):
     return traces_array, times_array, parameter_dict
 
 
+
 if __name__ == '__main__':
-    # Run the example
-    station_id = 18
-    traces, times, parameter_dict = example_usage(station_id)
     
-    # Simple analysis example
-    if len(traces) > 0 and len(times) > 0:
-        print(f"\n=== Simple Analysis ===")
-        print(f"Total events loaded: {len(times)}")
-        if traces.ndim > 1:
-            print(f"Trace dimensions: {traces.shape}")
-            print(f"Average trace length: {traces.shape[1] if traces.ndim == 3 else 'Variable'}")
+    station_ids = [13,15,18,14,17,19,30]
 
-    # from A0_Utilities import pT    
-    # for i in [1,10,15,30]:
-    #     pT(traces[i], "test plot trace after 9.18.25 noise cut", f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/10.7.25_plot_9.18.25_noise_cut_trace{i}.png")
 
-    import matplotlib.pyplot as plt
-    import matplotlib
-    plot_folder = f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/"
-    chi_types = ['Chi2016', 'ChiRCR']
-    SNRbins = np.logspace(0.477, 2, num=80)
-    maxCorrBins = np.arange(0, 1.0001, 0.01)
+    for station_id in station_ids:
+        traces, times, parameter_dict = example_usage(station_id)
 
-    for param in chi_types:
-        plt.hist2d(parameter_dict['SNR'], parameter_dict[param], bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
-        plt.colorbar()
-        plt.xlim((3, 100))
-        plt.ylim((0, 1))
-        plt.xlabel('SNR')
-        plt.ylabel('Avg Chi Highest Parallel Channels')
-        # plt.legend()
-        plt.xscale('log')
-        plt.tick_params(axis='x', which='minor', bottom=True)
-        plt.grid(visible=True, which='both', axis='both') 
-        plt.title(f'Station {station_id}')
-        print(f'Saving {plot_folder}10.7.25_All_stn{station_id}_{param}.png')
-        plt.savefig(f'{plot_folder}10.7.25_All_stn{station_id}_{param}.png')
-        plt.clf()
+        # from A0_Utilities import pT    
+        # for i in [1,10,15,30]:
+        #     pT(traces[i], "test plot trace after 9.18.25 noise cut", f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/10.7.25_plot_9.18.25_noise_cut_trace{i}.png")
+
+        import matplotlib.pyplot as plt
+        import matplotlib
+        plot_folder = f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/"
+        chi_types = ['Chi2016', 'ChiRCR']
+        SNRbins = np.logspace(0.477, 2, num=80)
+        maxCorrBins = np.arange(0, 1.0001, 0.01)
+
+        for param in chi_types:
+            plt.hist2d(parameter_dict['SNR'], parameter_dict[param], bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+            plt.colorbar()
+            plt.xlim((3, 100))
+            plt.ylim((0, 1))
+            plt.xlabel('SNR')
+            plt.ylabel('Avg Chi Highest Parallel Channels')
+            # plt.legend()
+            plt.xscale('log')
+            plt.tick_params(axis='x', which='minor', bottom=True)
+            plt.grid(visible=True, which='both', axis='both') 
+            plt.title(f'Station {station_id}')
+            print(f'Saving {plot_folder}10.7.25_All_stn{station_id}_{param}.png')
+            plt.savefig(f'{plot_folder}10.7.25_All_stn{station_id}_{param}.png')
+            plt.clf()
 
         

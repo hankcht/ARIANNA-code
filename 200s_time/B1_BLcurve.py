@@ -494,7 +494,12 @@ if __name__ == "__main__":
     # All_UNIX = np.load(f'{data_directory}/station{station_id}_all_Times.npy')
     # All_SNRs = np.load(f'{data_directory}/station{station_id}_all_SNR.npy')
     data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
-    data = load_520_data(station_id, '', data_folder, single_load=False)
+    #######
+    # data = load_520_data(station_id, '', data_folder, single_load=False)
+    import pickle
+    with open(f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_data/10.17.25/all_data_stn{station_id}.pkl', 'rb') as f:
+        data = pickle.load(f)
+    #########
     All_SNRs = data['SNR']
     All_Traces = data['Traces']
     All_UNIX = data['Times']
@@ -533,9 +538,9 @@ if __name__ == "__main__":
             plt.close()
             return
 
-        # plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
+        plot_new_chi_data(param, All_SNRs, All_Chi, SNRbins, maxCorrBins, station_id, plot_output_folder, extraname="withCurve_", if_sim=f'') # _withSim{len(sim_Chi2016)}
         
-        saveabovecurve_info(All_Traces, All_UNIX, param)
+        # saveabovecurve_info(All_Traces, All_UNIX, param)
 
 
 

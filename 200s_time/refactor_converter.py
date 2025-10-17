@@ -175,10 +175,10 @@ if __name__ == '__main__':
         traces, times, parameter_dict = example_usage(station_id)
 
         import pickle
-        with open('/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_data/10.17.25/all_data.pkl', 'wb') as f:
+        with open(f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_data/10.17.25/all_data_stn{station_id}.pkl', 'wb') as f:
             pickle.dump(parameter_dict, f)
 
-        with open('/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_data/10.17.25/all_data.pkl', 'rb') as f:
+        with open(f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_data/10.17.25/all_data_stn{station_id}.pkl', 'rb') as f:
             loaded_dict = pickle.load(f)
 
         # from A0_Utilities import pT    

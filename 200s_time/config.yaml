@@ -37,8 +37,10 @@ all_station_data: "/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_d
 
 
 # --- Neural Net Training Inputs & Outputs
-base_model_path: "/pub/tangch3/ARIANNA/DeepLearning/refactor/models/"
-base_plot_path: "/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/"
+# base_model_path: "/pub/tangch3/ARIANNA/DeepLearning/refactor/models/"
+# base_plot_path: "/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/"
+base_model_path: "/dfs8/sbarwick_lab/ariannaproject/tangch3/models/"
+base_plot_path: "/dfs8/sbarwick_lab/ariannaproject/tangch3/plots/"
 
 # Training
 if_1D: False # currently used in checks.py to evaluate transposed events

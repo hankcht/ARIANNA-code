@@ -483,7 +483,7 @@ if __name__ == "__main__":
 
     # --- load data ---
     # data_directory = f'/pub/tangch3/ARIANNA/DeepLearning/new_chi_data/4.4.25/Station{station_id}'
-    plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/snr_chi/1000evt_8.25.25'
+    plot_output_folder = '/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/snr_chi/10.17.25'
     os.makedirs(plot_output_folder, exist_ok=True)  
 
     parameters = ['ChiRCR', 'Chi2016'] # to plot both Chi2016 and ChiRCR  
@@ -495,10 +495,10 @@ if __name__ == "__main__":
     # All_SNRs = np.load(f'{data_directory}/station{station_id}_all_SNR.npy')
     data_folder = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/5.20.25/'
     #######
-    data = load_520_data(station_id, '', data_folder, single_load=False)
-    # import pickle
-    # with open(f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_data/10.17.25/all_data_stn{station_id}.pkl', 'rb') as f:
-    #     data = pickle.load(f)
+    # data = load_520_data(station_id, '', data_folder, single_load=False)
+    import pickle
+    with open(f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_data/10.17.25/all_data_stn{station_id}.pkl', 'rb') as f:
+        data = pickle.load(f)
     #########
     All_SNRs = data['SNR']
     All_Traces = data['Traces']

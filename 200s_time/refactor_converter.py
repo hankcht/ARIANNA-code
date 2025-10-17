@@ -193,7 +193,8 @@ if __name__ == '__main__':
         maxCorrBins = np.arange(0, 1.0001, 0.01)
 
         for param in chi_types:
-            plt.hist2d(loaded_dict['SNR'], loaded_dict[param], bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+            snr = loaded_dict['SNR']
+            plt.hist2d(snr, loaded_dict[param], bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
             plt.colorbar()
             plt.xlim((3, 100))
             plt.ylim((0, 1))
@@ -203,7 +204,7 @@ if __name__ == '__main__':
             plt.xscale('log')
             plt.tick_params(axis='x', which='minor', bottom=True)
             plt.grid(visible=True, which='both', axis='both') 
-            plt.title(f'Station {station_id} {len(loaded_dict['SNR'])} events')
+            plt.title(f'Station {station_id} {len(snr)} events')
             print(f'Saving {plot_folder}10.7.25_All_stn{station_id}_{param}.png')
             plt.savefig(f'{plot_folder}10.7.25_All_stn{station_id}_{param}.png')
             plt.clf()

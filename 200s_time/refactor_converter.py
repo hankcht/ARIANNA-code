@@ -170,9 +170,19 @@ if __name__ == '__main__':
     
     station_ids = [13,15,18,14,17,19,30]
 
-    # Track total events across all stations
+    # Track total events across all stations for both chi types
     total_events_before = 0
-    total_events_after = 0
+    total_events_after_2016 = 0
+    total_events_after_rcr = 0
+
+    # Dictionary to store combined data across all stations
+    # Format matches refactor_train_and_run.py line 46
+    combined_backlobe_data = {
+        'snr2016': [], 'snrRCR': [], 
+        'chi2016': [], 'chiRCR': [], 
+        'traces2016': [], 'tracesRCR': [], 
+        'unix2016': [], 'unixRCR': []
+    }
 
     for station_id in station_ids:
         traces, times, parameter_dict = example_usage(station_id)
@@ -238,21 +248,24 @@ if __name__ == '__main__':
             print(f'  Events after cuts: {events_after}')
             print(f'  Events removed: {events_before - events_after} ({100*(events_before - events_after)/events_before:.1f}%)')
             
-            # Track total (only for ChiRCR to avoid double counting)
-            if param == 'ChiRCR':
-                total_events_after += events_after
+            # Track totals for each chi type
+            if param == 'Chi2016':
+                total_events_after_2016 += events_after
                 
-                # Save filtered dictionary with events that pass the cut
-                filtered_dict = {}
-                for key in loaded_dict.keys():
-                    filtered_dict[key] = loaded_dict[key][cut_mask]
+                # Append to combined dictionary with 2016 suffix
+                combined_backlobe_data['snr2016'].extend(snr_cut.tolist())
+                combined_backlobe_data['chi2016'].extend(chi_cut.tolist())
+                combined_backlobe_data['traces2016'].extend(loaded_dict['Traces'][cut_mask].tolist())
+                combined_backlobe_data['unix2016'].extend(loaded_dict['Times'][cut_mask].tolist())
                 
-                # Save to pickle file
-                cut_save_path = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/5000evt_10.17.25/above_curve_stn{station_id}.pkl'
-                os.makedirs(os.path.dirname(cut_save_path), exist_ok=True)
-                with open(cut_save_path, 'wb') as f:
-                    pickle.dump(filtered_dict, f)
-                print(f'Saved filtered events to {cut_save_path}')
+            elif param == 'ChiRCR':
+                total_events_after_rcr += events_after
+                
+                # Append to combined dictionary with RCR suffix
+                combined_backlobe_data['snrRCR'].extend(snr_cut.tolist())
+                combined_backlobe_data['chiRCR'].extend(chi_cut.tolist())
+                combined_backlobe_data['tracesRCR'].extend(loaded_dict['Traces'][cut_mask].tolist())
+                combined_backlobe_data['unixRCR'].extend(loaded_dict['Times'][cut_mask].tolist())
             
             # Create plot with cuts applied
             plt.hist2d(snr_cut, chi_cut, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
@@ -269,12 +282,27 @@ if __name__ == '__main__':
             plt.savefig(f'{plot_folder}10.17.25_Cut_stn{station_id}_{param}.png')
             plt.clf()
 
+    # Convert lists to numpy arrays in the combined dictionary
+    for key in combined_backlobe_data.keys():
+        combined_backlobe_data[key] = np.array(combined_backlobe_data[key])
+
+    # Save combined backlobe data across all stations
+    combined_save_path = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/5000evt_10.17.25/above_curve_combined.pkl'
+    os.makedirs(os.path.dirname(combined_save_path), exist_ok=True)
+    with open(combined_save_path, 'wb') as f:
+        pickle.dump(combined_backlobe_data, f)
+    print(f'\n{"="*60}')
+    print(f'Saved combined filtered events to {combined_save_path}')
+    print(f'Combined data format:')
+    for key, value in combined_backlobe_data.items():
+        print(f'  {key}: {len(value)} events')
+
     # Print total statistics
     print(f'\n{"="*60}')
     print(f'TOTAL ACROSS ALL STATIONS:')
     print(f'  Events before cuts: {total_events_before}')
-    print(f'  Events after cuts: {total_events_after}')
-    print(f'  Events removed: {total_events_before - total_events_after} ({100*(total_events_before - total_events_after)/total_events_before:.1f}%)')
+    print(f'  Events after Chi2016 cuts: {total_events_after_2016} ({100*total_events_after_2016/total_events_before:.1f}% retained)')
+    print(f'  Events after ChiRCR cuts: {total_events_after_rcr} ({100*total_events_after_rcr/total_events_before:.1f}% retained)')
     print(f'{"="*60}')
 
         

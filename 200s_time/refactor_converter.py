@@ -174,6 +174,13 @@ if __name__ == '__main__':
     for station_id in station_ids:
         traces, times, parameter_dict = example_usage(station_id)
 
+        import pickle
+        with open('/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_data/10.17.25', 'wb') as f:
+            pickle.dump(parameter_dict, f)
+
+        with open('/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_data/10.17.25', 'rb') as f:
+            loaded_dict = pickle.load(f)
+
         # from A0_Utilities import pT    
         # for i in [1,10,15,30]:
         #     pT(traces[i], "test plot trace after 9.18.25 noise cut", f"/pub/tangch3/ARIANNA/DeepLearning/refactor/other/10.7.25_plot_9.18.25_noise_cut_trace{i}.png")
@@ -186,7 +193,7 @@ if __name__ == '__main__':
         maxCorrBins = np.arange(0, 1.0001, 0.01)
 
         for param in chi_types:
-            plt.hist2d(parameter_dict['SNR'], parameter_dict[param], bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+            plt.hist2d(loaded_dict['SNR'], loaded_dict[param], bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
             plt.colorbar()
             plt.xlim((3, 100))
             plt.ylim((0, 1))
@@ -201,4 +208,5 @@ if __name__ == '__main__':
             plt.savefig(f'{plot_folder}10.7.25_All_stn{station_id}_{param}.png')
             plt.clf()
 
+        
         

@@ -1,5 +1,6 @@
 import os
 import pickle
+import argparse
 from datetime import datetime
 import numpy as np
 import matplotlib
@@ -86,13 +87,14 @@ def load_and_prep_data_for_training(config):
 
 
 # --- CNN Model ---
-def build_cnn_model(n_channels, n_samples):
+def build_cnn_model(n_channels, n_samples, learning_rate):
     """
     Builds and compiles the CNN model architecture.
 
     Args:
         n_channels (int): Number of input channels.
         n_samples (int): Number of samples per trace.
+        learning_rate (float): Learning rate for the Adam optimizer.
 
     Returns:
         keras.Model: The compiled Keras model.
@@ -103,13 +105,13 @@ def build_cnn_model(n_channels, n_samples):
     model.add(Dropout(0.5))
     model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
-    model.compile(optimizer='Adam',
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
     return model
 
 
-def train_cnn_model(training_rcr, training_backlobe, config):
+def train_cnn_model(training_rcr, training_backlobe, config, learning_rate):
     """
     Trains the CNN model.
 
@@ -117,6 +119,7 @@ def train_cnn_model(training_rcr, training_backlobe, config):
         training_rcr (np.ndarray): RCR training data.
         training_backlobe (np.ndarray): Backlobe training data.
         config (dict): Configuration dictionary.
+        learning_rate (float): Learning rate for the optimizer.
 
     Returns:
         tuple: (keras.Model, keras.callbacks.History) The trained model and training history.
@@ -135,7 +138,7 @@ def train_cnn_model(training_rcr, training_backlobe, config):
 
     callbacks_list = [keras.callbacks.EarlyStopping(monitor='val_loss', patience=config['early_stopping_patience'])]
 
-    model = build_cnn_model(n_channels, n_samples)
+    model = build_cnn_model(n_channels, n_samples, learning_rate)
     model.summary()
 
     history = model.fit(x, y,
@@ -148,7 +151,7 @@ def train_cnn_model(training_rcr, training_backlobe, config):
     return model, history
 
 
-def save_and_plot_training_history(history, model_path, plot_path, timestamp, amp, config):
+def save_and_plot_training_history(history, model_path, plot_path, timestamp, amp, config, learning_rate):
     """
     Saves the training history and plots loss and accuracy curves.
 
@@ -159,13 +162,15 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
         timestamp (str): Timestamp for filenames.
         amp (str): Amplifier type for plot filenames.
         config (dict): Configuration dictionary.
+        learning_rate (float): Learning rate used for training.
     """
     prefix = config['prefix']
+    lr_str = f"lr{learning_rate:.0e}".replace('-', '')
 
     os.makedirs(model_path, exist_ok=True)
     os.makedirs(plot_path, exist_ok=True)
 
-    history_file = os.path.join(model_path, config['history_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
+    history_file = os.path.join(model_path, f'{timestamp}_{amp}_history_{prefix}_{lr_str}.pkl')
     with open(history_file, 'wb') as f: 
         pickle.dump(history.history, f)
     print(f'Training history saved to: {history_file}')
@@ -176,9 +181,9 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     plt.plot(history.history['val_loss'], label='Validation Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title('Training vs Validation Loss')
+    plt.title(f'Training vs Validation Loss (LR={learning_rate:.0e})')
     plt.legend()
-    loss_plot_file = os.path.join(plot_path, 'loss', config['loss_plot_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
+    loss_plot_file = os.path.join(plot_path, 'loss', f'{timestamp}_{amp}_loss_{prefix}_{lr_str}.png')
     plt.savefig(loss_plot_file)
     plt.close()
     print(f'Loss plot saved to: {loss_plot_file}')
@@ -189,9 +194,9 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
-    plt.title('Training vs Validation Accuracy')
+    plt.title(f'Training vs Validation Accuracy (LR={learning_rate:.0e})')
     plt.legend()
-    accuracy_plot_file = os.path.join(plot_path, 'accuracy', config['accuracy_plot_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
+    accuracy_plot_file = os.path.join(plot_path, 'accuracy', f'{timestamp}_{amp}_accuracy_{prefix}_{lr_str}.png')
     plt.savefig(accuracy_plot_file)
     plt.close()
     print(f'Accuracy plot saved to: {accuracy_plot_file}')
@@ -230,7 +235,7 @@ def evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all,
 
 # --- Plotting Network Output Histogram ---
 def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
-                                  backlobe_efficiency, config, timestamp):
+                                  backlobe_efficiency, config, timestamp, learning_rate):
     """
     Plots the histogram of network outputs for RCR and Backlobe events.
 
@@ -241,11 +246,13 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
         backlobe_efficiency (float): Calculated Backlobe efficiency.
         config (dict): Configuration dictionary.
         timestamp (str): Timestamp for filename.
+        learning_rate (float): Learning rate used for training.
     """
     amp = config['amp']
     prefix = config['prefix']
     output_cut_value = config['output_cut_value']
     train_cut = config['train_cut']
+    lr_str = f"lr{learning_rate:.0e}".replace('-', '')
     plot_path = os.path.join(config['base_plot_path'], 'network_output')
     os.makedirs(plot_path, exist_ok=True)
 
@@ -258,7 +265,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     plt.xlabel('Network Output', fontsize=18)
     plt.ylabel('Number of Events', fontsize=18)
     plt.yscale('log')
-    plt.title(f'{amp}_time RCR-Backlobe network output', fontsize=14)
+    plt.title(f'{amp}_time RCR-Backlobe network output (LR={learning_rate:.0e})', fontsize=14)
     plt.xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0], fontsize=18)
     plt.yticks(fontsize=18)
 
@@ -274,12 +281,13 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     ax.text(0.25, 0.75, f'RCR efficiency: {rcr_efficiency:.2f}%', fontsize=12, transform=ax.transAxes)
     ax.text(0.25, 0.70, f'Backlobe efficiency: {backlobe_efficiency:.4f}%', fontsize=12, transform=ax.transAxes)
     ax.text(0.25, 0.65, f'TrainCut: {train_cut}', fontsize=12, transform=ax.transAxes)
+    ax.text(0.25, 0.60, f'LR: {learning_rate:.0e}', fontsize=12, transform=ax.transAxes)
     plt.axvline(x=output_cut_value, color='y', label='cut', linestyle='--')
     ax.annotate('BL', xy=(0.0, -0.1), xycoords='axes fraction', ha='left', va='center', fontsize=12, color='blue')
     ax.annotate('RCR', xy=(1.0, -0.1), xycoords='axes fraction', ha='right', va='center', fontsize=12, color='red')
     plt.subplots_adjust(left=0.15, right=0.85, bottom=0.15, top=0.9)
 
-    hist_file = os.path.join(plot_path, config['histogram_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
+    hist_file = os.path.join(plot_path, f'{timestamp}_{amp}_histogram_{prefix}_{lr_str}.png')
     print(f'saving {hist_file}')
     plt.savefig(hist_file)
     plt.close()
@@ -287,15 +295,29 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
 
 def main(enable_sim_bl_814):
     
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description='Train CNN model with specified learning rate.')
+    parser.add_argument('--learning_rate', type=float, required=True, 
+                        help='Learning rate for the Adam optimizer (e.g., 0.001, 0.0001)')
+    args = parser.parse_args()
+    
+    learning_rate = args.learning_rate
+    lr_str = f"lr{learning_rate:.0e}".replace('-', '')
+    
     config = load_config()
     amp = config['amp']
     prefix = config['prefix']
 
+    # Create learning rate specific directories
+    lr_folder = f'lr_{learning_rate:.0e}'.replace('-', '')
+    config['base_model_path'] = os.path.join(config['base_model_path'], lr_folder)
+    config['base_plot_path'] = os.path.join(config['base_plot_path'], lr_folder)
+    
     # Ensure all paths inside 'refactor' folder
     config['network_output_plot_path'] = os.path.join(config['base_plot_path'], 'Network_Output')
 
     timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
-    print(f"Starting CNN training at {timestamp} for {amp} amplifier.")
+    print(f"Starting CNN training at {timestamp} for {amp} amplifier with learning rate {learning_rate}.")
     
     # Data load & prep
     data = load_and_prep_data_for_training(config)
@@ -308,22 +330,22 @@ def main(enable_sim_bl_814):
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
     
     # Train model
-    model, history = train_cnn_model(training_rcr, training_backlobe, config)
+    model, history = train_cnn_model(training_rcr, training_backlobe, config, learning_rate)
     print('------> Training is Done!')
 
     # Save model
-    model_save_path = os.path.join(config['base_model_path'], config['model_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
+    model_save_path = os.path.join(config['base_model_path'], f'{timestamp}_{amp}_model_{prefix}_{lr_str}.h5')
     model.save(model_save_path)
     print(f'Model saved to: {model_save_path}')
 
     # Save training history & plots
-    save_and_plot_training_history(history, config['base_model_path'], config['base_plot_path'], timestamp, amp, config)
+    save_and_plot_training_history(history, config['base_model_path'], config['base_plot_path'], timestamp, amp, config, learning_rate)
 
     # Evaluate & plot network output histogram ON RCR-like TRACES!
     prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \
         evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all, config['output_cut_value'], config)
 
-    plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency, config, timestamp)
+    plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency, config, timestamp, learning_rate)
 
     # Plotting individual traces if needed 
     # indices = np.where(prob_backlobe.flatten() > config['output_cut_value'])[0]
@@ -332,7 +354,7 @@ def main(enable_sim_bl_814):
     #     pT(data['data_backlobe_tracesRCR'][index], f'Backlobe Trace {index} (Output > {config["output_cut_value"]:.2f})', plot_traces_save_path)
     #     print(f"Saved trace plot for Backlobe event {index} to {plot_traces_save_path}")
          
-    print(f"Script finished successfully. Completion for {prefix} ")
+    print(f"Script finished successfully. Completion for {prefix} with learning rate {learning_rate}")
 
 if __name__ == "__main__":
     main(enable_sim_bl_814=False)

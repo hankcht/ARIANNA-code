@@ -15,7 +15,7 @@ MODIFY the file path templates in load_station_parameter() if your structure dif
 import numpy as np
 import os
 import re
-from C_utils import load_station_events
+from C_utils import load_station_events, apply_chi_and_bin_cuts
 
 
 def build_cuts_path_custom(date_cuts, date_str, station_id, cuts_root):
@@ -170,6 +170,9 @@ if __name__ == '__main__':
     
     station_ids = [13,15,18,14,17,19,30]
 
+    # Track total events across all stations
+    total_events_before = 0
+    total_events_after = 0
 
     for station_id in station_ids:
         traces, times, parameter_dict = example_usage(station_id)
@@ -192,22 +195,75 @@ if __name__ == '__main__':
         SNRbins = np.logspace(0.477, 2, num=80)
         maxCorrBins = np.arange(0, 1.0001, 0.01)
 
+        # Count events before cuts for this station
+        events_before = len(loaded_dict['SNR'])
+        total_events_before += events_before
+
         for param in chi_types:
             snr = loaded_dict['SNR']
-            plt.hist2d(snr, loaded_dict[param], bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+            chi = loaded_dict[param]
+            
+            # Create original plot (before cuts)
+            plt.hist2d(snr, chi, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
             plt.colorbar()
             plt.xlim((3, 100))
             plt.ylim((0, 1))
             plt.xlabel('SNR')
             plt.ylabel('Avg Chi Highest Parallel Channels')
-            # plt.legend()
             plt.xscale('log')
             plt.tick_params(axis='x', which='minor', bottom=True)
             plt.grid(visible=True, which='both', axis='both') 
             plt.title(f'Station {station_id} {len(snr)} events')
-            print(f'Saving {plot_folder}10.7.25_All_stn{station_id}_{param}.png')
-            plt.savefig(f'{plot_folder}10.7.25_All_stn{station_id}_{param}.png')
+            print(f'Saving {plot_folder}10.17.25_All_stn{station_id}_{param}.png')
+            plt.savefig(f'{plot_folder}10.17.25_All_stn{station_id}_{param}.png')
             plt.clf()
+            
+            # Apply the two-fold cut for both chi types
+            cut_mask = apply_chi_and_bin_cuts(
+                snr_values=snr, 
+                chi_values=chi, 
+                chi_threshold=0.6, 
+                max_bin_count=75,
+                snr_bins=SNRbins,
+                chi_bins=maxCorrBins
+            )
+            
+            snr_cut = snr[cut_mask]
+            chi_cut = chi[cut_mask]
+            
+            # Count and report events after cuts
+            events_after = len(snr_cut)
+            print(f'\nStation {station_id} - {param}:')
+            print(f'  Events before cuts: {events_before}')
+            print(f'  Events after cuts: {events_after}')
+            print(f'  Events removed: {events_before - events_after} ({100*(events_before - events_after)/events_before:.1f}%)')
+            
+            # Track total (only for ChiRCR to avoid double counting)
+            if param == 'ChiRCR':
+                total_events_after += events_after
+            
+            # Create plot with cuts applied
+            plt.hist2d(snr_cut, chi_cut, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())
+            plt.colorbar()
+            plt.xlim((3, 100))
+            plt.ylim((0, 1))
+            plt.xlabel('SNR')
+            plt.ylabel('Avg Chi Highest Parallel Channels')
+            plt.xscale('log')
+            plt.tick_params(axis='x', which='minor', bottom=True)
+            plt.grid(visible=True, which='both', axis='both') 
+            plt.title(f'Station {station_id} {len(snr_cut)} events ({param}>0.6, max 75/bin)')
+            print(f'Saving {plot_folder}10.17.25_Cut_stn{station_id}_{param}.png')
+            plt.savefig(f'{plot_folder}10.17.25_Cut_stn{station_id}_{param}.png')
+            plt.clf()
+
+    # Print total statistics
+    print(f'\n{"="*60}')
+    print(f'TOTAL ACROSS ALL STATIONS:')
+    print(f'  Events before cuts: {total_events_before}')
+    print(f'  Events after cuts: {total_events_after}')
+    print(f'  Events removed: {total_events_before - total_events_after} ({100*(total_events_before - total_events_after)/total_events_before:.1f}%)')
+    print(f'{"="*60}')
 
         
         

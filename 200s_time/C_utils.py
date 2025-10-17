@@ -244,3 +244,55 @@ def timeInTimes(times_list):
         if np.any(np.abs(time - time_unix) <= 1):  # within 1 second
             return True
     return False
+
+
+def apply_chi_and_bin_cuts(snr_values, chi_values, chi_threshold=0.6, max_bin_count=75, 
+                           snr_bins=None, chi_bins=None):
+    """
+    Apply two-fold cuts on event data:
+    1. Chi value threshold cut (e.g., ChiRCR > 0.6)
+    2. Remove events from histogram bins with excessive counts
+    
+    Args:
+        snr_values (np.array): SNR values for all events
+        chi_values (np.array): Chi values (e.g., ChiRCR) for all events
+        chi_threshold (float): Minimum chi value to keep (default 0.6)
+        max_bin_count (int): Maximum number of events allowed per 2D histogram bin (default 75)
+        snr_bins (np.array): Bin edges for SNR axis (default: logspace from 10^0.477 to 10^2, 80 bins)
+        chi_bins (np.array): Bin edges for Chi axis (default: 0 to 1.0001 in steps of 0.01)
+    
+    Returns:
+        np.array: Boolean mask indicating which events pass both cuts (True = pass)
+    """
+    
+    # Default bin definitions matching the hist2d in refactor_converter.py
+    if snr_bins is None:
+        snr_bins = np.logspace(0.477, 2, num=80)
+    if chi_bins is None:
+        chi_bins = np.arange(0, 1.0001, 0.01)
+    
+    # Initialize mask - all events start as True
+    cut_mask = np.ones(len(snr_values), dtype=bool)
+    
+    # Apply chi threshold cut
+    chi_cut_mask = chi_values >= chi_threshold
+    cut_mask &= chi_cut_mask
+    
+    # Create 2D histogram to identify bins with high counts
+    hist, _, _ = np.histogram2d(snr_values, chi_values, bins=[snr_bins, chi_bins])
+    
+    # Find which bin each event belongs to
+    snr_bin_indices = np.digitize(snr_values, snr_bins) - 1
+    chi_bin_indices = np.digitize(chi_values, chi_bins) - 1
+    
+    # Clip indices to valid range (handles edge cases)
+    snr_bin_indices = np.clip(snr_bin_indices, 0, len(snr_bins) - 2)
+    chi_bin_indices = np.clip(chi_bin_indices, 0, len(chi_bins) - 2)
+    
+    # Apply bin count cut - reject events in bins exceeding max_bin_count
+    for i in range(len(snr_values)):
+        bin_count = hist[snr_bin_indices[i], chi_bin_indices[i]]
+        if bin_count > max_bin_count:
+            cut_mask[i] = False
+    
+    return cut_mask

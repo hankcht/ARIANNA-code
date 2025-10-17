@@ -277,5 +277,10 @@ if __name__ == '__main__':
     print(f'  Events removed: {total_events_before - total_events_after} ({100*(total_events_before - total_events_after)/total_events_before:.1f}%)')
     print(f'{"="*60}')
 
+    with open(f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_data/10.17.25/all_data_stn17.pkl', 'rb') as f:
+        loaded_dict = pickle.load(f)
+
+    print(loaded_dict['SNR'])
+
         
         

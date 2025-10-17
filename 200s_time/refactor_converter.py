@@ -248,7 +248,7 @@ if __name__ == '__main__':
                     filtered_dict[key] = loaded_dict[key][cut_mask]
                 
                 # Save to pickle file
-                cut_save_path = f'test/test.pkl'
+                cut_save_path = f'/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/above_curve_data/5000evt_10.17.25/above_curve.pkl'
                 os.makedirs(os.path.dirname(cut_save_path), exist_ok=True)
                 with open(cut_save_path, 'wb') as f:
                     pickle.dump(filtered_dict, f)

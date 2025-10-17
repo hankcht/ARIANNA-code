@@ -241,6 +241,18 @@ if __name__ == '__main__':
             # Track total (only for ChiRCR to avoid double counting)
             if param == 'ChiRCR':
                 total_events_after += events_after
+                
+                # Save filtered dictionary with events that pass the cut
+                filtered_dict = {}
+                for key in loaded_dict.keys():
+                    filtered_dict[key] = loaded_dict[key][cut_mask]
+                
+                # Save to pickle file
+                cut_save_path = f'test/test.pkl'
+                os.makedirs(os.path.dirname(cut_save_path), exist_ok=True)
+                with open(cut_save_path, 'wb') as f:
+                    pickle.dump(filtered_dict, f)
+                print(f'Saved filtered events to {cut_save_path}')
             
             # Create plot with cuts applied
             plt.hist2d(snr_cut, chi_cut, bins=[SNRbins, maxCorrBins], norm=matplotlib.colors.LogNorm())

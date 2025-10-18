@@ -305,10 +305,10 @@ if __name__ == '__main__':
     print(f'  Events after ChiRCR cuts: {total_events_after_rcr} ({100*total_events_after_rcr/total_events_before:.1f}% retained)')
     print(f'{"="*60}')
 
-    with open(f'/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/all_data/10.17.25/all_data_stn17.pkl', 'rb') as f:
+    with open(f'/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/5000evt_10.17.25/above_curve_combined.pkl', 'rb') as f:
         loaded_dict = pickle.load(f)
 
-    print(loaded_dict['SNR'])
+    # print(loaded_dict['SNR'])
 
         
         

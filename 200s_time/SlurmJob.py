@@ -83,8 +83,11 @@ if __name__ == "__main__":
 
     # Run refactored model with multiple learning rate settings
     learning_rates = [0.01, 0.001, 0.0001, 0.00001, 1e-6, 1e-7, 1e-8, 1e-9]
+    # for lr in learning_rates:
+    #     cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run.py --learning_rate {lr}'
+    #     RunMultipleJobs(cmd, jobName=f'train_and_run_lr_{lr}') # check if the above curve is filtered!
     for lr in learning_rates:
-        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run.py --learning_rate {lr}'
+        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/R01_1D_CNN_train_and_run.py --learning_rate {lr}'
         RunMultipleJobs(cmd, jobName=f'train_and_run_lr_{lr}') # check if the above curve is filtered!
 
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run_all_amp.py' 

@@ -16,3 +16,5 @@ code
 **/__pycache__/
 *Log.txt
 venv
+plots/*
+.vscode/settings.json

@@ -102,14 +102,14 @@ def build_cnn_model(n_channels, n_samples, learning_rate):
     model = Sequential()
     
     # Multi-scale idea approximated with stacked Conv1D layers
-    model.add(Conv1D(32, kernel_size=5, padding="same", activation="relu", input_shape=(n_samples, n_channels)))
-    model.add(Conv1D(32, kernel_size=15, padding="same", activation="relu"))
-    model.add(Conv1D(32, kernel_size=31, padding="same", activation="relu"))
+    model.add(Conv1D(32, kernel_size=5, padding="valid", activation="relu", input_shape=(n_samples, n_channels)))
+    model.add(Conv1D(32, kernel_size=15, padding="valid", activation="relu"))
+    model.add(Conv1D(32, kernel_size=31, padding="valid", activation="relu"))
     model.add(BatchNormalization())
     model.add(ReLU())
     
     # Downstream feature extractor
-    model.add(Conv1D(64, kernel_size=7, padding="same", activation="relu"))
+    model.add(Conv1D(64, kernel_size=7, padding="valid", activation="relu"))
     
     # Collapse across time
     model.add(GlobalAveragePooling1D())

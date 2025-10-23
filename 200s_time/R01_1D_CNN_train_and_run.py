@@ -517,8 +517,6 @@ def main(enable_sim_bl_814):
     data = load_and_prep_data_for_training(config)
     training_rcr = data['training_rcr']
     training_backlobe = data['training_backlobe']
-    if enable_sim_bl_814:
-        training_backlobe = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedBacklobe/8.14.25/200s/all_traces_200s_part0_11239events.npy')
 
     # Apply channel cycling to RCR training data to augment the dataset
     print(f"\n--- Applying channel cycling to RCR training data ---")
@@ -527,6 +525,14 @@ def main(enable_sim_bl_814):
     training_rcr = cycle_channels(training_rcr, channel_axis=1)
     print(f"Augmented RCR training shape: {training_rcr.shape}")
     print(f"RCR training data multiplied by factor of 7\n")
+
+    # Apply channel cycling to Backlobe training data to augment the dataset
+    print(f"\n--- Applying channel cycling to Backlobe training data ---")
+    print(f"Original Backlobe training shape: {training_backlobe.shape}")
+    # training_backlobe has shape [n_events, 4, 256], so channel_axis=1
+    training_backlobe = cycle_channels(training_backlobe, channel_axis=1)
+    print(f"Augmented Backlobe training shape: {training_backlobe.shape}")
+    print(f"Backlobe training data multiplied by factor of 7\n")
 
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']

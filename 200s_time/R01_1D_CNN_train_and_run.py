@@ -13,7 +13,7 @@ from tensorflow import keras
 from NuRadioReco.utilities import units
 from A0_Utilities import load_sim_rcr, load_data, pT, load_config
 
-# Add parent directory to path to import model_builder
+# Add parent directory to path to import model_builder and data_channel_cycling
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model_builder import (
     build_cnn_model,
@@ -22,6 +22,7 @@ from model_builder import (
     build_strided_model,
     build_parallel_strided_model
 )
+from data_channel_cycling import cycle_channels
 
 # --- Data Loading and Preparation ---
 def load_and_prep_data_for_training(config):
@@ -518,6 +519,14 @@ def main(enable_sim_bl_814):
     training_backlobe = data['training_backlobe']
     if enable_sim_bl_814:
         training_backlobe = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedBacklobe/8.14.25/200s/all_traces_200s_part0_11239events.npy')
+
+    # Apply channel cycling to RCR training data to augment the dataset
+    print(f"\n--- Applying channel cycling to RCR training data ---")
+    print(f"Original RCR training shape: {training_rcr.shape}")
+    # training_rcr has shape [n_events, 4, 256], so channel_axis=1
+    training_rcr = cycle_channels(training_rcr, channel_axis=1)
+    print(f"Augmented RCR training shape: {training_rcr.shape}")
+    print(f"RCR training data multiplied by factor of 7\n")
 
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']

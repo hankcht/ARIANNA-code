@@ -113,6 +113,7 @@ def load_and_prep_data_for_training(config):
     print(f'RCR shape: {sim_rcr.shape}, Backlobe 2016 shape: {backlobe_traces_2016.shape}, Backlobe RCR shape: {backlobe_traces_rcr.shape}')
 
     # Pick random subsets for training
+    train_cut = int(min(sim_rcr.shape[0], backlobe_traces_2016.shape[0]))
     rcr_training_indices = np.random.choice(sim_rcr.shape[0], size=train_cut, replace=False)
     bl_training_indices = np.random.choice(backlobe_traces_2016.shape[0], size=train_cut, replace=False)
 

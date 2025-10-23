@@ -24,10 +24,55 @@ from model_builder import (
 )
 from data_channel_cycling import cycle_channels
 
+
+def load_combined_backlobe_data(combined_pkl_path):
+    """
+    Load the combined backlobe data saved by refactor_converter.py.
+    
+    This function loads a pickle file containing backlobe data from all stations
+    that has been processed through chi and bin cuts.
+    
+    Args:
+        combined_pkl_path (str): Path to the combined pickle file containing all stations' data.
+                                Default location from refactor_converter.py:
+                                '/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/5000evt_10.17.25/above_curve_combined.pkl'
+    
+    Returns:
+        tuple: (snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR)
+               All as numpy arrays containing data from all stations combined.
+    """
+    print(f"Loading combined backlobe data from: {combined_pkl_path}")
+    
+    with open(combined_pkl_path, 'rb') as f:
+        combined_data = pickle.load(f)
+    
+    # Extract all arrays from the combined dictionary
+    snr2016 = combined_data['snr2016']
+    snrRCR = combined_data['snrRCR']
+    chi2016 = combined_data['chi2016']
+    chiRCR = combined_data['chiRCR']
+    traces2016 = combined_data['traces2016']
+    tracesRCR = combined_data['tracesRCR']
+    unix2016 = combined_data['unix2016']
+    unixRCR = combined_data['unixRCR']
+    
+    print(f"Loaded combined data:")
+    print(f"  SNR2016: {len(snr2016)} events")
+    print(f"  SNRRCR: {len(snrRCR)} events")
+    print(f"  Chi2016: {len(chi2016)} events")
+    print(f"  ChiRCR: {len(chiRCR)} events")
+    print(f"  Traces2016 shape: {traces2016.shape}")
+    print(f"  TracesRCR shape: {tracesRCR.shape}")
+    print(f"  Unix2016: {len(unix2016)} events")
+    print(f"  UnixRCR: {len(unixRCR)} events")
+    
+    return snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR
+
 # --- Data Loading and Preparation ---
 def load_and_prep_data_for_training(config):
     """
-    Loads sim RCR and data Backlobe, selects random subset for training
+    Loads sim RCR and data Backlobe from the combined pickle file saved by refactor_converter.py.
+    Selects random subset for training.
 
     Args:
         config (dict): Configuration dictionary.
@@ -37,14 +82,14 @@ def load_and_prep_data_for_training(config):
     """
     amp = config['amp']
     train_cut = config['train_cut']
-    # Already determined in main based on amp, so directly use 'station_ids'
-    station_ids = config['station_ids']
-    sim_folder = os.path.join(config['base_sim_rcr_folder'], amp, config['sim_rcr_date'])
 
     print(f"Loading data for amplifier type: {amp}")
 
-    sim_rcr = load_sim_rcr(sim_folder, noise_enabled=config['noise_enabled'], filter_enabled=True, amp=amp) # currently loads 5.28.25 from config
-    # add 8.14.25 sim RCR
+    # Load simulation RCR data
+    sim_folder = os.path.join(config['base_sim_rcr_folder'], amp, config['sim_rcr_date'])
+    sim_rcr = load_sim_rcr(sim_folder, noise_enabled=config['noise_enabled'], filter_enabled=True, amp=amp)
+    
+    # Add 8.14.25 sim RCR
     if amp == '200s': 
         sim_rcr_814 = np.load(f'/dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/8.14.25/200s/all_traces_200s_RCR_part0_4473events.npy') 
         print('Loading /dfs8/sbarwick_lab/ariannaproject/rricesmi/simulatedRCRs/8.14.25/200s/all_traces_200s_RCR_part0_4473events.npy')
@@ -55,44 +100,39 @@ def load_and_prep_data_for_training(config):
         print(f'amp not found')
     sim_rcr = np.vstack([sim_rcr, sim_rcr_814])
 
-    backlobe_data = {'snr2016': [], 'snrRCR': [], 'chi2016': [], 'chiRCR': [], 'traces2016': [], 'tracesRCR': [], 'unix2016': [], 'unixRCR': []}
-    for s_id in station_ids:
-        snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_data(config, amp_type=amp, station_id=s_id)
-        backlobe_data['snr2016'].extend(snr2016)
-        backlobe_data['snrRCR'].extend(snrRCR)
-        backlobe_data['chi2016'].extend(chi2016)
-        backlobe_data['chiRCR'].extend(chiRCR)
-        backlobe_data['traces2016'].extend(traces2016)
-        backlobe_data['tracesRCR'].extend(tracesRCR)
-        backlobe_data['unix2016'].extend(unix2016)
-        backlobe_data['unixRCR'].extend(unixRCR)
+    # Load combined backlobe data from the pickle file saved by refactor_converter.py
+    # This file contains data from all stations after chi and bin cuts
+    combined_pkl_path = f'/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/5000evt_10.17.25/above_curve_combined.pkl'
+    
+    snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_combined_backlobe_data(combined_pkl_path)
 
-    sim_rcr = np.array(sim_rcr)
-    backlobe_traces_2016 = np.array(backlobe_data['traces2016'])
-    backlobe_traces_rcr = np.array(backlobe_data['tracesRCR'])
+    # Convert to numpy arrays (they should already be arrays from the pickle, but ensure consistency)
+    backlobe_traces_2016 = np.array(traces2016)
+    backlobe_traces_rcr = np.array(tracesRCR)
 
-    # pick random subsets for training
+    print(f'RCR shape: {sim_rcr.shape}, Backlobe 2016 shape: {backlobe_traces_2016.shape}, Backlobe RCR shape: {backlobe_traces_rcr.shape}')
+
+    # Pick random subsets for training
     rcr_training_indices = np.random.choice(sim_rcr.shape[0], size=train_cut, replace=False)
     bl_training_indices = np.random.choice(backlobe_traces_2016.shape[0], size=train_cut, replace=False)
 
     training_rcr = sim_rcr[rcr_training_indices, :]
-    training_backlobe = backlobe_traces_2016[bl_training_indices, :]
+    training_backlobe = backlobe_traces_2016[bl_training_indices, :]  # Using traces2016 for training
 
     rcr_non_training_indices = np.setdiff1d(np.arange(sim_rcr.shape[0]), rcr_training_indices)
     bl_non_training_indices = np.setdiff1d(np.arange(backlobe_traces_2016.shape[0]), bl_training_indices)
 
-    print(f'RCR shape: {sim_rcr.shape}, Backlobe shape: {backlobe_traces_2016.shape}')
     print(f'Training shape RCR {training_rcr.shape}, Training Shape Backlobe {training_backlobe.shape}, TrainCut {train_cut}')
     print(f'Non-training RCR count {len(rcr_non_training_indices)}, Non-training Backlobe count {len(bl_non_training_indices)}')
 
     return {
         'training_rcr': training_rcr,
-        'training_backlobe': training_backlobe,
+        'training_backlobe': training_backlobe,  # This is traces2016
         'sim_rcr_all': sim_rcr,
         'data_backlobe_traces2016': backlobe_traces_2016,
         'data_backlobe_tracesRCR': backlobe_traces_rcr,
-        'data_backlobe_unix2016_all': np.array(backlobe_data['unix2016']),
-        'data_backlobe_chi2016_all': np.array(backlobe_data['chi2016']),
+        'data_backlobe_unix2016_all': unix2016,
+        'data_backlobe_chi2016_all': chi2016,
         'rcr_non_training_indices': rcr_non_training_indices,
         'bl_non_training_indices': bl_non_training_indices
     } 

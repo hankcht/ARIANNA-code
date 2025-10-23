@@ -219,6 +219,7 @@ def load_data(config, amp_type, station_id):
                Above_curve_data_Traces2016, Above_curve_data_TracesRCR, Above_curve_data_UNIX2016, Above_curve_data_UNIXRCR
 
 
+
 def load_520_data(station_id, param, data_folder, date_filter="5.20.25", single_load = True):
     '''
     quick load function for 5/20 after nosie cut data with very specific filenames

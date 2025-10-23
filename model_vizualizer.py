@@ -81,14 +81,14 @@ def build_parallel_model(input_shape):
     # Each branch takes the valid `inputs` tensor.
     
     # Branch A: Specialist with small kernel
-    branch_a = Conv1D(32, kernel_size=5, padding="valid", activation="relu")(inputs)
+    branch_a = Conv1D(32, kernel_size=5, padding="same", activation="relu")(inputs)
     
     # Branch B: Specialist with medium kernel
-    branch_b = Conv1D(32, kernel_size=15, padding="valid", activation="relu")(inputs)
+    branch_b = Conv1D(32, kernel_size=15, padding="same", activation="relu")(inputs)
     
     # Branch C: Specialist with large kernel
-    branch_c = Conv1D(32, kernel_size=31, padding="valid", activation="relu")(inputs)
-    
+    branch_c = Conv1D(32, kernel_size=31, padding="same", activation="relu")(inputs)
+
     # 3. Combine the "reports" from the specialists.
     # The Concatenate layer stacks the feature maps along the channel axis.
     # Output shape will be (256, 32+32+32) -> (256, 96)

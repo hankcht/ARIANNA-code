@@ -527,7 +527,7 @@ def main(enable_sim_bl_814):
     print('------> Training is Done!')
 
     # Save model
-    model_save_path = os.path.join(config['base_model_path'], f'{timestamp}_{amp}_{model_type}_model_{prefix}_{lr_str}.h5')
+    model_save_path = os.path.join(config['base_model_path'], f'{timestamp}', f'{amp}_{model_type}_model_{prefix}_{lr_str}.h5')
     model.save(model_save_path)
     print(f'Model saved to: {model_save_path}')
 

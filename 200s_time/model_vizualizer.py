@@ -136,7 +136,7 @@ if __name__ == "__main__":
         # 2. Create a directory for saving plots
         base_plot_path = '/dfs8/sbarwick_lab/ariannaproject/tangch3/plots/fixed_lr/'
     
-        os.makedirs('plots', exist_ok=True)
+        os.makedirs(base_plot_path, exist_ok=True)
         print(f"Created {base_plot_path} directory for output images.")
 
         # --- Method 2: Save Static Graph Plot ---
@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
         # 1. Create a sample input tensor (e.g., random noise)
         # Shape is (num_samples_to_predict, sequence_length, num_channels)
-        sample_input = np.random.rand(1, n_samples, n_channels)
+        sample_input = np.random.rand(n_samples, n_channels)
         print(f"Generated a sample input tensor of shape: {sample_input.shape}")
 
         # 2. Identify the convolutional layers to inspect

@@ -81,8 +81,19 @@ if __name__ == "__main__":
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
     # RunMultipleJobs(cmd, jobName='converter')
 
-    # Run refactored model with multiple learning rate settings
-    learning_rates = [0.01, 0.001, 0.0001, 0.00001, 1e-6, 1e-7, 1e-8, 1e-9]
+    # Define available model types
+    model_types = ['1d_cnn', 'parallel', 'strided', 'parallel_strided', 'astrid_2d']
+    
+    # Run refactored model with multiple learning rate settings and model types
+    learning_rates = [1e-4, 5e-5, 1e-5, 5e-6, 1e-6]
+    
+    # Iterate over both model types and learning rates
+    for model_type in model_types:
+        for lr in learning_rates:
+            cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/R01_1D_CNN_train_and_run.py --learning_rate {lr} --model_type {model_type}'
+            RunMultipleJobs(cmd, jobName=f'train_{model_type}_lr_{lr}')
+    
+    # Original single runs (commented out for reference)
     # for lr in learning_rates:
     #     cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run.py --learning_rate {lr}'
     #     RunMultipleJobs(cmd, jobName=f'train_and_run_lr_{lr}') # check if the above curve is filtered!
@@ -90,8 +101,8 @@ if __name__ == "__main__":
     #     cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/R01_1D_CNN_train_and_run.py --learning_rate {lr}'
     #     RunMultipleJobs(cmd, jobName=f'train_and_run_lr_{lr}') # check if the above curve is filtered!
 
-    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/model_vizualizer.py'
-    RunMultipleJobs(cmd, jobName=f'model_vizualizer')
+    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/model_vizualizer.py'
+    # RunMultipleJobs(cmd, jobName=f'model_vizualizer')
 
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run_all_amp.py' 
     # RunMultipleJobs(cmd, jobName='train_and_run') # check if the above curve is filtered!

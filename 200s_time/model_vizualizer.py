@@ -14,10 +14,6 @@ n_samples = 256    # Sequence length (time steps)
 n_channels = 4     # Number of features per time step
 learning_rate = 0.001
 
-# 2. Create a directory for saving plots
-if not os.path.exists('plots'):
-    os.makedirs('plots')
-    print("Created 'plots/' directory for output images.")
 
 # --- Astrid CNN Model ---
 def build_cnn_model(input_shape):
@@ -137,13 +133,18 @@ if __name__ == "__main__":
         print("="*50)
         model.summary()
 
+        # 2. Create a directory for saving plots
+        base_plot_path = '/dfs8/sbarwick_lab/ariannaproject/tangch3/plots/fixed_lr/'
+    
+        os.makedirs('plots', exist_ok=True)
+        print(f"Created {base_plot_path} directory for output images.")
 
         # --- Method 2: Save Static Graph Plot ---
         print("\n" + "="*50)
         print(f"METHOD 2: PLOTTING MODEL ARCHITECTURE {model_name}")
         print("="*50)
         try:
-            plot_path = os.path.join('plots', f'model_architecture_{model_name}.png')
+            plot_path = os.path.join(base_plot_path, f'model_architecture_{model_name}_lr{learning_rate}.png')
             keras.utils.plot_model(
                 model,
                 to_file=plot_path,
@@ -211,7 +212,7 @@ if __name__ == "__main__":
         plt.tight_layout(rect=[0, 0, 1, 0.96]) # Adjust layout to make room for suptitle
 
         # Save the plot
-        activation_plot_path = os.path.join('plots', f'layer_activations_{model_name}.png')
+        activation_plot_path = os.path.join(base_plot_path, f'layer_activations_{model_name}_lr{learning_rate}.png')
         plt.savefig(activation_plot_path)
         # plt.show()
         print(f"\nSuccessfully saved layer activation plot to '{activation_plot_path}'")

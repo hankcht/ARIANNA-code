@@ -546,10 +546,10 @@ def main(enable_sim_bl_814):
     # Create learning rate and model type specific directories
     lr_folder = f'lr_{learning_rate:.0e}'.replace('-', '')
     model_folder = model_type
+    timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
     config['base_model_path'] = os.path.join(config['base_model_path'], model_folder, lr_folder)
     config['base_plot_path'] = os.path.join(config['base_plot_path'], f"{timestamp}", model_folder, lr_folder)
 
-    timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
     print(f"Starting CNN training at {timestamp} for {amp} amplifier")
     print(f"Model type: {model_type}, Learning rate: {learning_rate}")
     

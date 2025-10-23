@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
         # 1. Create a sample input tensor (e.g., random noise)
         # Shape is (num_samples_to_predict, sequence_length, num_channels)
-        sample_input = np.random.rand(1, n_samples, n_channels)
+        sample_input = np.random.rand(n_samples, n_channels, 1)
         print(f"Generated a sample input tensor of shape: {sample_input.shape}")
 
         # 2. Identify the convolutional layers to inspect

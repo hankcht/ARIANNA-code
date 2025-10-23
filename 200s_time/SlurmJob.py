@@ -86,9 +86,12 @@ if __name__ == "__main__":
     # for lr in learning_rates:
     #     cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run.py --learning_rate {lr}'
     #     RunMultipleJobs(cmd, jobName=f'train_and_run_lr_{lr}') # check if the above curve is filtered!
-    for lr in learning_rates: # check prefix in config to match model type
-        cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/R01_1D_CNN_train_and_run.py --learning_rate {lr}'
-        RunMultipleJobs(cmd, jobName=f'train_and_run_lr_{lr}') # check if the above curve is filtered!
+    # for lr in learning_rates: # check prefix in config to match model type
+    #     cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/R01_1D_CNN_train_and_run.py --learning_rate {lr}'
+    #     RunMultipleJobs(cmd, jobName=f'train_and_run_lr_{lr}') # check if the above curve is filtered!
+
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/model_vizualizer.py'
+    RunMultipleJobs(cmd, jobName=f'model_vizualizer')
 
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_train_and_run_all_amp.py' 
     # RunMultipleJobs(cmd, jobName='train_and_run') # check if the above curve is filtered!

@@ -199,6 +199,11 @@ def build_parallel_strided_model(input_shape, learning_rate=0.001):
     # Branch C: Large kernel with stride
     branch_c = Conv1D(32, kernel_size=31, strides=31, padding="same", activation="relu")(inputs)
 
+    # Printing shapes
+    print(f"Branch A shape: {branch_a.shape}")
+    print(f"Branch B shape: {branch_b.shape}")
+    print(f"Branch C shape: {branch_c.shape}")
+
     # Combine the parallel branches
     concatenated = Concatenate()([branch_a, branch_b, branch_c])
     

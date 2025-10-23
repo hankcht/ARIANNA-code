@@ -352,7 +352,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     ax = plt.gca()
     ax.text(0.25, 0.75, f'RCR efficiency: {rcr_efficiency:.2f}%', fontsize=12, transform=ax.transAxes)
     ax.text(0.25, 0.70, f'Backlobe efficiency: {backlobe_efficiency:.4f}%', fontsize=12, transform=ax.transAxes)
-    ax.text(0.25, 0.65, f'TrainCut: {train_cut}', fontsize=12, transform=ax.transAxes)
+    # ax.text(0.25, 0.65, f'TrainCut: {train_cut}', fontsize=12, transform=ax.transAxes)
     ax.text(0.25, 0.60, f'LR: {learning_rate:.0e}', fontsize=12, transform=ax.transAxes)
     ax.text(0.25, 0.55, f'Model: {model_type}', fontsize=12, transform=ax.transAxes)
     plt.axvline(x=output_cut_value, color='y', label='cut', linestyle='--')
@@ -414,76 +414,95 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
     return np.stack(arrays, axis=0), metadata
 
 
-def load_all_coincidence_traces(pkl_path, trace_key):
+def load_new_coincidence_data(pkl_path, passing_event_ids):
     """
-    Load coincidence traces from a PKL file.
-
+    Load coincidence data from the new PKL file and separate into passing and raw events.
+    
     Parameters
     ----------
     pkl_path : str
-        Path to the PKL file.
-    trace_key : str
-        Key in each station dictionary from which to load traces. "Traces" or "Filtered_Traces".
-
+        Path to the PKL file containing coincidence data.
+    passing_event_ids : list
+        List of event IDs that pass cuts.
+    
     Returns
     -------
-    coinc_dict : dict
-        The full coincidence dictionary.
-    X : np.ndarray
-        Stacked traces of shape (n_events, n_channels, n_samples).
-    metadata : dict
-        Mapping of global trace index to metadata.
+    passing_traces : np.ndarray
+        Traces from events that pass cuts, shape (n_events, n_channels, n_samples).
+    raw_traces : np.ndarray
+        Traces from all other events, shape (n_events, n_channels, n_samples).
+    passing_metadata : dict
+        Metadata for passing traces.
+    raw_metadata : dict
+        Metadata for raw traces.
     """
     with open(pkl_path, "rb") as f:
         coinc_dict = pickle.load(f)
+    
+    passing_traces = []
+    raw_traces = []
+    passing_metadata = {}
+    raw_metadata = {}
+    passing_idx = 0
+    raw_idx = 0
+    
+    print(f"Loading coincidence data from {pkl_path}")
+    print(f"Passing event IDs: {passing_event_ids}")
+    
+    # Iterate through all events in the dictionary
+    for event_id, event_data in coinc_dict.items():
+        # Check if this event passes cuts
+        is_passing = event_id in passing_event_ids
+        
+        # Get all stations for this event
+        if 'stations' in event_data:
+            for station_id, station_data in event_data['stations'].items():
+                # Get traces for this station
+                if 'Traces' in station_data:
+                    traces = station_data['Traces']
+                    if traces is not None and len(traces) > 0:
+                        traces = np.array(traces)
+                        
+                        # If traces is a single trace (4, 256), wrap it in a list
+                        if traces.ndim == 2:
+                            traces = [traces]
+                        
+                        # Add each trace
+                        for trace in traces:
+                            if is_passing:
+                                passing_traces.append(trace)
+                                passing_metadata[passing_idx] = {
+                                    'event_id': event_id,
+                                    'station_id': station_id,
+                                }
+                                passing_idx += 1
+                            else:
+                                raw_traces.append(trace)
+                                raw_metadata[raw_idx] = {
+                                    'event_id': event_id,
+                                    'station_id': station_id,
+                                }
+                                raw_idx += 1
+    
+    # Convert to numpy arrays
+    passing_traces = np.stack(passing_traces, axis=0) if passing_traces else np.array([])
+    raw_traces = np.stack(raw_traces, axis=0) if raw_traces else np.array([])
+    
+    print(f"Loaded {len(passing_traces)} traces from {len(passing_event_ids)} passing events")
+    print(f"Loaded {len(raw_traces)} traces from raw coincidence events")
+    
+    return passing_traces, raw_traces, passing_metadata, raw_metadata
 
-    all_traces = []
-    metadata = {}
-    idx = 0
 
-    print(f'loading {trace_key}')
-
-    for master_id, master_data in coinc_dict.items():
-        for station_id, station_dict in master_data['stations'].items():
-            traces = station_dict.get(trace_key)
-            if traces is None or len(traces) == 0:
-                continue
-            traces = np.array(traces)
-            n_traces = len(traces)
-
-            for i in range(n_traces):
-                all_traces.append(traces[i])
-                metadata[idx] = {
-                    'master_id': master_id,
-                    'station_id': station_id,
-                    'index': station_dict['indices'][i],
-                    'event_id': station_dict['event_ids'][i],
-                    'SNR': station_dict['SNR'][i],
-                    'ChiRCR': station_dict['ChiRCR'][i],
-                    'Chi2016': station_dict['Chi2016'][i],
-                    'ChiBad': station_dict['ChiBad'][i],
-                    'Zen': station_dict['Zen'][i],
-                    'Azi': station_dict['Azi'][i],
-                    'Times': station_dict['Times'][i],
-                    'PolAngle': station_dict['PolAngle'][i],
-                    'PolAngleErr': station_dict['PolAngleErr'][i],
-                    'ExpectedPolAngle': station_dict['ExpectedPolAngle'][i],
-                }
-                idx += 1
-
-    all_Traces = np.stack(all_traces, axis=0)
-    return coinc_dict, all_Traces, metadata
-
-
-def plot_check_histogram(prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp, prefix, 
+def plot_check_histogram(prob_2016, prob_passing, prob_raw, amp, timestamp, prefix, 
                          learning_rate, model_type, config):
     """
-    Plot histogram comparing 2016 backlobes and coincidence events.
+    Plot histogram comparing 2016 backlobes, passing cuts events, and raw coincidence events.
     
     Args:
         prob_2016 (np.ndarray): Network output for 2016 backlobe events.
-        prob_coincidence (np.ndarray): Network output for coincidence events.
-        prob_coincidence_rcr (np.ndarray): Network output for coincidence RCR trace.
+        prob_passing (np.ndarray): Network output for events passing cuts.
+        prob_raw (np.ndarray): Network output for raw coincidence events.
         amp (str): Amplifier type.
         timestamp (str): Timestamp for filename.
         prefix (str): Prefix for filename.
@@ -497,21 +516,21 @@ def plot_check_histogram(prob_2016, prob_coincidence, prob_coincidence_rcr, amp,
 
     plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
              label=f'2016-Backlobes {len(prob_2016)}', density=False)
-    plt.hist(prob_coincidence, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',
-             label=f'Coincidence-Events {len(prob_coincidence)}', density=False)
+    plt.hist(prob_passing, bins=bins, range=range_vals, histtype='step', color='green', linestyle='solid',
+             label=f'Passing cuts {len(prob_passing)}', density=False)
+    plt.hist(prob_raw, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',
+             label=f'Raw coincidence {len(prob_raw)}', density=False)
 
     plt.xlabel('Network Output', fontsize=18)
     plt.ylabel('Number of Events', fontsize=18)
     plt.yscale('log')
 
     hist_values_2016, _ = np.histogram(prob_2016, bins=20, range=(0, 1))
-    hist_values_coincidence, _ = np.histogram(prob_coincidence, bins=20, range=(0, 1))
-    max_overall_hist = max(np.max(hist_values_2016), np.max(hist_values_coincidence))
+    hist_values_passing, _ = np.histogram(prob_passing, bins=20, range=(0, 1))
+    hist_values_raw, _ = np.histogram(prob_raw, bins=20, range=(0, 1))
+    max_overall_hist = max(np.max(hist_values_2016), np.max(hist_values_passing), np.max(hist_values_raw))
     plt.ylim(7*1e-1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
 
-    plt.text(0.00, 0.85, f'Coincidence RCR network Output is: {prob_coincidence_rcr.item():.2f}',
-             fontsize=12, verticalalignment='top', transform=plt.gca().transAxes,
-             bbox=dict(facecolor='white', alpha=0.7, edgecolor='gray'))
     plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=14)
     plt.legend(loc='upper left', fontsize=12)
 
@@ -556,8 +575,13 @@ def main(enable_sim_bl_814):
     
     # Data load & prep
     data = load_and_prep_data_for_training(config)
-    training_rcr = data['training_rcr']
-    training_backlobe = data['training_backlobe']
+    training_rcr_original = data['training_rcr']
+    training_backlobe_original = data['training_backlobe']
+
+    # Keep copies of original training data before augmentation
+    # (used for evaluation to ensure histogram proportions are correct)
+    training_rcr = training_rcr_original.copy()
+    training_backlobe = training_backlobe_original.copy()
 
     # Apply channel cycling to RCR training data to augment the dataset
     print(f"\n--- Applying channel cycling to RCR training data ---")
@@ -610,69 +634,65 @@ def main(enable_sim_bl_814):
         all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
         print(f"Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
         
-        # Load coincidence events
-        pkl_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl"
+        # Load new coincidence data
+        pkl_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other/9.24.25_CoincidenceDatetimes_passing_cuts_with_all_params_recalcZenAzi_calcPol.pkl"
+        
+        # Event IDs that pass cuts
+        passing_event_ids = [3047, 3432, 10195, 10231, 10273, 10284, 10444, 10449, 10466, 10471, 10554, 11197, 11220, 11230, 11236, 11243]
         
         if os.path.exists(pkl_path):
-            coinc_dict, all_coincidence_events, metadata = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
-            print(f"Loaded {len(all_coincidence_events)} coincidence traces.")
+            passing_traces, raw_traces, passing_metadata, raw_metadata = load_new_coincidence_data(pkl_path, passing_event_ids)
             
-            # Ensure proper shape for model prediction
-            all_2016_backlobes = np.array(all_2016_backlobes)
-            all_coincidence_events = np.array(all_coincidence_events)
-            print(f"2016 backlobes shape: {all_2016_backlobes.shape}")
-            print(f"Coincidence events shape: {all_coincidence_events.shape}")
-            
-            # Prepare data based on model type
-            if model_type == 'astrid_2d':
-                # For 2D CNN: add channel dimension if needed
-                if all_2016_backlobes.ndim == 3:
-                    all_2016_backlobes = all_2016_backlobes[..., np.newaxis]
-                    print(f'Changed 2016 backlobes to shape {all_2016_backlobes.shape}')
-                if all_coincidence_events.ndim == 3:
-                    all_coincidence_events = all_coincidence_events[..., np.newaxis]
-                    print(f'Changed coincidence events to shape {all_coincidence_events.shape}')
+            if len(passing_traces) > 0 and len(raw_traces) > 0:
+                # Ensure proper shape for model prediction
+                all_2016_backlobes = np.array(all_2016_backlobes)
+                passing_traces = np.array(passing_traces)
+                raw_traces = np.array(raw_traces)
                 
-                # Predict
-                prob_2016_backlobe = model.predict(all_2016_backlobes)
-                prob_coincidence = model.predict(all_coincidence_events)
+                print(f"2016 backlobes shape: {all_2016_backlobes.shape}")
+                print(f"Passing cuts traces shape: {passing_traces.shape}")
+                print(f"Raw coincidence traces shape: {raw_traces.shape}")
                 
-                # Get specific coincidence RCR trace (index 1297)
-                coinc_rcr_idx = 1297
-                if coinc_rcr_idx < len(all_coincidence_events):
-                    prob_coincidence_rcr = model.predict(np.expand_dims(all_coincidence_events[coinc_rcr_idx], axis=0))
+                # Prepare data based on model type
+                if model_type == 'astrid_2d':
+                    # For 2D CNN: add channel dimension if needed
+                    if all_2016_backlobes.ndim == 3:
+                        all_2016_backlobes = all_2016_backlobes[..., np.newaxis]
+                        print(f'Changed 2016 backlobes to shape {all_2016_backlobes.shape}')
+                    if passing_traces.ndim == 3:
+                        passing_traces = passing_traces[..., np.newaxis]
+                        print(f'Changed passing traces to shape {passing_traces.shape}')
+                    if raw_traces.ndim == 3:
+                        raw_traces = raw_traces[..., np.newaxis]
+                        print(f'Changed raw traces to shape {raw_traces.shape}')
+                    
+                    # Predict
+                    prob_2016_backlobe = model.predict(all_2016_backlobes)
+                    prob_passing = model.predict(passing_traces)
+                    prob_raw = model.predict(raw_traces)
                 else:
-                    prob_coincidence_rcr = np.array([0.0])
-                    print(f"Warning: coinc_rcr_idx {coinc_rcr_idx} out of bounds")
+                    # For 1D CNNs: transpose from (n_events, 4, 256) to (n_events, 256, 4)
+                    all_2016_backlobes_transpose = all_2016_backlobes.transpose(0, 2, 1)
+                    passing_traces_transpose = passing_traces.transpose(0, 2, 1)
+                    raw_traces_transpose = raw_traces.transpose(0, 2, 1)
+                    
+                    # Predict
+                    prob_2016_backlobe = model.predict(all_2016_backlobes_transpose)
+                    prob_passing = model.predict(passing_traces_transpose)
+                    prob_raw = model.predict(raw_traces_transpose)
+                
+                # Flatten probabilities
+                prob_2016_backlobe = prob_2016_backlobe.flatten()
+                prob_passing = prob_passing.flatten()
+                prob_raw = prob_raw.flatten()
+                
+                print(f'Mean network output - 2016 BL: {np.mean(prob_2016_backlobe):.3f}, Passing cuts: {np.mean(prob_passing):.3f}, Raw: {np.mean(prob_raw):.3f}')
+                
+                # Plot the check histogram
+                plot_check_histogram(prob_2016_backlobe, prob_passing, prob_raw, 
+                                   amp, timestamp, prefix, learning_rate, model_type, config)
             else:
-                # For 1D CNNs: transpose from (n_events, 4, 256) to (n_events, 256, 4)
-                all_2016_backlobes_transpose = all_2016_backlobes.transpose(0, 2, 1)
-                all_coincidence_events_transpose = all_coincidence_events.transpose(0, 2, 1)
-                
-                # Predict
-                prob_2016_backlobe = model.predict(all_2016_backlobes_transpose)
-                prob_coincidence = model.predict(all_coincidence_events_transpose)
-                
-                # Get specific coincidence RCR trace (index 1297)
-                coinc_rcr_idx = 1297
-                if coinc_rcr_idx < len(all_coincidence_events):
-                    coinc_rcr = all_coincidence_events[coinc_rcr_idx]
-                    coinc_rcr_transpose = coinc_rcr.transpose(1, 0)
-                    prob_coincidence_rcr = model.predict(np.expand_dims(coinc_rcr_transpose, axis=0))
-                else:
-                    prob_coincidence_rcr = np.array([0.0])
-                    print(f"Warning: coinc_rcr_idx {coinc_rcr_idx} out of bounds")
-            
-            # Flatten probabilities
-            prob_2016_backlobe = prob_2016_backlobe.flatten()
-            prob_coincidence = prob_coincidence.flatten()
-            prob_coincidence_rcr = prob_coincidence_rcr.flatten()
-            
-            print(f'Coincidence RCR network output: {prob_coincidence_rcr}')
-            
-            # Plot the check histogram
-            plot_check_histogram(prob_2016_backlobe, prob_coincidence, prob_coincidence_rcr, 
-                               amp, timestamp, prefix, learning_rate, model_type, config)
+                print(f"Warning: No traces loaded from coincidence data")
         else:
             print(f"Warning: Coincidence PKL file not found at {pkl_path}")
     else:

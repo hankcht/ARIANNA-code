@@ -150,14 +150,14 @@ def build_strided_model(input_shape, learning_rate=0.001):
 
     # First 3 layers use stride to downsample the temporal dimension
     # stride=2 reduces sequence length by half at each layer
-    model.add(Conv1D(32, kernel_size=5, strides=5, padding="valid", activation="relu", input_shape=input_shape))
-    model.add(Conv1D(32, kernel_size=15, strides=15, padding="valid", activation="relu"))
-    model.add(Conv1D(32, kernel_size=31, strides=31, padding="valid", activation="relu"))
+    model.add(Conv1D(32, kernel_size=5, strides=5, padding="same", activation="relu", input_shape=input_shape))
+    model.add(Conv1D(32, kernel_size=15, strides=15, padding="same", activation="relu"))
+    model.add(Conv1D(32, kernel_size=31, strides=31, padding="same", activation="relu"))
     model.add(BatchNormalization())
     model.add(ReLU())
 
     # Downstream feature extractor (no stride)
-    model.add(Conv1D(64, kernel_size=7, padding="valid", activation="relu"))
+    model.add(Conv1D(64, kernel_size=7, padding="same", activation="relu"))
 
     # Collapse across time
     model.add(GlobalAveragePooling1D())
@@ -207,10 +207,10 @@ def build_parallel_strided_model(input_shape, learning_rate=0.001):
     x = ReLU()(x)
     
     # Additional strided convolution layer
-    x = Conv1D(64, kernel_size=15, strides=2, padding="valid", activation="relu")(x)
+    x = Conv1D(64, kernel_size=15, strides=2, padding="same", activation="relu")(x)
     
     # Downstream feature extractor
-    x = Conv1D(64, kernel_size=7, padding="valid", activation="relu")(x)
+    x = Conv1D(64, kernel_size=7, padding="same", activation="relu")(x)
     
     # Collapse across time
     x = GlobalAveragePooling1D()(x)

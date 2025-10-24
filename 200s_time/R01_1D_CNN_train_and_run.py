@@ -693,10 +693,13 @@ def main(enable_sim_bl_814):
                                    amp, timestamp, prefix, learning_rate, model_type, config)
             else:
                 print(f"Warning: No traces loaded from coincidence data")
+                quit(1)
         else:
             print(f"Warning: Coincidence PKL file not found at {pkl_path}")
+            quit(1)
     else:
         print(f"Warning: 2016 backlobe template directory not found at {template_dir}")
+        quit(1)
 
     # Plotting individual traces if needed 
     # indices = np.where(prob_backlobe.flatten() > config['output_cut_value'])[0]

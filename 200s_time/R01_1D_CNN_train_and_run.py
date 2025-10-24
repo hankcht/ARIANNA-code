@@ -635,7 +635,7 @@ def main(enable_sim_bl_814):
         print(f"Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
         
         # Load new coincidence data
-        pkl_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other/9.24.25_CoincidenceDatetimes_passing_cuts_with_all_params_recalcZenAzi_calcPol.pkl"
+        pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.24.25_CoincidenceDatetimes_passing_cuts_with_all_params_recalcZenAzi_calcPol.pkl"
         
         # Event IDs that pass cuts
         passing_event_ids = [3047, 3432, 10195, 10231, 10273, 10284, 10444, 10449, 10466, 10471, 10554, 11197, 11220, 11230, 11236, 11243]

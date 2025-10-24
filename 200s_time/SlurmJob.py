@@ -82,7 +82,7 @@ if __name__ == "__main__":
     # RunMultipleJobs(cmd, jobName='converter')
 
     # Define available model types
-    model_types = ['1d_cnn', 'parallel', 'strided', 'parallel_strided', 'astrid_2d']
+    model_types = ['1d_cnn', 'parallel', 'strided', 'astrid_2d'] # 'parallel_strided', need debug
     
     # Run refactored model with multiple learning rate settings and model types
     learning_rates = [1e-4, 5e-5, 1e-5, 5e-6, 1e-6]

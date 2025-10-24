@@ -889,6 +889,7 @@ def main(enable_sim_bl_814):
                     plot_layer_activations(model, special_trace_to_plot, model_type, plot_save_path)
                 else:
                     print(f"\n--- No special event trace found, skipping activation plot ---")
+                    quit(1)
 
             else:
                 print(f"Warning: No traces loaded from coincidence data")
@@ -899,6 +900,49 @@ def main(enable_sim_bl_814):
     else:
         print(f"Warning: 2016 backlobe template directory not found at {template_dir}")
         quit(1)
+
+    # --- ADDED: Plot layer activations for max output events from training sets ---
+    print("\n--- Generating activation plots for max output training events ---")
+    plot_save_dir = os.path.join(config['base_plot_path'], 'activation_maps')
+    os.makedirs(plot_save_dir, exist_ok=True)
+    
+    # Get network predictions on the ORIGINAL training sets (before augmentation)
+    # training_rcr_original and training_backlobe_original have shape (n_events, 4, 256)
+    if model_type == 'astrid_2d':
+        # For 2D CNN: add channel dimension
+        training_rcr_for_pred = training_rcr_original[..., np.newaxis]
+        training_backlobe_for_pred = training_backlobe_original[..., np.newaxis]
+    else:
+        # For 1D CNNs: transpose from (n_events, 4, 256) to (n_events, 256, 4)
+        training_rcr_for_pred = training_rcr_original.transpose(0, 2, 1)
+        training_backlobe_for_pred = training_backlobe_original.transpose(0, 2, 1)
+    
+    print(f"Predicting on RCR training set ({training_rcr_original.shape[0]} events)...")
+    prob_training_rcr = model.predict(training_rcr_for_pred, batch_size=config['keras_batch_size']).flatten()
+    
+    print(f"Predicting on Backlobe training set ({training_backlobe_original.shape[0]} events)...")
+    prob_training_backlobe = model.predict(training_backlobe_for_pred, batch_size=config['keras_batch_size']).flatten()
+    
+    # Find indices of maximum network output
+    max_rcr_idx = np.argmax(prob_training_rcr)
+    max_backlobe_idx = np.argmax(prob_training_backlobe)
+    
+    print(f"Max RCR training output: {prob_training_rcr[max_rcr_idx]:.4f} at index {max_rcr_idx}")
+    print(f"Max Backlobe training output: {prob_training_backlobe[max_backlobe_idx]:.4f} at index {max_backlobe_idx}")
+    
+    # Get the traces (shape: (4, 256))
+    max_rcr_trace = training_rcr_original[max_rcr_idx]
+    max_backlobe_trace = training_backlobe_original[max_backlobe_idx]
+    
+    # Generate activation plots
+    rcr_activation_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_max_rcr_training_activations.png')
+    print(f"Generating activation plot for max RCR training event (index {max_rcr_idx})...")
+    plot_layer_activations(model, max_rcr_trace, model_type, rcr_activation_path)
+    
+    backlobe_activation_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_max_backlobe_training_activations.png')
+    print(f"Generating activation plot for max Backlobe training event (index {max_backlobe_idx})...")
+    plot_layer_activations(model, max_backlobe_trace, model_type, backlobe_activation_path)
+
 
     # Plotting individual traces if needed 
     # indices = np.where(prob_backlobe.flatten() > config['output_cut_value'])[0]

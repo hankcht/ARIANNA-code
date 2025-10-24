@@ -414,7 +414,7 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
     return np.stack(arrays, axis=0), metadata
 
 
-def load_new_coincidence_data(pkl_path, passing_event_ids):
+def load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id=None, special_station_id=None):
     """
     Load coincidence data from the new PKL file and separate into passing and raw events.
     
@@ -424,6 +424,10 @@ def load_new_coincidence_data(pkl_path, passing_event_ids):
         Path to the PKL file containing coincidence data.
     passing_event_ids : list
         List of event IDs that pass cuts.
+    special_event_id : int, optional
+        Event ID to separate out for special analysis.
+    special_station_id : int, optional
+        Station ID to separate out for special analysis (must be combined with special_event_id).
     
     Returns
     -------
@@ -431,23 +435,32 @@ def load_new_coincidence_data(pkl_path, passing_event_ids):
         Traces from events that pass cuts, shape (n_events, n_channels, n_samples).
     raw_traces : np.ndarray
         Traces from all other events, shape (n_events, n_channels, n_samples).
+    special_traces : np.ndarray
+        Traces from the special event/station combination.
     passing_metadata : dict
         Metadata for passing traces.
     raw_metadata : dict
         Metadata for raw traces.
+    special_metadata : dict
+        Metadata for special traces.
     """
     with open(pkl_path, "rb") as f:
         coinc_dict = pickle.load(f)
     
     passing_traces = []
     raw_traces = []
+    special_traces = []
     passing_metadata = {}
     raw_metadata = {}
+    special_metadata = {}
     passing_idx = 0
     raw_idx = 0
+    special_idx = 0
     
     print(f"Loading coincidence data from {pkl_path}")
     print(f"Passing event IDs: {passing_event_ids}")
+    if special_event_id and special_station_id:
+        print(f"Special event: ID={special_event_id}, Station={special_station_id}")
     
     # Iterate through all events in the dictionary
     for event_id, event_data in coinc_dict.items():
@@ -469,7 +482,20 @@ def load_new_coincidence_data(pkl_path, passing_event_ids):
                         
                         # Add each trace
                         for trace in traces:
-                            if is_passing:
+                            # Check if this is the special event/station combination
+                            is_special = (special_event_id is not None and 
+                                         special_station_id is not None and
+                                         event_id == special_event_id and 
+                                         station_id == special_station_id)
+                            
+                            if is_special:
+                                special_traces.append(trace)
+                                special_metadata[special_idx] = {
+                                    'event_id': event_id,
+                                    'station_id': station_id,
+                                }
+                                special_idx += 1
+                            elif is_passing:
                                 passing_traces.append(trace)
                                 passing_metadata[passing_idx] = {
                                     'event_id': event_id,
@@ -487,22 +513,26 @@ def load_new_coincidence_data(pkl_path, passing_event_ids):
     # Convert to numpy arrays
     passing_traces = np.stack(passing_traces, axis=0) if passing_traces else np.array([])
     raw_traces = np.stack(raw_traces, axis=0) if raw_traces else np.array([])
+    special_traces = np.stack(special_traces, axis=0) if special_traces else np.array([])
     
     print(f"Loaded {len(passing_traces)} traces from {len(passing_event_ids)} passing events")
     print(f"Loaded {len(raw_traces)} traces from raw coincidence events")
+    if len(special_traces) > 0:
+        print(f"Loaded {len(special_traces)} special traces (Event {special_event_id}, Station {special_station_id})")
     
-    return passing_traces, raw_traces, passing_metadata, raw_metadata
+    return passing_traces, raw_traces, special_traces, passing_metadata, raw_metadata, special_metadata
 
 
-def plot_check_histogram(prob_2016, prob_passing, prob_raw, amp, timestamp, prefix, 
+def plot_check_histogram(prob_2016, prob_passing, prob_raw, prob_special, amp, timestamp, prefix, 
                          learning_rate, model_type, config):
     """
-    Plot histogram comparing 2016 backlobes, passing cuts events, and raw coincidence events.
+    Plot histogram comparing 2016 backlobes, passing cuts events, raw coincidence events, and special suspected RCR.
     
     Args:
         prob_2016 (np.ndarray): Network output for 2016 backlobe events.
         prob_passing (np.ndarray): Network output for events passing cuts.
         prob_raw (np.ndarray): Network output for raw coincidence events.
+        prob_special (np.ndarray): Network output for special suspected RCR event.
         amp (str): Amplifier type.
         timestamp (str): Timestamp for filename.
         prefix (str): Prefix for filename.
@@ -520,6 +550,12 @@ def plot_check_histogram(prob_2016, prob_passing, prob_raw, amp, timestamp, pref
              label=f'Passing cuts {len(prob_passing)}', density=False)
     plt.hist(prob_raw, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',
              label=f'Raw coincidence {len(prob_raw)}', density=False)
+    
+    # Plot special suspected RCR if it exists
+    if len(prob_special) > 0:
+        mean_output = np.mean(prob_special)
+        plt.hist(prob_special, bins=bins, range=range_vals, histtype='step', color='red', linestyle='solid',
+                 linewidth=2, label=f'Suspected RCR (Evt 11230, Stn 13) - Output: {mean_output:.3f}', density=False)
 
     plt.xlabel('Network Output', fontsize=18)
     plt.ylabel('Number of Events', fontsize=18)
@@ -529,10 +565,13 @@ def plot_check_histogram(prob_2016, prob_passing, prob_raw, amp, timestamp, pref
     hist_values_passing, _ = np.histogram(prob_passing, bins=20, range=(0, 1))
     hist_values_raw, _ = np.histogram(prob_raw, bins=20, range=(0, 1))
     max_overall_hist = max(np.max(hist_values_2016), np.max(hist_values_passing), np.max(hist_values_raw))
+    if len(prob_special) > 0:
+        hist_values_special, _ = np.histogram(prob_special, bins=20, range=(0, 1))
+        max_overall_hist = max(max_overall_hist, np.max(hist_values_special))
     plt.ylim(7*1e-1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
 
     plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=14)
-    plt.legend(loc='upper left', fontsize=12)
+    plt.legend(loc='upper left', fontsize=10)
 
     lr_str = f"lr{learning_rate:.0e}".replace('-', '')
     filename = f'{timestamp}_{amp}_{model_type}_check_histogram_{prefix}_{lr_str}.png'
@@ -640,8 +679,13 @@ def main(enable_sim_bl_814):
         # Event IDs that pass cuts
         passing_event_ids = [3047, 3432, 10195, 10231, 10273, 10284, 10444, 10449, 10466, 10471, 10554, 11197, 11220, 11230, 11236, 11243]
         
+        # Special event/station to check separately (suspected RCR)
+        special_event_id = 11230
+        special_station_id = 13
+        
         if os.path.exists(pkl_path):
-            passing_traces, raw_traces, passing_metadata, raw_metadata = load_new_coincidence_data(pkl_path, passing_event_ids)
+            passing_traces, raw_traces, special_traces, passing_metadata, raw_metadata, special_metadata = \
+                load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id, special_station_id)
             
             if len(passing_traces) > 0 and len(raw_traces) > 0:
                 # Ensure proper shape for model prediction
@@ -652,6 +696,8 @@ def main(enable_sim_bl_814):
                 print(f"2016 backlobes shape: {all_2016_backlobes.shape}")
                 print(f"Passing cuts traces shape: {passing_traces.shape}")
                 print(f"Raw coincidence traces shape: {raw_traces.shape}")
+                if len(special_traces) > 0:
+                    print(f"Special traces shape: {special_traces.shape}")
                 
                 # Prepare data based on model type
                 if model_type == 'astrid_2d':
@@ -665,11 +711,15 @@ def main(enable_sim_bl_814):
                     if raw_traces.ndim == 3:
                         raw_traces = raw_traces[..., np.newaxis]
                         print(f'Changed raw traces to shape {raw_traces.shape}')
+                    if len(special_traces) > 0 and special_traces.ndim == 3:
+                        special_traces = special_traces[..., np.newaxis]
+                        print(f'Changed special traces to shape {special_traces.shape}')
                     
                     # Predict
                     prob_2016_backlobe = model.predict(all_2016_backlobes)
                     prob_passing = model.predict(passing_traces)
                     prob_raw = model.predict(raw_traces)
+                    prob_special = model.predict(special_traces) if len(special_traces) > 0 else np.array([])
                 else:
                     # For 1D CNNs: transpose from (n_events, 4, 256) to (n_events, 256, 4)
                     all_2016_backlobes_transpose = all_2016_backlobes.transpose(0, 2, 1)
@@ -680,16 +730,25 @@ def main(enable_sim_bl_814):
                     prob_2016_backlobe = model.predict(all_2016_backlobes_transpose)
                     prob_passing = model.predict(passing_traces_transpose)
                     prob_raw = model.predict(raw_traces_transpose)
+                    
+                    if len(special_traces) > 0:
+                        special_traces_transpose = special_traces.transpose(0, 2, 1)
+                        prob_special = model.predict(special_traces_transpose)
+                    else:
+                        prob_special = np.array([])
                 
                 # Flatten probabilities
                 prob_2016_backlobe = prob_2016_backlobe.flatten()
                 prob_passing = prob_passing.flatten()
                 prob_raw = prob_raw.flatten()
+                prob_special = prob_special.flatten() if len(prob_special) > 0 else np.array([])
                 
                 print(f'Mean network output - 2016 BL: {np.mean(prob_2016_backlobe):.3f}, Passing cuts: {np.mean(prob_passing):.3f}, Raw: {np.mean(prob_raw):.3f}')
+                if len(prob_special) > 0:
+                    print(f'Mean network output - Suspected RCR (Evt 11230, Stn 13): {np.mean(prob_special):.3f}')
                 
                 # Plot the check histogram
-                plot_check_histogram(prob_2016_backlobe, prob_passing, prob_raw, 
+                plot_check_histogram(prob_2016_backlobe, prob_passing, prob_raw, prob_special,
                                    amp, timestamp, prefix, learning_rate, model_type, config)
             else:
                 print(f"Warning: No traces loaded from coincidence data")

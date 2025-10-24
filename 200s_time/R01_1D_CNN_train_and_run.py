@@ -10,6 +10,7 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from tensorflow import keras
+from tensorflow.keras.models import Model  # Import Model for activation plotting
 from NuRadioReco.utilities import units
 from A0_Utilities import load_sim_rcr, load_data, pT, load_config
 
@@ -583,6 +584,128 @@ def plot_check_histogram(prob_2016, prob_passing, prob_raw, prob_special, amp, t
     plt.close()
 
 
+# --- NEW: Activation Visualization Function ---
+
+def plot_layer_activations(model, event_trace_original, model_type, save_path):
+    """
+    Visualizes the activations of convolutional layers for a single event.
+
+    Plots the 4 raw channels and heatmaps of activations for each conv layer.
+
+    Args:
+        model (keras.Model): The trained Keras model.
+        event_trace_original (np.ndarray): The event trace, shape (4, 256).
+        model_type (str): The type of model ('1d_cnn', 'astrid_2d', etc.).
+        save_path (str): Full path to save the output plot.
+    """
+    print(f"Generating activation map for model {model.name}...")
+    
+    # --- 1. Prepare input for the model ---
+    if model_type == 'astrid_2d':
+        # Expected shape: (1, 4, 256, 1)
+        event_for_model = event_trace_original[np.newaxis, ..., np.newaxis]
+        layer_keyword = 'conv2d'
+    else:
+        # Expected shape: (1, 256, 4)
+        event_for_model = event_trace_original.transpose(1, 0) # (256, 4)
+        event_for_model = event_for_model[np.newaxis, ...]      # (1, 256, 4)
+        layer_keyword = 'conv1d'
+
+    # --- 2. Create activation model ---
+    layer_outputs = []
+    layer_names = []
+    for layer in model.layers:
+        # Find conv layers, but ignore the parallel branches in 'Parallel_Strided_CNN'
+        # as their outputs are not the same length
+        if 'parallel_strided' in model.name.lower() and 'conv1d_' in layer.name.lower():
+             print(f'Skipping parallel branch layer: {layer.name}')
+             continue
+             
+        if layer_keyword in layer.name.lower():
+            layer_outputs.append(layer.output)
+            layer_names.append(layer.name)
+    
+    if not layer_outputs:
+        print(f"No '{layer_keyword}' layers found in model {model.name} to visualize.")
+        return
+
+    activation_model = Model(inputs=model.input, outputs=layer_outputs)
+
+    # --- 3. Get activations ---
+    try:
+        activations = activation_model.predict(event_for_model)
+        if not isinstance(activations, list):
+            activations = [activations]
+    except Exception as e:
+        print(f"Error during model prediction for activations: {e}")
+        print(f"Model input shape: {model.input.shape}, Data shape: {event_for_model.shape}")
+        quit(1)
+        return
+
+    num_layers = len(activations)
+    
+    # --- 4. Plot ---
+    fig, axes = plt.subplots(4 + num_layers, 1, figsize=(20, 4 + 3 * num_layers), sharex=True)
+    fig.suptitle(f'Layer Activations for {model.name} ({model_type}) on Special Event', fontsize=16)
+
+    time_samples = np.arange(event_trace_original.shape[1]) # Should be 256
+
+    # Plot Traces (Axes 0-3)
+    for i in range(4):
+        axes[i].plot(time_samples, event_trace_original[i, :], color='black', linewidth=1)
+        axes[i].set_ylabel(f'Channel {i}\n(Amplitude)')
+        axes[i].grid(True, linestyle='--', alpha=0.6)
+        axes[i].set_xlim(0, len(time_samples) - 1)
+
+    # Plot Heatmaps (Axes 4...)
+    for i in range(num_layers):
+        act = activations[i][0] # Get batch 0
+        ax = axes[4 + i]
+        
+        # Squeeze out any dimensions of size 1 (e.g., from Conv2D height)
+        act = np.squeeze(act) 
+        
+        if act.ndim != 2:
+            print(f"Warning: Activation for layer {layer_names[i]} has unexpected shape {act.shape}. Trying to reduce.")
+            # Try to average over first dimension if 3D
+            if act.ndim == 3:
+                act = np.mean(act, axis=0)
+            else:
+                ax.set_ylabel(f'{layer_names[i]}\n(Error: Shape {act.shape})')
+                continue
+        
+        # We want (filters, seq_len). Current shape is (seq_len, filters).
+        act_heatmap = act.T
+        
+        # Get sequence length for extent
+        seq_len = act_heatmap.shape[1]
+        
+        # We set extent so the x-axis matches the trace plot's samples
+        # Note: seq_len might not be 256 due to 'valid' padding or strides
+        x_start = 0
+        x_end = 255 # Default to full trace length
+        
+        # If sequence length is different, we can't perfectly align.
+        # For simplicity, we'll stretch the heatmap to fit the 256 samples.
+        # A more complex approach would involve calculating sample mapping.
+        im = ax.imshow(act_heatmap, aspect='auto', interpolation='nearest', cmap='viridis', 
+                       extent=[x_start, x_end, -0.5, act_heatmap.shape[0] - 0.5])
+        
+        ax.set_ylabel(f'{layer_names[i]}\n(Filters: {act_heatmap.shape[0]})')
+        fig.colorbar(im, ax=ax, orientation='vertical', pad=0.01)
+
+    axes[-1].set_xlabel('Time Sample')
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    
+    try:
+        plt.savefig(save_path)
+        print(f"Saved activation map to {save_path}")
+    except Exception as e:
+        print(f"Error saving activation plot: {e}")
+        
+    plt.close(fig)
+
+
 def main(enable_sim_bl_814):
     
     # Parse command-line arguments
@@ -687,6 +810,10 @@ def main(enable_sim_bl_814):
             passing_traces, raw_traces, special_traces, passing_metadata, raw_metadata, special_metadata = \
                 load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id, special_station_id)
             
+            # --- ADDED: Store the first special trace for activation plotting ---
+            # This trace has shape (4, 256)
+            special_trace_to_plot = special_traces[0].copy() if len(special_traces) > 0 else None
+            
             if len(passing_traces) > 0 and len(raw_traces) > 0:
                 # Ensure proper shape for model prediction
                 all_2016_backlobes = np.array(all_2016_backlobes)
@@ -750,6 +877,19 @@ def main(enable_sim_bl_814):
                 # Plot the check histogram
                 plot_check_histogram(prob_2016_backlobe, prob_passing, prob_raw, prob_special,
                                    amp, timestamp, prefix, learning_rate, model_type, config)
+                                   
+                # --- ADDED: Plot layer activations for the first special event ---
+                if special_trace_to_plot is not None:
+                    print(f"\n--- Generating activation plot for special event ---")
+                    # special_trace_to_plot has shape (4, 256)
+                    plot_save_dir = os.path.join(config['base_plot_path'], 'activation_maps')
+                    os.makedirs(plot_save_dir, exist_ok=True)
+                    plot_save_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_special_event_activations.png')
+                    
+                    plot_layer_activations(model, special_trace_to_plot, model_type, plot_save_path)
+                else:
+                    print(f"\n--- No special event trace found, skipping activation plot ---")
+
             else:
                 print(f"Warning: No traces loaded from coincidence data")
                 quit(1)

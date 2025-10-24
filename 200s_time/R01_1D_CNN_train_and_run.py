@@ -925,7 +925,7 @@ def main(enable_sim_bl_814):
     
     # Find indices of maximum network output
     max_rcr_idx = np.argmax(prob_training_rcr)
-    max_backlobe_idx = np.argmax(prob_training_backlobe)
+    max_backlobe_idx = np.argmin(prob_training_backlobe)
     
     print(f"Max RCR training output: {prob_training_rcr[max_rcr_idx]:.4f} at index {max_rcr_idx}")
     print(f"Max Backlobe training output: {prob_training_backlobe[max_backlobe_idx]:.4f} at index {max_backlobe_idx}")

@@ -26,6 +26,28 @@ from model_builder import (
 from data_channel_cycling import cycle_channels
 
 
+def _to_frequency_domain(traces, sampling_rate):
+    """Return magnitude of the real FFT for the final axis."""
+
+    if traces is None:
+        return traces
+
+    traces_array = np.asarray(traces)
+    if traces_array.size == 0:
+        return traces_array
+
+    freq = np.fft.rfft(traces_array, axis=-1)
+    scale = np.sqrt(2.0) / float(sampling_rate)
+    transformed = np.abs(freq) * scale
+    return transformed.astype(traces_array.dtype, copy=False)
+
+
+def maybe_transform_domain(traces, use_frequency, sampling_rate):
+    """Optionally convert traces to the frequency domain."""
+
+    return _to_frequency_domain(traces, sampling_rate) if use_frequency else traces
+
+
 def load_combined_backlobe_data(combined_pkl_path):
     """
     Load the combined backlobe data saved by refactor_converter.py.
@@ -83,6 +105,8 @@ def load_and_prep_data_for_training(config):
     """
     amp = config['amp']
     train_cut = config['train_cut']
+    use_frequency = config.get('use_frequency_domain', False)
+    sampling_rate = config.get('frequency_sampling_rate', 2.0)
 
     print(f"Loading data for amplifier type: {amp}")
 
@@ -112,6 +136,13 @@ def load_and_prep_data_for_training(config):
     backlobe_traces_rcr = np.array(tracesRCR)
 
     print(f'RCR shape: {sim_rcr.shape}, Backlobe 2016 shape: {backlobe_traces_2016.shape}, Backlobe RCR shape: {backlobe_traces_rcr.shape}')
+
+    if use_frequency:
+        print('Converting training and evaluation data to frequency domain...')
+        sim_rcr = maybe_transform_domain(sim_rcr, True, sampling_rate)
+        backlobe_traces_2016 = maybe_transform_domain(backlobe_traces_2016, True, sampling_rate)
+        backlobe_traces_rcr = maybe_transform_domain(backlobe_traces_rcr, True, sampling_rate)
+        print(f'   Frequency-domain shapes -> RCR: {sim_rcr.shape}, Backlobe2016: {backlobe_traces_2016.shape}, BacklobeRCR: {backlobe_traces_rcr.shape}')
 
     # Pick random subsets for training
     train_cut = int(min(sim_rcr.shape[0], backlobe_traces_2016.shape[0]))
@@ -182,16 +213,16 @@ def train_cnn_model(training_rcr, training_backlobe, config, learning_rate, mode
     
     # Prepare data based on model type
     if model_type == 'astrid_2d':
-        # For 2D CNN: shape should be (n_events, 4, 256, 1)
+        # For 2D CNN: shape should be (n_events, 4, n_samples, 1)
         x = np.vstack((training_rcr, training_backlobe))
         # Add channel dimension for 2D conv
-        x = np.expand_dims(x, axis=-1)  # (n_events, 4, 256, 1)
-        input_shape = (x.shape[1], x.shape[2], 1)  # (4, 256, 1)
+        x = np.expand_dims(x, axis=-1)
+        input_shape = (x.shape[1], x.shape[2], 1)
     else:
-        # For 1D CNNs: transpose from (n_events, 4, 256) to (n_events, 256, 4)
+        # For 1D CNNs: transpose from (n_events, 4, n_samples) to (n_events, n_samples, 4)
         x = np.vstack((training_rcr, training_backlobe))
         x = x.transpose(0, 2, 1)
-        input_shape = (x.shape[1], x.shape[2])  # (256, 4)
+        input_shape = (x.shape[1], x.shape[2])
     
     y = np.vstack((np.ones((training_rcr.shape[0], 1)), np.zeros((training_backlobe.shape[0], 1)))) # 1s for RCR (signal)
     s = np.arange(x.shape[0])
@@ -231,11 +262,13 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     """
     prefix = config['prefix']
     lr_str = f"lr{learning_rate:.0e}".replace('-', '')
+    domain_suffix = config.get('domain_suffix', '')
+    domain_label = config.get('domain_label', 'time')
 
     os.makedirs(model_path, exist_ok=True)
     os.makedirs(plot_path, exist_ok=True)
 
-    history_file = os.path.join(model_path, f'{timestamp}_{amp}_{model_type}_history_{prefix}_{lr_str}.pkl')
+    history_file = os.path.join(model_path, f'{timestamp}_{amp}_{model_type}_history_{prefix}_{lr_str}{domain_suffix}.pkl')
     with open(history_file, 'wb') as f: 
         pickle.dump(history.history, f)
     print(f'Training history saved to: {history_file}')
@@ -246,9 +279,9 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     plt.plot(history.history['val_loss'], label='Validation Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title(f'{model_type} Training vs Validation Loss (LR={learning_rate:.0e})')
+    plt.title(f'{model_type} Training vs Validation Loss ({domain_label}, LR={learning_rate:.0e})')
     plt.legend()
-    loss_plot_file = os.path.join(plot_path, f'{timestamp}_{amp}_{model_type}_loss_{prefix}_{lr_str}.png')
+    loss_plot_file = os.path.join(plot_path, f'{timestamp}_{amp}_{model_type}_loss_{prefix}_{lr_str}{domain_suffix}.png')
     plt.savefig(loss_plot_file)
     plt.close()
     print(f'Loss plot saved to: {loss_plot_file}')
@@ -259,9 +292,9 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
-    plt.title(f'{model_type} Training vs Validation Accuracy (LR={learning_rate:.0e})')
+    plt.title(f'{model_type} Training vs Validation Accuracy ({domain_label}, LR={learning_rate:.0e})')
     plt.legend()
-    accuracy_plot_file = os.path.join(plot_path, f'{timestamp}_{amp}_{model_type}_accuracy_{prefix}_{lr_str}.png')
+    accuracy_plot_file = os.path.join(plot_path, f'{timestamp}_{amp}_{model_type}_accuracy_{prefix}_{lr_str}{domain_suffix}.png')
     plt.savefig(accuracy_plot_file)
     plt.close()
     print(f'Accuracy plot saved to: {accuracy_plot_file}')
@@ -284,11 +317,11 @@ def evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all,
     """
     # Prepare data based on model type
     if model_type == 'astrid_2d':
-        # For 2D CNN: add channel dimension (n_events, 4, 256, 1)
+        # For 2D CNN: add channel dimension (n_events, 4, n_samples, 1)
         sim_rcr_expanded = np.expand_dims(sim_rcr_all, axis=-1)
         data_backlobe_expanded = np.expand_dims(data_backlobe_traces_rcr_all, axis=-1)
     else:
-        # For 1D CNNs: transpose from (n_events, 4, 256) to (n_events, 256, 4)
+        # For 1D CNNs: transpose from (n_events, 4, n_samples) to (n_events, n_samples, 4)
         sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
         data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
 
@@ -324,9 +357,10 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     amp = config['amp']
     prefix = config['prefix']
     output_cut_value = config['output_cut_value']
-    train_cut = config['train_cut']
     lr_str = f"lr{learning_rate:.0e}".replace('-', '')
     plot_path = config['base_plot_path']
+    domain_label = config.get('domain_label', 'time')
+    domain_suffix = config.get('domain_suffix', '')
     os.makedirs(plot_path, exist_ok=True)
 
     dense_val = False
@@ -338,7 +372,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     plt.xlabel('Network Output', fontsize=18)
     plt.ylabel('Number of Events', fontsize=18)
     plt.yscale('log')
-    plt.title(f'{amp}_time {model_type} RCR-Backlobe network output (LR={learning_rate:.0e})', fontsize=14)
+    plt.title(f'{amp}_{domain_label} {model_type} RCR-Backlobe network output (LR={learning_rate:.0e})', fontsize=14)
     plt.xticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0], fontsize=18)
     plt.yticks(fontsize=18)
 
@@ -361,7 +395,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     ax.annotate('RCR', xy=(1.0, -0.1), xycoords='axes fraction', ha='right', va='center', fontsize=12, color='red')
     plt.subplots_adjust(left=0.15, right=0.85, bottom=0.15, top=0.9)
 
-    hist_file = os.path.join(plot_path, f'{timestamp}_{amp}_{model_type}_network_output_{prefix}_{lr_str}.png')
+    hist_file = os.path.join(plot_path, f'{timestamp}_{amp}_{model_type}_network_output_{prefix}_{lr_str}{domain_suffix}.png')
     print(f'saving {hist_file}')
     plt.savefig(hist_file)
     plt.close()
@@ -477,7 +511,7 @@ def load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id=None
                     if traces is not None and len(traces) > 0:
                         traces = np.array(traces)
                         
-                        # If traces is a single trace (4, 256), wrap it in a list
+                        # If traces is a single trace (4, n_samples), wrap it in a list
                         if traces.ndim == 2:
                             traces = [traces]
                         
@@ -571,11 +605,14 @@ def plot_check_histogram(prob_2016, prob_passing, prob_raw, prob_special, amp, t
         max_overall_hist = max(max_overall_hist, np.max(hist_values_special))
     plt.ylim(7*1e-1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
 
-    plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=14)
+    domain_label = config.get('domain_label', 'time')
+    domain_suffix = config.get('domain_suffix', '')
+
+    plt.title(f'{amp}-{domain_label} 2016 BL and Coincidence Events Network Output', fontsize=14)
     plt.legend(loc='upper left', fontsize=10)
 
     lr_str = f"lr{learning_rate:.0e}".replace('-', '')
-    filename = f'{timestamp}_{amp}_{model_type}_check_histogram_{prefix}_{lr_str}.png'
+    filename = f'{timestamp}_{amp}_{model_type}_check_histogram_{prefix}_{lr_str}{domain_suffix}.png'
     out_path = os.path.join(config['base_plot_path'], filename)
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
@@ -586,29 +623,30 @@ def plot_check_histogram(prob_2016, prob_passing, prob_raw, prob_special, amp, t
 
 # --- NEW: Activation Visualization Function ---
 
-def plot_layer_activations(model, event_trace_original, model_type, save_path):
+def plot_layer_activations(model, event_trace_original, model_type, save_path, use_frequency_domain=False):
     """
     Visualizes the activations of convolutional layers for a single event.
 
-    Plots the 4 raw channels and heatmaps of activations for each conv layer.
+    Plots the 4 input channels and heatmaps of activations for each conv layer.
 
     Args:
         model (keras.Model): The trained Keras model.
-        event_trace_original (np.ndarray): The event trace, shape (4, 256).
+    event_trace_original (np.ndarray): The event trace, shape (4, n_samples).
         model_type (str): The type of model ('1d_cnn', 'astrid_2d', etc.).
         save_path (str): Full path to save the output plot.
     """
-    print(f"Generating activation map for model {model.name}...")
+    domain_desc = 'Frequency Domain' if use_frequency_domain else 'Time Domain'
+    print(f"Generating activation map for model {model.name} ({domain_desc})...")
     
     # --- 1. Prepare input for the model ---
     if model_type == 'astrid_2d':
-        # Expected shape: (1, 4, 256, 1)
+        # Expected shape: (1, 4, samples, 1)
         event_for_model = event_trace_original[np.newaxis, ..., np.newaxis]
         layer_keyword = 'conv2d'
     else:
-        # Expected shape: (1, 256, 4)
-        event_for_model = event_trace_original.transpose(1, 0) # (256, 4)
-        event_for_model = event_for_model[np.newaxis, ...]      # (1, 256, 4)
+        # Expected shape: (1, samples, 4)
+        event_for_model = event_trace_original.transpose(1, 0)
+        event_for_model = event_for_model[np.newaxis, ...]
         layer_keyword = 'conv1d'
 
     # --- 2. Create activation model ---
@@ -618,8 +656,8 @@ def plot_layer_activations(model, event_trace_original, model_type, save_path):
         # Find conv layers, but ignore the parallel branches in 'Parallel_Strided_CNN'
         # as their outputs are not the same length
         if 'parallel_strided' in model.name.lower() and 'conv1d_' in layer.name.lower():
-             print(f'Skipping parallel branch layer: {layer.name}')
-             continue
+            print(f'Skipping parallel branch layer: {layer.name}')
+            continue
              
         if layer_keyword in layer.name.lower():
             layer_outputs.append(layer.output)
@@ -646,16 +684,17 @@ def plot_layer_activations(model, event_trace_original, model_type, save_path):
     
     # --- 4. Plot ---
     fig, axes = plt.subplots(4 + num_layers, 1, figsize=(20, 4 + 3 * num_layers), sharex=True)
-    fig.suptitle(f'Layer Activations for {model.name} ({model_type}) on Special Event', fontsize=16)
+    fig.suptitle(f'Layer Activations for {model.name} ({model_type}, {domain_desc}) on Special Event', fontsize=16)
 
-    time_samples = np.arange(event_trace_original.shape[1]) # Should be 256
+    sequence_length = event_trace_original.shape[1]
+    sample_indices = np.arange(sequence_length)
 
     # Plot Traces (Axes 0-3)
     for i in range(4):
-        axes[i].plot(time_samples, event_trace_original[i, :], color='black', linewidth=1)
+        axes[i].plot(sample_indices, event_trace_original[i, :], color='black', linewidth=1)
         axes[i].set_ylabel(f'Channel {i}\n(Amplitude)')
         axes[i].grid(True, linestyle='--', alpha=0.6)
-        axes[i].set_xlim(0, len(time_samples) - 1)
+        axes[i].set_xlim(0, sequence_length - 1)
 
     # Plot Heatmaps (Axes 4...)
     for i in range(num_layers):
@@ -681,12 +720,12 @@ def plot_layer_activations(model, event_trace_original, model_type, save_path):
         seq_len = act_heatmap.shape[1]
         
         # We set extent so the x-axis matches the trace plot's samples
-        # Note: seq_len might not be 256 due to 'valid' padding or strides
+        # Note: seq_len might not be equal to the input length due to padding/stride
         x_start = 0
-        x_end = 255 # Default to full trace length
+        x_end = sequence_length - 1
         
         # If sequence length is different, we can't perfectly align.
-        # For simplicity, we'll stretch the heatmap to fit the 256 samples.
+        # For simplicity, we'll stretch the heatmap to align with the input length.
         # A more complex approach would involve calculating sample mapping.
         im = ax.imshow(act_heatmap, aspect='auto', interpolation='nearest', cmap='viridis', 
                        extent=[x_start, x_end, -0.5, act_heatmap.shape[0] - 0.5])
@@ -694,7 +733,7 @@ def plot_layer_activations(model, event_trace_original, model_type, save_path):
         ax.set_ylabel(f'{layer_names[i]}\n(Filters: {act_heatmap.shape[0]})')
         fig.colorbar(im, ax=ax, orientation='vertical', pad=0.01)
 
-    axes[-1].set_xlabel('Time Sample')
+    axes[-1].set_xlabel('Frequency Bin' if use_frequency_domain else 'Time Sample')
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     
     try:
@@ -725,15 +764,29 @@ def main(enable_sim_bl_814):
     amp = config['amp']
     prefix = config['prefix']
 
+    use_frequency = bool(config.get('use_frequency_domain', False))
+    config['use_frequency_domain'] = use_frequency
+    config['frequency_sampling_rate'] = float(config.get('frequency_sampling_rate', 2.0))
+    config['domain_label'] = 'freq' if use_frequency else 'time'
+    config['domain_suffix'] = '_freq' if use_frequency else ''
+
+    base_model_root = config['base_model_path']
+    base_plot_root = config['base_plot_path']
+
     # Create learning rate and model type specific directories
     lr_folder = f'lr_{learning_rate:.0e}'.replace('-', '')
     model_folder = model_type
     timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
-    config['base_model_path'] = os.path.join(config['base_model_path'], model_folder, lr_folder)
-    config['base_plot_path'] = os.path.join(config['base_plot_path'], f"{timestamp}", model_folder, lr_folder)
+    if use_frequency:
+        config['base_model_path'] = os.path.join(base_model_root, 'freq', model_folder, lr_folder)
+        config['base_plot_path'] = os.path.join(base_plot_root, 'freq', f"{timestamp}", model_folder, lr_folder)
+    else:
+        config['base_model_path'] = os.path.join(base_model_root, model_folder, lr_folder)
+        config['base_plot_path'] = os.path.join(base_plot_root, f"{timestamp}", model_folder, lr_folder)
 
     print(f"Starting CNN training at {timestamp} for {amp} amplifier")
     print(f"Model type: {model_type}, Learning rate: {learning_rate}")
+    print(f"Training domain: {config['domain_label']}")
     
     # Data load & prep
     data = load_and_prep_data_for_training(config)
@@ -748,7 +801,7 @@ def main(enable_sim_bl_814):
     # Apply channel cycling to RCR training data to augment the dataset
     print(f"\n--- Applying channel cycling to RCR training data ---")
     print(f"Original RCR training shape: {training_rcr.shape}")
-    # training_rcr has shape [n_events, 4, 256], so channel_axis=1
+    # training_rcr has shape [n_events, 4, n_samples], so channel_axis=1
     training_rcr = cycle_channels(training_rcr, channel_axis=1)
     print(f"Augmented RCR training shape: {training_rcr.shape}")
     print(f"RCR training data multiplied by factor of 7\n")
@@ -756,7 +809,7 @@ def main(enable_sim_bl_814):
     # Apply channel cycling to Backlobe training data to augment the dataset
     print(f"\n--- Applying channel cycling to Backlobe training data ---")
     print(f"Original Backlobe training shape: {training_backlobe.shape}")
-    # training_backlobe has shape [n_events, 4, 256], so channel_axis=1
+    # training_backlobe has shape [n_events, 4, n_samples], so channel_axis=1
     training_backlobe = cycle_channels(training_backlobe, channel_axis=1)
     print(f"Augmented Backlobe training shape: {training_backlobe.shape}")
     print(f"Backlobe training data multiplied by factor of 7\n")
@@ -769,7 +822,9 @@ def main(enable_sim_bl_814):
     print('------> Training is Done!')
 
     # Save model
-    model_save_path = os.path.join(config['base_model_path'], f'{timestamp}_{amp}_{model_type}_model_{prefix}_{lr_str}.h5')
+    domain_suffix = config['domain_suffix']
+    model_filename = f'{timestamp}_{amp}_{model_type}_model_{prefix}_{lr_str}{domain_suffix}.h5'
+    model_save_path = os.path.join(config['base_model_path'], model_filename)
     model.save(model_save_path)
     print(f'Model saved to: {model_save_path}')
 
@@ -811,7 +866,6 @@ def main(enable_sim_bl_814):
                 load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id, special_station_id)
             
             # --- ADDED: Store the first special trace for activation plotting ---
-            # This trace has shape (4, 256)
             special_trace_to_plot = special_traces[0].copy() if len(special_traces) > 0 else None
             
             if len(passing_traces) > 0 and len(raw_traces) > 0:
@@ -820,6 +874,19 @@ def main(enable_sim_bl_814):
                 passing_traces = np.array(passing_traces)
                 raw_traces = np.array(raw_traces)
                 
+                use_frequency = config.get('use_frequency_domain', False)
+                sampling_rate = config.get('frequency_sampling_rate', 2.0)
+                domain_suffix_local = config.get('domain_suffix', '')
+
+                if use_frequency:
+                    all_2016_backlobes = maybe_transform_domain(all_2016_backlobes, True, sampling_rate)
+                    passing_traces = maybe_transform_domain(passing_traces, True, sampling_rate)
+                    raw_traces = maybe_transform_domain(raw_traces, True, sampling_rate)
+                    if len(special_traces) > 0:
+                        special_traces = maybe_transform_domain(special_traces, True, sampling_rate)
+                    if special_trace_to_plot is not None:
+                        special_trace_to_plot = maybe_transform_domain(special_trace_to_plot, True, sampling_rate)
+
                 print(f"2016 backlobes shape: {all_2016_backlobes.shape}")
                 print(f"Passing cuts traces shape: {passing_traces.shape}")
                 print(f"Raw coincidence traces shape: {raw_traces.shape}")
@@ -848,7 +915,7 @@ def main(enable_sim_bl_814):
                     prob_raw = model.predict(raw_traces)
                     prob_special = model.predict(special_traces) if len(special_traces) > 0 else np.array([])
                 else:
-                    # For 1D CNNs: transpose from (n_events, 4, 256) to (n_events, 256, 4)
+                    # For 1D CNNs: transpose from (n_events, 4, n_samples) to (n_events, n_samples, 4)
                     all_2016_backlobes_transpose = all_2016_backlobes.transpose(0, 2, 1)
                     passing_traces_transpose = passing_traces.transpose(0, 2, 1)
                     raw_traces_transpose = raw_traces.transpose(0, 2, 1)
@@ -881,12 +948,11 @@ def main(enable_sim_bl_814):
                 # --- ADDED: Plot layer activations for the first special event ---
                 if special_trace_to_plot is not None:
                     print(f"\n--- Generating activation plot for special event ---")
-                    # special_trace_to_plot has shape (4, 256)
                     plot_save_dir = os.path.join(config['base_plot_path'], 'activation_maps')
                     os.makedirs(plot_save_dir, exist_ok=True)
-                    plot_save_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_special_event_activations.png')
+                    plot_save_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_special_event_activations{domain_suffix_local}.png')
                     
-                    plot_layer_activations(model, special_trace_to_plot, model_type, plot_save_path)
+                    plot_layer_activations(model, special_trace_to_plot, model_type, plot_save_path, use_frequency_domain=use_frequency)
                 else:
                     print(f"\n--- No special event trace found, skipping activation plot ---")
                     quit(1)
@@ -903,17 +969,18 @@ def main(enable_sim_bl_814):
 
     # --- ADDED: Plot layer activations for max output events from training sets ---
     print("\n--- Generating activation plots for max output training events ---")
+    domain_suffix_local = config.get('domain_suffix', '')
     plot_save_dir = os.path.join(config['base_plot_path'], 'activation_maps')
     os.makedirs(plot_save_dir, exist_ok=True)
     
     # Get network predictions on the ORIGINAL training sets (before augmentation)
-    # training_rcr_original and training_backlobe_original have shape (n_events, 4, 256)
+    # training_rcr_original and training_backlobe_original have shape (n_events, 4, n_samples)
     if model_type == 'astrid_2d':
         # For 2D CNN: add channel dimension
         training_rcr_for_pred = training_rcr_original[..., np.newaxis]
         training_backlobe_for_pred = training_backlobe_original[..., np.newaxis]
     else:
-        # For 1D CNNs: transpose from (n_events, 4, 256) to (n_events, 256, 4)
+    # For 1D CNNs: transpose from (n_events, 4, n_samples) to (n_events, n_samples, 4)
         training_rcr_for_pred = training_rcr_original.transpose(0, 2, 1)
         training_backlobe_for_pred = training_backlobe_original.transpose(0, 2, 1)
     
@@ -930,18 +997,18 @@ def main(enable_sim_bl_814):
     print(f"Max RCR training output: {prob_training_rcr[max_rcr_idx]:.4f} at index {max_rcr_idx}")
     print(f"Max Backlobe training output: {prob_training_backlobe[max_backlobe_idx]:.4f} at index {max_backlobe_idx}")
     
-    # Get the traces (shape: (4, 256))
+    # Get the traces (shape: (4, n_samples))
     max_rcr_trace = training_rcr_original[max_rcr_idx]
     max_backlobe_trace = training_backlobe_original[max_backlobe_idx]
     
     # Generate activation plots
-    rcr_activation_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_max_rcr_training_activations.png')
+    rcr_activation_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_max_rcr_training_activations{domain_suffix_local}.png')
     print(f"Generating activation plot for max RCR training event (index {max_rcr_idx})...")
-    plot_layer_activations(model, max_rcr_trace, model_type, rcr_activation_path)
+    plot_layer_activations(model, max_rcr_trace, model_type, rcr_activation_path, use_frequency_domain=config.get('use_frequency_domain', False))
     
-    backlobe_activation_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_max_backlobe_training_activations.png')
+    backlobe_activation_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_max_backlobe_training_activations{domain_suffix_local}.png')
     print(f"Generating activation plot for max Backlobe training event (index {max_backlobe_idx})...")
-    plot_layer_activations(model, max_backlobe_trace, model_type, backlobe_activation_path)
+    plot_layer_activations(model, max_backlobe_trace, model_type, backlobe_activation_path, use_frequency_domain=config.get('use_frequency_domain', False))
 
 
     # Plotting individual traces if needed 

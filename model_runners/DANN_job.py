@@ -44,13 +44,7 @@ if __name__ == "__main__":
     # Define available model types from your original script
     model_types = [
         '1d_cnn',
-        '1d_cnn_freq',
-        'parallel',
-        'parallel_freq',
-        'strided',
-        'strided_freq',
-        'astrid_2d',
-        'astrid_2d_freq'
+        '1d_cnn_freq'
     ]
     
     # --- Parameters to sweep for DANN ---

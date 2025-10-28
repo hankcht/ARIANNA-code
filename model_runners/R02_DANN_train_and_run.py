@@ -17,6 +17,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from tensorflow import keras
 from tensorflow.keras.models import Model
+from tensorflow.keras.layers import GlobalAveragePooling1D
 from NuRadioReco.utilities import units
 from pathlib import Path
 
@@ -26,11 +27,10 @@ from A0_Utilities import load_sim_rcr, load_data, pT, load_config
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model_builder import (
-    build_1d_model, build_parallel_model, build_strided_model, 
-    build_1d_model_freq, build_parallel_model_freq, build_strided_model_freq,
-    build_cnn_model, build_cnn_model_freq
+    build_1d_model,
+    build_1d_model_freq
 )
-from model_builder_dann import build_dann_model # Import new DANN builder
+from model_builder_DANN import build_dann_model, GradientReversalLayer  # Import DANN builder + custom layer
 from data_channel_cycling import cycle_channels
 # Import original data loading functions (modified slightly)
 from R01_1D_CNN_train_and_run import (
@@ -49,14 +49,11 @@ from R01_1D_CNN_train_and_run import (
 # We select the *base* feature extractor here. The DANN head will be added.
 MODEL_BUILDERS = {
     '1d_cnn': build_1d_model,
-    '1d_cnn_freq': build_1d_model_freq,
-    'parallel': build_parallel_model,
-    'parallel_freq': build_parallel_model_freq,
-    'strided': build_strided_model,
-    'strided_freq': build_strided_model_freq,
-    'astrid_2d': build_cnn_model,
-    'astrid_2d_freq': build_cnn_model_freq
+    '1d_cnn_freq': build_1d_model_freq
 }
+
+# Register custom layers so saved models can be reloaded without manual custom_objects.
+keras.utils.get_custom_objects()['GradientReversalLayer'] = GradientReversalLayer
 
 def get_base_model_builder(model_type):
     if model_type not in MODEL_BUILDERS:
@@ -97,28 +94,22 @@ def train_dann_model(training_rcr, training_backlobe, config, learning_rate, mod
     """
     Trains the DANN model.
     """
-    
-    # 1. Get the input shape
-    is_freq_model = model_type.endswith('_freq')
-    if is_freq_model:
-        input_seq_len = 129 # From R01
-    else:
-        input_seq_len = 256 # From R01
-
-    # 2. Get the base model builder
+    # 1. Get the base model builder
     builder_func = get_base_model_builder(model_type)
 
-    # 3. Determine data format (transpose or not)
-    # We call the builder once just to get the `requires_transpose` flag
-    # And the correct input shape
-    _temp_model, requires_transpose = MODEL_BUILDERS[model_type](learning_rate=learning_rate)
-    if requires_transpose:
-        input_shape = (input_seq_len, 4)
-    else:
-        # 2D models
-        input_shape = (4, input_seq_len, 1)
+    # 2. Determine data format (transpose or not)
+    _, requires_transpose = MODEL_BUILDERS[model_type]()
+    if not requires_transpose:
+        raise ValueError("Selected model type is not supported by the DANN pipeline (expects 1D models).")
 
-    # 4. Prepare data
+    # Determine expected input shape directly from the training arrays to mirror R01 handling
+    if training_rcr.ndim != 3:
+        raise ValueError(f"Unexpected training_rcr shape {training_rcr.shape}; expected (N, channels, samples).")
+    sample_axis = -1  # Trace length dimension
+    channel_axis = -2  # Channel dimension before transpose
+    input_shape = (training_rcr.shape[sample_axis], training_rcr.shape[channel_axis])
+
+    # 3. Prepare data
     x_rcr = training_rcr
     x_bl = training_backlobe
     
@@ -153,7 +144,7 @@ def train_dann_model(training_rcr, training_backlobe, config, learning_rate, mod
     print(f"Training data shape: {x_train.shape}, requires_transpose: {requires_transpose}")
     print(f"Classifier label shape: {y_train[0].shape}, Domain label shape: {y_train[1].shape}")
 
-    # 5. Build the full DANN model
+    # 4. Build the full DANN model
     base_extractor, _ = builder_func(input_shape=input_shape, learning_rate=learning_rate)
     
     dann_model = build_dann_model(base_extractor, 
@@ -163,7 +154,7 @@ def train_dann_model(training_rcr, training_backlobe, config, learning_rate, mod
     
     dann_model.summary()
 
-    # 6. Train the model
+    # 5. Train the model
     callbacks_list = [keras.callbacks.EarlyStopping(
         monitor='val_classifier_output_loss', # Monitor the validation loss of the *main task*
         patience=config['early_stopping_patience']

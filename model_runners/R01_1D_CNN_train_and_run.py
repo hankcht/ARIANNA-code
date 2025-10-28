@@ -25,6 +25,14 @@ from model_builder import (
 )
 from data_channel_cycling import cycle_channels
 
+# --- Model Selection and Building ---
+MODEL_TYPES = {
+    '1d_cnn': build_1d_model,
+    'parallel': build_parallel_model,
+    'strided': build_strided_model,
+    'parallel_strided': build_parallel_strided_model,
+    'astrid_2d': build_cnn_model
+}
 
 def _to_frequency_domain(traces, sampling_rate):
     """Return magnitude of the real FFT for the final axis."""
@@ -171,14 +179,7 @@ def load_and_prep_data_for_training(config):
     } 
 
 
-# --- Model Selection and Building ---
-MODEL_TYPES = {
-    '1d_cnn': build_1d_model,
-    'parallel': build_parallel_model,
-    'strided': build_strided_model,
-    'parallel_strided': build_parallel_strided_model,
-    'astrid_2d': build_cnn_model
-}
+
 
 def get_model_builder(model_type):
     """

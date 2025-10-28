@@ -63,6 +63,21 @@ def _compute_frequency_magnitude(traces, sampling_rate):
     return magnitude
 
 
+def _apply_frequency_edge_filter(freq_array, num_bins=10):
+    """Zero out low/high frequency bins in-place to suppress edge artifacts."""
+
+    freq_array = np.asarray(freq_array)
+    if freq_array.size == 0:
+        return freq_array
+
+    if freq_array.shape[-1] <= num_bins * 2:
+        return freq_array
+
+    freq_array[..., :num_bins] = 0
+    freq_array[..., -num_bins:] = 0
+    return freq_array
+
+
 def load_combined_backlobe_data(combined_pkl_path):
     """
     Load the combined backlobe data saved by refactor_converter.py.
@@ -122,11 +137,12 @@ def load_and_prep_data_for_training(config):
     train_cut = config['train_cut']
     is_freq_model = config.get('is_freq_model', False)
     sampling_rate = float(config.get('frequency_sampling_rate', 2.0))
+    use_filtering = bool(config.get('use_filtering', False))
     print(f"Loading data for amplifier type: {amp}")
 
     # Load simulation RCR data
     sim_folder = os.path.join(config['base_sim_rcr_folder'], amp, config['sim_rcr_date'])
-    sim_rcr = load_sim_rcr(sim_folder, noise_enabled=config['noise_enabled'], filter_enabled=True, amp=amp)
+    sim_rcr = load_sim_rcr(sim_folder, noise_enabled=config['noise_enabled'], filter_enabled=use_filtering, amp=amp)
     
     # Add 8.14.25 sim RCR
     if amp == '200s': 
@@ -155,6 +171,12 @@ def load_and_prep_data_for_training(config):
         sim_rcr = _compute_frequency_magnitude(sim_rcr, sampling_rate)
         backlobe_traces_2016 = _compute_frequency_magnitude(backlobe_traces_2016, sampling_rate)
         backlobe_traces_rcr = _compute_frequency_magnitude(backlobe_traces_rcr, sampling_rate)
+
+        if use_filtering:
+            print('Applying frequency edge filtering (zeroing first/last 10 bins).')
+            sim_rcr = _apply_frequency_edge_filter(sim_rcr)
+            backlobe_traces_2016 = _apply_frequency_edge_filter(backlobe_traces_2016)
+            backlobe_traces_rcr = _apply_frequency_edge_filter(backlobe_traces_rcr)
 
     print(f'RCR shape: {sim_rcr.shape}, Backlobe 2016 shape: {backlobe_traces_2016.shape}, Backlobe RCR shape: {backlobe_traces_rcr.shape}')
 
@@ -766,6 +788,8 @@ def main(enable_sim_bl_814):
     config = load_config()
     amp = config['amp']
     prefix = config['prefix']
+    use_filtering = bool(config.get('use_filtering', False))
+    config['use_filtering'] = use_filtering
 
     is_freq_model = model_type.endswith('_freq')
     config['is_freq_model'] = is_freq_model
@@ -884,6 +908,16 @@ def main(enable_sim_bl_814):
                         special_traces = _compute_frequency_magnitude(special_traces, sampling_rate)
                     if special_trace_to_plot is not None:
                         special_trace_to_plot = _compute_frequency_magnitude(special_trace_to_plot[np.newaxis, ...], sampling_rate)[0]
+
+                    if use_filtering:
+                        print('Applying frequency edge filtering to coincidence validation sets.')
+                        all_2016_backlobes = _apply_frequency_edge_filter(all_2016_backlobes)
+                        passing_traces = _apply_frequency_edge_filter(passing_traces)
+                        raw_traces = _apply_frequency_edge_filter(raw_traces)
+                        if len(special_traces) > 0:
+                            special_traces = _apply_frequency_edge_filter(special_traces)
+                        if special_trace_to_plot is not None:
+                            special_trace_to_plot = _apply_frequency_edge_filter(special_trace_to_plot)
 
 
                 print(f"2016 backlobes shape: {all_2016_backlobes.shape}")

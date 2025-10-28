@@ -84,8 +84,8 @@ if __name__ == "__main__":
         'parallel_freq',
         'strided',
         'strided_freq',
-        'parallel_strided',
-        'parallel_strided_freq',
+        # 'parallel_strided',
+        # 'parallel_strided_freq',
         'astrid_2d',
         'astrid_2d_freq'
     ]

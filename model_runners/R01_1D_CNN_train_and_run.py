@@ -47,6 +47,22 @@ MODEL_TYPES = {
 }
 
 
+def _compute_frequency_magnitude(traces, sampling_rate):
+    """Return scaled magnitude of the real FFT along the final axis."""
+
+    traces_array = np.asarray(traces)
+    if traces_array.size == 0:
+        return traces_array
+
+    freq = np.fft.rfft(traces_array, axis=-1)
+    magnitude = np.abs(freq)
+    if sampling_rate > 0:
+        magnitude = magnitude / sampling_rate * np.sqrt(2.0)
+    if np.issubdtype(traces_array.dtype, np.floating):
+        magnitude = magnitude.astype(traces_array.dtype, copy=False)
+    return magnitude
+
+
 def load_combined_backlobe_data(combined_pkl_path):
     """
     Load the combined backlobe data saved by refactor_converter.py.
@@ -104,6 +120,8 @@ def load_and_prep_data_for_training(config):
     """
     amp = config['amp']
     train_cut = config['train_cut']
+    use_fft = config.get('use_fft', False)
+    sampling_rate = float(config.get('frequency_sampling_rate', 2.0))
     print(f"Loading data for amplifier type: {amp}")
 
     # Load simulation RCR data
@@ -130,6 +148,12 @@ def load_and_prep_data_for_training(config):
     # Convert to numpy arrays (they should already be arrays from the pickle, but ensure consistency)
     backlobe_traces_2016 = np.array(traces2016)
     backlobe_traces_rcr = np.array(tracesRCR)
+
+    if use_fft:
+        print('Converting training and evaluation data to frequency-domain magnitude...')
+    sim_rcr = _compute_frequency_magnitude(sim_rcr, sampling_rate)
+    backlobe_traces_2016 = _compute_frequency_magnitude(backlobe_traces_2016, sampling_rate)
+    backlobe_traces_rcr = _compute_frequency_magnitude(backlobe_traces_rcr, sampling_rate)
 
     print(f'RCR shape: {sim_rcr.shape}, Backlobe 2016 shape: {backlobe_traces_2016.shape}, Backlobe RCR shape: {backlobe_traces_rcr.shape}')
 
@@ -612,15 +636,18 @@ def plot_layer_activations(model, event_trace_original, model_type, save_path):
     """
     domain_desc = 'Frequency Domain' if model_type.endswith('_freq') else 'Time Domain'
     print(f"Generating activation map for model {model.name} ({domain_desc})...")
+
+    event_array = np.asarray(event_trace_original)
+    event_for_plot = np.abs(event_array) if np.iscomplexobj(event_array) else event_array
     
     # --- 1. Prepare input for the model ---
     if model_type.startswith('astrid_2d'):
         # Expected shape: (1, 4, samples, 1)
-        event_for_model = event_trace_original[np.newaxis, ..., np.newaxis]
+        event_for_model = event_array[np.newaxis, ..., np.newaxis]
         layer_keyword = 'conv2d'
     else:
         # Expected shape: (1, samples, 4)
-        event_for_model = event_trace_original.transpose(1, 0)
+        event_for_model = event_array.transpose(1, 0)
         event_for_model = event_for_model[np.newaxis, ...]
         layer_keyword = 'conv1d'
 
@@ -661,12 +688,12 @@ def plot_layer_activations(model, event_trace_original, model_type, save_path):
     fig, axes = plt.subplots(4 + num_layers, 1, figsize=(20, 4 + 3 * num_layers), sharex=True)
     fig.suptitle(f'Layer Activations for {model.name} ({model_type}, {domain_desc}) on Special Event', fontsize=16)
 
-    sequence_length = event_trace_original.shape[1]
+    sequence_length = event_for_plot.shape[1]
     sample_indices = np.arange(sequence_length)
 
     # Plot Traces (Axes 0-3)
     for i in range(4):
-        axes[i].plot(sample_indices, event_trace_original[i, :], color='black', linewidth=1)
+        axes[i].plot(sample_indices, event_for_plot[i, :], color='black', linewidth=1)
         axes[i].set_ylabel(f'Channel {i}\n(Amplitude)')
         axes[i].grid(True, linestyle='--', alpha=0.6)
         axes[i].set_xlim(0, sequence_length - 1)
@@ -740,6 +767,8 @@ def main(enable_sim_bl_814):
     prefix = config['prefix']
 
     is_freq_model = model_type.endswith('_freq')
+    config['use_fft'] = is_freq_model
+    config['frequency_sampling_rate'] = float(config.get('frequency_sampling_rate', 2.0))
     config['domain_label'] = 'freq' if is_freq_model else 'time'
     config['domain_suffix'] = '_freq' if is_freq_model else ''
 
@@ -838,16 +867,28 @@ def main(enable_sim_bl_814):
             passing_traces, raw_traces, special_traces, passing_metadata, raw_metadata, special_metadata = \
                 load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id, special_station_id)
             
-            # --- ADDED: Store the first special trace for activation plotting ---
             special_trace_to_plot = special_traces[0].copy() if len(special_traces) > 0 else None
-            
+
             if len(passing_traces) > 0 and len(raw_traces) > 0:
                 # Ensure proper shape for model prediction
                 all_2016_backlobes = np.array(all_2016_backlobes)
                 passing_traces = np.array(passing_traces)
                 raw_traces = np.array(raw_traces)
-                
+                special_traces = np.array(special_traces) if len(special_traces) > 0 else special_traces
+
+                use_fft = config.get('use_fft', False)
+                sampling_rate = float(config.get('frequency_sampling_rate', 2.0))
                 domain_suffix_local = config.get('domain_suffix', '')
+
+                if use_fft:
+                    all_2016_backlobes = _compute_frequency_magnitude(all_2016_backlobes, sampling_rate)
+                    passing_traces = _compute_frequency_magnitude(passing_traces, sampling_rate)
+                    raw_traces = _compute_frequency_magnitude(raw_traces, sampling_rate)
+                    if len(special_traces) > 0:
+                        special_traces = _compute_frequency_magnitude(special_traces, sampling_rate)
+                    if special_trace_to_plot is not None:
+                        special_trace_to_plot = _compute_frequency_magnitude(special_trace_to_plot[np.newaxis, ...], sampling_rate)[0]
+
 
                 print(f"2016 backlobes shape: {all_2016_backlobes.shape}")
                 print(f"Passing cuts traces shape: {passing_traces.shape}")

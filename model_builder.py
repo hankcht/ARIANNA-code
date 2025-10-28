@@ -75,6 +75,49 @@ def build_1d_model(input_shape=(256, 4), learning_rate=0.001):
     return model, True
 
 
+def build_cnn_model_freq(input_shape=(4, 129, 1), learning_rate=0.001):
+    """Frequency-domain variant of Astrid CNN with reduced sequence length."""
+
+    model = Sequential(name="Astrid_CNN")
+    model.add(Conv2D(20, (4, 10), activation='relu', input_shape=input_shape, groups=1))
+    model.add(Conv2D(10, (1, 10), activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Flatten())
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+    return model, False
+
+
+def build_1d_model_freq(input_shape=(129, 4), learning_rate=0.001):
+    """Frequency-domain variant of the 1D CNN with reduced sequence length."""
+
+    model = Sequential(name="1D_CNN")
+
+    model.add(Conv1D(32, kernel_size=5, padding="valid", activation="relu", input_shape=input_shape))
+    model.add(Conv1D(32, kernel_size=15, padding="valid", activation="relu"))
+    model.add(Conv1D(32, kernel_size=31, padding="valid", activation="relu"))
+    model.add(BatchNormalization())
+    model.add(ReLU())
+
+    model.add(Conv1D(64, kernel_size=7, padding="valid", activation="relu"))
+
+    model.add(GlobalAveragePooling1D())
+
+    model.add(Dense(32, activation="relu"))
+    model.add(Dense(1, activation="sigmoid"))
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+    return model, True
+
+
 def build_parallel_model(input_shape=(256, 4), learning_rate=0.001):
     """
     Builds and compiles a Keras model with parallel Conv1D branches.
@@ -134,6 +177,37 @@ def build_parallel_model(input_shape=(256, 4), learning_rate=0.001):
     return model, True
 
 
+def build_parallel_model_freq(input_shape=(129, 4), learning_rate=0.001):
+    """Frequency-domain variant of the parallel Conv1D model."""
+
+    inputs = Input(shape=input_shape)
+
+    branch_a = Conv1D(32, kernel_size=5, padding="same", activation="relu")(inputs)
+    branch_b = Conv1D(32, kernel_size=15, padding="same", activation="relu")(inputs)
+    branch_c = Conv1D(32, kernel_size=31, padding="same", activation="relu")(inputs)
+
+    concatenated = Concatenate()([branch_a, branch_b, branch_c])
+
+    x = BatchNormalization()(concatenated)
+    x = ReLU()(x)
+
+    x = Conv1D(64, kernel_size=7, padding="valid", activation="relu")(x)
+
+    x = GlobalAveragePooling1D()(x)
+
+    x = Dense(32, activation="relu")(x)
+    outputs = Dense(1, activation="sigmoid")(x)
+
+    model = Model(inputs=inputs, outputs=outputs, name="Parallel_CNN")
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+    return model, True
+
+
 def build_strided_model(input_shape=(256, 4), learning_rate=0.001):
     """
     Builds and compiles a 1D CNN model using strided convolutions in the first 3 layers.
@@ -163,6 +237,32 @@ def build_strided_model(input_shape=(256, 4), learning_rate=0.001):
     model.add(GlobalAveragePooling1D())
 
     # Dense classification head
+    model.add(Dense(32, activation="relu"))
+    model.add(Dense(1, activation="sigmoid"))
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+    return model, True
+
+
+def build_strided_model_freq(input_shape=(129, 4), learning_rate=0.001):
+    """Frequency-domain variant of the strided Conv1D model."""
+
+    model = Sequential(name="Strided_CNN")
+
+    model.add(Conv1D(32, kernel_size=5, strides=5, padding="same", activation="relu", input_shape=input_shape))
+    model.add(Conv1D(32, kernel_size=15, strides=15, padding="same", activation="relu"))
+    model.add(Conv1D(32, kernel_size=31, strides=31, padding="same", activation="relu"))
+    model.add(BatchNormalization())
+    model.add(ReLU())
+
+    model.add(Conv1D(64, kernel_size=7, padding="same", activation="relu"))
+
+    model.add(GlobalAveragePooling1D())
+
     model.add(Dense(32, activation="relu"))
     model.add(Dense(1, activation="sigmoid"))
 
@@ -227,6 +327,43 @@ def build_parallel_strided_model(input_shape=(256, 4), learning_rate=0.001):
     # Create the final Model
     model = Model(inputs=inputs, outputs=outputs, name="Parallel_Strided_CNN")
     
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+    return model, True
+
+
+def build_parallel_strided_model_freq(input_shape=(129, 4), learning_rate=0.001):
+    """Frequency-domain variant of the parallel strided Conv1D model."""
+
+    inputs = Input(shape=input_shape)
+
+    branch_a = Conv1D(32, kernel_size=5, strides=5, padding="same", activation="relu")(inputs)
+    branch_b = Conv1D(32, kernel_size=15, strides=15, padding="same", activation="relu")(inputs)
+    branch_c = Conv1D(32, kernel_size=31, strides=31, padding="same", activation="relu")(inputs)
+
+    print(f"Branch A shape: {branch_a.shape}")
+    print(f"Branch B shape: {branch_b.shape}")
+    print(f"Branch C shape: {branch_c.shape}")
+
+    concatenated = Concatenate()([branch_a, branch_b, branch_c])
+
+    x = BatchNormalization()(concatenated)
+    x = ReLU()(x)
+
+    x = Conv1D(64, kernel_size=15, strides=2, padding="same", activation="relu")(x)
+
+    x = Conv1D(64, kernel_size=7, padding="same", activation="relu")(x)
+
+    x = GlobalAveragePooling1D()(x)
+
+    x = Dense(32, activation="relu")(x)
+    outputs = Dense(1, activation="sigmoid")(x)
+
+    model = Model(inputs=inputs, outputs=outputs, name="Parallel_Strided_CNN")
+
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
         loss='binary_crossentropy',

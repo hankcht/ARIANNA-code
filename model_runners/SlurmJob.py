@@ -77,7 +77,18 @@ def main(multi_run):
 if __name__ == "__main__":
 
     # Define available model types
-    model_types = ['1d_cnn', 'parallel', 'strided', 'astrid_2d'] # 'parallel_strided', need debug
+    model_types = [
+        '1d_cnn',
+        '1d_cnn_freq',
+        'parallel',
+        'parallel_freq',
+        'strided',
+        'strided_freq',
+        'parallel_strided',
+        'parallel_strided_freq',
+        'astrid_2d',
+        'astrid_2d_freq'
+    ]
     
     # Run refactored model with multiple learning rate settings and model types
     learning_rates = [1e-4, 5e-5, 1e-5, 5e-6, 1e-6]

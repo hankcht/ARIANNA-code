@@ -20,42 +20,31 @@ from A0_Utilities import load_sim_rcr, load_data, pT, load_config
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model_builder import (
     build_cnn_model,
+    build_cnn_model_freq,
     build_1d_model,
+    build_1d_model_freq,
     build_parallel_model,
+    build_parallel_model_freq,
     build_strided_model,
-    build_parallel_strided_model
+    build_strided_model_freq,
+    build_parallel_strided_model,
+    build_parallel_strided_model_freq
 )
 from data_channel_cycling import cycle_channels
 
 # --- Model Selection and Building ---
 MODEL_TYPES = {
     '1d_cnn': build_1d_model,
+    '1d_cnn_freq': build_1d_model_freq,
     'parallel': build_parallel_model,
+    'parallel_freq': build_parallel_model_freq,
     'strided': build_strided_model,
+    'strided_freq': build_strided_model_freq,
     'parallel_strided': build_parallel_strided_model,
-    'astrid_2d': build_cnn_model
+    'parallel_strided_freq': build_parallel_strided_model_freq,
+    'astrid_2d': build_cnn_model,
+    'astrid_2d_freq': build_cnn_model_freq
 }
-
-def _to_frequency_domain(traces, sampling_rate):
-    """Return magnitude of the real FFT for the final axis."""
-
-    if traces is None:
-        return traces
-
-    traces_array = np.asarray(traces)
-    if traces_array.size == 0:
-        return traces_array
-
-    freq = np.fft.rfft(traces_array, axis=-1)
-    scale = np.sqrt(2.0) / float(sampling_rate)
-    transformed = np.abs(freq) * scale
-    return transformed.astype(traces_array.dtype, copy=False)
-
-
-def maybe_transform_domain(traces, use_frequency, sampling_rate):
-    """Optionally convert traces to the frequency domain."""
-
-    return _to_frequency_domain(traces, sampling_rate) if use_frequency else traces
 
 
 def load_combined_backlobe_data(combined_pkl_path):
@@ -115,9 +104,6 @@ def load_and_prep_data_for_training(config):
     """
     amp = config['amp']
     train_cut = config['train_cut']
-    use_frequency = config.get('use_frequency_domain', False)
-    sampling_rate = config.get('frequency_sampling_rate', 2.0)
-
     print(f"Loading data for amplifier type: {amp}")
 
     # Load simulation RCR data
@@ -146,13 +132,6 @@ def load_and_prep_data_for_training(config):
     backlobe_traces_rcr = np.array(tracesRCR)
 
     print(f'RCR shape: {sim_rcr.shape}, Backlobe 2016 shape: {backlobe_traces_2016.shape}, Backlobe RCR shape: {backlobe_traces_rcr.shape}')
-
-    if use_frequency:
-        print('Converting training and evaluation data to frequency domain...')
-        sim_rcr = maybe_transform_domain(sim_rcr, True, sampling_rate)
-        backlobe_traces_2016 = maybe_transform_domain(backlobe_traces_2016, True, sampling_rate)
-        backlobe_traces_rcr = maybe_transform_domain(backlobe_traces_rcr, True, sampling_rate)
-        print(f'   Frequency-domain shapes -> RCR: {sim_rcr.shape}, Backlobe2016: {backlobe_traces_2016.shape}, BacklobeRCR: {backlobe_traces_rcr.shape}')
 
     # Pick random subsets for training
     train_cut = int(min(sim_rcr.shape[0], backlobe_traces_2016.shape[0]))
@@ -619,7 +598,7 @@ def plot_check_histogram(prob_2016, prob_passing, prob_raw, prob_special, amp, t
 
 # --- NEW: Activation Visualization Function ---
 
-def plot_layer_activations(model, event_trace_original, model_type, save_path, use_frequency_domain=False):
+def plot_layer_activations(model, event_trace_original, model_type, save_path):
     """
     Visualizes the activations of convolutional layers for a single event.
 
@@ -627,15 +606,15 @@ def plot_layer_activations(model, event_trace_original, model_type, save_path, u
 
     Args:
         model (keras.Model): The trained Keras model.
-    event_trace_original (np.ndarray): The event trace, shape (4, n_samples).
+        event_trace_original (np.ndarray): The event trace, shape (4, n_samples).
         model_type (str): The type of model ('1d_cnn', 'astrid_2d', etc.).
         save_path (str): Full path to save the output plot.
     """
-    domain_desc = 'Frequency Domain' if use_frequency_domain else 'Time Domain'
+    domain_desc = 'Frequency Domain' if model_type.endswith('_freq') else 'Time Domain'
     print(f"Generating activation map for model {model.name} ({domain_desc})...")
     
     # --- 1. Prepare input for the model ---
-    if model_type == 'astrid_2d':
+    if model_type.startswith('astrid_2d'):
         # Expected shape: (1, 4, samples, 1)
         event_for_model = event_trace_original[np.newaxis, ..., np.newaxis]
         layer_keyword = 'conv2d'
@@ -729,7 +708,7 @@ def plot_layer_activations(model, event_trace_original, model_type, save_path, u
         ax.set_ylabel(f'{layer_names[i]}\n(Filters: {act_heatmap.shape[0]})')
         fig.colorbar(im, ax=ax, orientation='vertical', pad=0.01)
 
-    axes[-1].set_xlabel('Frequency Bin' if use_frequency_domain else 'Time Sample')
+    axes[-1].set_xlabel('Frequency Bin' if model_type.endswith('_freq') else 'Time Sample')
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     
     try:
@@ -760,11 +739,9 @@ def main(enable_sim_bl_814):
     amp = config['amp']
     prefix = config['prefix']
 
-    use_frequency = bool(config.get('use_frequency_domain', False))
-    config['use_frequency_domain'] = use_frequency
-    config['frequency_sampling_rate'] = float(config.get('frequency_sampling_rate', 2.0))
-    config['domain_label'] = 'freq' if use_frequency else 'time'
-    config['domain_suffix'] = '_freq' if use_frequency else ''
+    is_freq_model = model_type.endswith('_freq')
+    config['domain_label'] = 'freq' if is_freq_model else 'time'
+    config['domain_suffix'] = '_freq' if is_freq_model else ''
 
     base_model_root = config['base_model_path']
     base_plot_root = config['base_plot_path']
@@ -773,7 +750,7 @@ def main(enable_sim_bl_814):
     lr_folder = f'lr_{learning_rate:.0e}'.replace('-', '')
     model_folder = model_type
     timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
-    if use_frequency:
+    if is_freq_model:
         config['base_model_path'] = os.path.join(base_model_root, 'freq', model_folder, lr_folder)
         config['base_plot_path'] = os.path.join(base_plot_root, 'freq', f"{timestamp}", model_folder, lr_folder)
     else:
@@ -870,18 +847,7 @@ def main(enable_sim_bl_814):
                 passing_traces = np.array(passing_traces)
                 raw_traces = np.array(raw_traces)
                 
-                use_frequency = config.get('use_frequency_domain', False)
-                sampling_rate = config.get('frequency_sampling_rate', 2.0)
                 domain_suffix_local = config.get('domain_suffix', '')
-
-                if use_frequency:
-                    all_2016_backlobes = maybe_transform_domain(all_2016_backlobes, True, sampling_rate)
-                    passing_traces = maybe_transform_domain(passing_traces, True, sampling_rate)
-                    raw_traces = maybe_transform_domain(raw_traces, True, sampling_rate)
-                    if len(special_traces) > 0:
-                        special_traces = maybe_transform_domain(special_traces, True, sampling_rate)
-                    if special_trace_to_plot is not None:
-                        special_trace_to_plot = maybe_transform_domain(special_trace_to_plot, True, sampling_rate)
 
                 print(f"2016 backlobes shape: {all_2016_backlobes.shape}")
                 print(f"Passing cuts traces shape: {passing_traces.shape}")
@@ -944,7 +910,7 @@ def main(enable_sim_bl_814):
                     os.makedirs(plot_save_dir, exist_ok=True)
                     plot_save_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_special_event_activations{domain_suffix_local}.png')
                     
-                    plot_layer_activations(model, special_trace_to_plot, model_type, plot_save_path, use_frequency_domain=use_frequency)
+                    plot_layer_activations(model, special_trace_to_plot, model_type, plot_save_path)
                 else:
                     print(f"\n--- No special event trace found, skipping activation plot ---")
                     quit(1)
@@ -994,11 +960,11 @@ def main(enable_sim_bl_814):
     # Generate activation plots
     rcr_activation_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_max_rcr_training_activations{domain_suffix_local}.png')
     print(f"Generating activation plot for max RCR training event (index {max_rcr_idx})...")
-    plot_layer_activations(model, max_rcr_trace, model_type, rcr_activation_path, use_frequency_domain=config.get('use_frequency_domain', False))
+    plot_layer_activations(model, max_rcr_trace, model_type, rcr_activation_path)
     
     backlobe_activation_path = os.path.join(plot_save_dir, f'{timestamp}_{amp}_{model_type}_max_backlobe_training_activations{domain_suffix_local}.png')
     print(f"Generating activation plot for max Backlobe training event (index {max_backlobe_idx})...")
-    plot_layer_activations(model, max_backlobe_trace, model_type, backlobe_activation_path, use_frequency_domain=config.get('use_frequency_domain', False))
+    plot_layer_activations(model, max_backlobe_trace, model_type, backlobe_activation_path)
 
 
     # Plotting individual traces if needed 

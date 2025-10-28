@@ -12,6 +12,8 @@ from matplotlib import pyplot as plt
 from tensorflow import keras
 from tensorflow.keras.models import Model  # Import Model for activation plotting
 from NuRadioReco.utilities import units
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[1] / '200s_time'))
 from A0_Utilities import load_sim_rcr, load_data, pT, load_config
 
 # Add parent directory to path to import model_builder and data_channel_cycling

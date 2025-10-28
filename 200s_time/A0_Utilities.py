@@ -18,7 +18,7 @@ from NuRadioReco.utilities.io_utilities import read_pickle
 import yaml
 
 
-def load_config(config_path="/pub/tangch3/ARIANNA/DeepLearning/code/200s_time/model_runners/config.yaml", station_id=None):
+def load_config(config_path="/pub/tangch3/ARIANNA/DeepLearning/code/model_runners/config.yaml", station_id=None):
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 

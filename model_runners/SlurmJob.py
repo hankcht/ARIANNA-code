@@ -85,6 +85,6 @@ if __name__ == "__main__":
     # Iterate over both model types and learning rates
     for model_type in model_types:
         for lr in learning_rates:
-            cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/model_runners/R01_1D_CNN_train_and_run.py --learning_rate {lr} --model_type {model_type}'
+            cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/model_runners/R01_1D_CNN_train_and_run.py --learning_rate {lr} --model_type {model_type}'
             RunMultipleJobs(cmd, jobName=f'{model_type}_lr_{lr}') # check A0 to input config path
     

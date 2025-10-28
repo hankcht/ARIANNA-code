@@ -780,12 +780,8 @@ def main(enable_sim_bl_814):
     lr_folder = f'lr_{learning_rate:.0e}'.replace('-', '')
     model_folder = model_type
     timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
-    if is_freq_model:
-        config['base_model_path'] = os.path.join(base_model_root, 'freq', model_folder, lr_folder)
-        config['base_plot_path'] = os.path.join(base_plot_root, 'freq', f"{timestamp}", model_folder, lr_folder)
-    else:
-        config['base_model_path'] = os.path.join(base_model_root, model_folder, lr_folder)
-        config['base_plot_path'] = os.path.join(base_plot_root, f"{timestamp}", model_folder, lr_folder)
+    config['base_model_path'] = os.path.join(base_model_root, model_folder, lr_folder)
+    config['base_plot_path'] = os.path.join(base_plot_root, f"{timestamp}", model_folder, lr_folder)
 
     print(f"Starting CNN training at {timestamp} for {amp} amplifier")
     print(f"Model type: {model_type}, Learning rate: {learning_rate}")

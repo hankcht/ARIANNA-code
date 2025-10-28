@@ -310,6 +310,9 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     print(f'Loss plot saved to: {loss_plot_file}')
 
     # Plot accuracy
+    if 'accuracy' not in history.history:
+        print('No accuracy data found in history; skipping accuracy plot.')
+        return
     plt.figure(figsize=(6, 4))
     plt.plot(history.history['accuracy'], label='Training Accuracy')
     plt.plot(history.history['val_accuracy'], label='Validation Accuracy')

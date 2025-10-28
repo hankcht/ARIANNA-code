@@ -151,9 +151,10 @@ def load_and_prep_data_for_training(config):
 
     if is_freq_model:
         print('Converting training and evaluation data to frequency-domain magnitude...')
-    sim_rcr = _compute_frequency_magnitude(sim_rcr, sampling_rate)
-    backlobe_traces_2016 = _compute_frequency_magnitude(backlobe_traces_2016, sampling_rate)
-    backlobe_traces_rcr = _compute_frequency_magnitude(backlobe_traces_rcr, sampling_rate)
+        # Only transform traces to frequency space when explicitly training frequency-domain models.
+        sim_rcr = _compute_frequency_magnitude(sim_rcr, sampling_rate)
+        backlobe_traces_2016 = _compute_frequency_magnitude(backlobe_traces_2016, sampling_rate)
+        backlobe_traces_rcr = _compute_frequency_magnitude(backlobe_traces_rcr, sampling_rate)
 
     print(f'RCR shape: {sim_rcr.shape}, Backlobe 2016 shape: {backlobe_traces_2016.shape}, Backlobe RCR shape: {backlobe_traces_rcr.shape}')
 

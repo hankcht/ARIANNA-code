@@ -120,7 +120,7 @@ def load_and_prep_data_for_training(config):
     """
     amp = config['amp']
     train_cut = config['train_cut']
-    use_fft = config.get('use_fft', False)
+    is_freq_model = config.get('is_freq_model', False)
     sampling_rate = float(config.get('frequency_sampling_rate', 2.0))
     print(f"Loading data for amplifier type: {amp}")
 
@@ -149,7 +149,7 @@ def load_and_prep_data_for_training(config):
     backlobe_traces_2016 = np.array(traces2016)
     backlobe_traces_rcr = np.array(tracesRCR)
 
-    if use_fft:
+    if is_freq_model:
         print('Converting training and evaluation data to frequency-domain magnitude...')
     sim_rcr = _compute_frequency_magnitude(sim_rcr, sampling_rate)
     backlobe_traces_2016 = _compute_frequency_magnitude(backlobe_traces_2016, sampling_rate)
@@ -767,7 +767,7 @@ def main(enable_sim_bl_814):
     prefix = config['prefix']
 
     is_freq_model = model_type.endswith('_freq')
-    config['use_fft'] = is_freq_model
+    config['is_freq_model'] = is_freq_model
     config['frequency_sampling_rate'] = float(config.get('frequency_sampling_rate', 2.0))
     config['domain_label'] = 'freq' if is_freq_model else 'time'
     config['domain_suffix'] = '_freq' if is_freq_model else ''
@@ -876,11 +876,10 @@ def main(enable_sim_bl_814):
                 raw_traces = np.array(raw_traces)
                 special_traces = np.array(special_traces) if len(special_traces) > 0 else special_traces
 
-                use_fft = config.get('use_fft', False)
                 sampling_rate = float(config.get('frequency_sampling_rate', 2.0))
                 domain_suffix_local = config.get('domain_suffix', '')
 
-                if use_fft:
+                if is_freq_model:
                     all_2016_backlobes = _compute_frequency_magnitude(all_2016_backlobes, sampling_rate)
                     passing_traces = _compute_frequency_magnitude(passing_traces, sampling_rate)
                     raw_traces = _compute_frequency_magnitude(raw_traces, sampling_rate)

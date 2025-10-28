@@ -30,12 +30,12 @@ if not os.path.exists('plots'):
 
 # --- Main Visualization Logic ---
 if __name__ == "__main__":
-    # Build the models
-    astrid_cnn = build_cnn_model(input_shape=(n_channels, n_samples, 1), learning_rate=learning_rate)
-    model_1d = build_1d_model(input_shape=(n_samples, n_channels), learning_rate=learning_rate)
-    parallel_model = build_parallel_model(input_shape=(n_samples, n_channels), learning_rate=learning_rate)
-    strided_model = build_strided_model(input_shape=(n_samples, n_channels), learning_rate=learning_rate)
-    parallel_strided_model = build_parallel_strided_model(input_shape=(n_samples, n_channels), learning_rate=learning_rate)
+    # Build the models (transpose flag ignored for visualization here)
+    astrid_cnn, _ = build_cnn_model(learning_rate=learning_rate)
+    model_1d, _ = build_1d_model(learning_rate=learning_rate)
+    parallel_model, _ = build_parallel_model(learning_rate=learning_rate)
+    strided_model, _ = build_strided_model(learning_rate=learning_rate)
+    parallel_strided_model, _ = build_parallel_strided_model(learning_rate=learning_rate)
 
     models = [
         ("1D Model", model_1d),

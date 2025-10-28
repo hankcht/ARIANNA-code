@@ -207,33 +207,27 @@ def train_cnn_model(training_rcr, training_backlobe, config, learning_rate, mode
         model_type (str): Type of model to build.
 
     Returns:
-        tuple: (keras.Model, keras.callbacks.History) The trained model and training history.
+        tuple: (keras.Model, keras.callbacks.History, bool) The trained model, history, and transpose flag.
     """
     model_builder = get_model_builder(model_type)
-    
-    # Prepare data based on model type
-    if model_type == 'astrid_2d':
-        # For 2D CNN: shape should be (n_events, 4, n_samples, 1)
-        x = np.vstack((training_rcr, training_backlobe))
-        # Add channel dimension for 2D conv
-        x = np.expand_dims(x, axis=-1)
-        input_shape = (x.shape[1], x.shape[2], 1)
-    else:
-        # For 1D CNNs: transpose from (n_events, 4, n_samples) to (n_events, n_samples, 4)
-        x = np.vstack((training_rcr, training_backlobe))
+    model, requires_transpose = model_builder(learning_rate=learning_rate)
+
+    x = np.vstack((training_rcr, training_backlobe))
+    if requires_transpose:
         x = x.transpose(0, 2, 1)
-        input_shape = (x.shape[1], x.shape[2])
-    
+    else:
+        if x.ndim == 3:
+            x = np.expand_dims(x, axis=-1)
+
     y = np.vstack((np.ones((training_rcr.shape[0], 1)), np.zeros((training_backlobe.shape[0], 1)))) # 1s for RCR (signal)
     s = np.arange(x.shape[0])
     np.random.shuffle(s)
     x = x[s]
     y = y[s]
-    print(f"Training data shape: {x.shape}, label shape: {y.shape}, input_shape: {input_shape}")
+    print(f"Training data shape: {x.shape}, label shape: {y.shape}, requires_transpose: {requires_transpose}")
 
     callbacks_list = [keras.callbacks.EarlyStopping(monitor='val_loss', patience=config['early_stopping_patience'])]
 
-    model = model_builder(input_shape=input_shape, learning_rate=learning_rate)
     model.summary()
 
     history = model.fit(x, y,
@@ -243,7 +237,7 @@ def train_cnn_model(training_rcr, training_backlobe, config, learning_rate, mode
                         verbose=config['verbose_fit'],
                         callbacks=callbacks_list)
 
-    return model, history
+    return model, history, requires_transpose
 
 
 def save_and_plot_training_history(history, model_path, plot_path, timestamp, amp, config, learning_rate, model_type):
@@ -301,7 +295,7 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
 
 
 # --- Model Evaluation ---
-def evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all, output_cut_value, config, model_type):
+def evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all, output_cut_value, config, model_type, requires_transpose):
     """
     Evaluates the model on above curve Backlobe in RCR template.
 
@@ -310,20 +304,19 @@ def evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all,
         sim_rcr_all (np.ndarray): All RCR simulation data.
         data_backlobe_traces_rcr_all (np.ndarray): All Backlobe data (TracesRCR).
         output_cut_value (float): The threshold for classification.
-        model_type (str): Type of model being evaluated.
+    model_type (str): Type of model being evaluated.
+    requires_transpose (bool): Whether inputs require axis transpose to match the model.
 
     Returns:
         tuple: (prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency)
     """
     # Prepare data based on model type
-    if model_type == 'astrid_2d':
-        # For 2D CNN: add channel dimension (n_events, 4, n_samples, 1)
-        sim_rcr_expanded = np.expand_dims(sim_rcr_all, axis=-1)
-        data_backlobe_expanded = np.expand_dims(data_backlobe_traces_rcr_all, axis=-1)
-    else:
-        # For 1D CNNs: transpose from (n_events, 4, n_samples) to (n_events, n_samples, 4)
+    if requires_transpose:
         sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
         data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
+    else:
+        sim_rcr_expanded = sim_rcr_all if sim_rcr_all.ndim == 4 else sim_rcr_all[..., np.newaxis]
+        data_backlobe_expanded = data_backlobe_traces_rcr_all if data_backlobe_traces_rcr_all.ndim == 4 else data_backlobe_traces_rcr_all[..., np.newaxis]
 
     prob_rcr = model.predict(sim_rcr_expanded, batch_size=config['keras_batch_size'])
     prob_backlobe = model.predict(data_backlobe_expanded, batch_size=config['keras_batch_size'])
@@ -818,7 +811,7 @@ def main(enable_sim_bl_814):
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
     
     # Train model
-    model, history = train_cnn_model(training_rcr, training_backlobe, config, learning_rate, model_type)
+    model, history, requires_transpose = train_cnn_model(training_rcr, training_backlobe, config, learning_rate, model_type)
     print('------> Training is Done!')
 
     # Save model
@@ -835,7 +828,7 @@ def main(enable_sim_bl_814):
     # Evaluate & plot network output histogram ON RCR-like TRACES!
     prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \
         evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all, 
-                                 config['output_cut_value'], config, model_type)
+                                 config['output_cut_value'], config, model_type, requires_transpose)
 
     plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency, 
                                  config, timestamp, learning_rate, model_type)
@@ -893,9 +886,22 @@ def main(enable_sim_bl_814):
                 if len(special_traces) > 0:
                     print(f"Special traces shape: {special_traces.shape}")
                 
-                # Prepare data based on model type
-                if model_type == 'astrid_2d':
-                    # For 2D CNN: add channel dimension if needed
+                # Prepare data based on model requirements
+                if requires_transpose:
+                    all_2016_backlobes_prepped = all_2016_backlobes.transpose(0, 2, 1)
+                    passing_traces_prepped = passing_traces.transpose(0, 2, 1)
+                    raw_traces_prepped = raw_traces.transpose(0, 2, 1)
+
+                    prob_2016_backlobe = model.predict(all_2016_backlobes_prepped)
+                    prob_passing = model.predict(passing_traces_prepped)
+                    prob_raw = model.predict(raw_traces_prepped)
+
+                    if len(special_traces) > 0:
+                        special_traces_prepped = special_traces.transpose(0, 2, 1)
+                        prob_special = model.predict(special_traces_prepped)
+                    else:
+                        prob_special = np.array([])
+                else:
                     if all_2016_backlobes.ndim == 3:
                         all_2016_backlobes = all_2016_backlobes[..., np.newaxis]
                         print(f'Changed 2016 backlobes to shape {all_2016_backlobes.shape}')
@@ -908,28 +914,11 @@ def main(enable_sim_bl_814):
                     if len(special_traces) > 0 and special_traces.ndim == 3:
                         special_traces = special_traces[..., np.newaxis]
                         print(f'Changed special traces to shape {special_traces.shape}')
-                    
-                    # Predict
+
                     prob_2016_backlobe = model.predict(all_2016_backlobes)
                     prob_passing = model.predict(passing_traces)
                     prob_raw = model.predict(raw_traces)
                     prob_special = model.predict(special_traces) if len(special_traces) > 0 else np.array([])
-                else:
-                    # For 1D CNNs: transpose from (n_events, 4, n_samples) to (n_events, n_samples, 4)
-                    all_2016_backlobes_transpose = all_2016_backlobes.transpose(0, 2, 1)
-                    passing_traces_transpose = passing_traces.transpose(0, 2, 1)
-                    raw_traces_transpose = raw_traces.transpose(0, 2, 1)
-                    
-                    # Predict
-                    prob_2016_backlobe = model.predict(all_2016_backlobes_transpose)
-                    prob_passing = model.predict(passing_traces_transpose)
-                    prob_raw = model.predict(raw_traces_transpose)
-                    
-                    if len(special_traces) > 0:
-                        special_traces_transpose = special_traces.transpose(0, 2, 1)
-                        prob_special = model.predict(special_traces_transpose)
-                    else:
-                        prob_special = np.array([])
                 
                 # Flatten probabilities
                 prob_2016_backlobe = prob_2016_backlobe.flatten()
@@ -975,14 +964,12 @@ def main(enable_sim_bl_814):
     
     # Get network predictions on the ORIGINAL training sets (before augmentation)
     # training_rcr_original and training_backlobe_original have shape (n_events, 4, n_samples)
-    if model_type == 'astrid_2d':
-        # For 2D CNN: add channel dimension
-        training_rcr_for_pred = training_rcr_original[..., np.newaxis]
-        training_backlobe_for_pred = training_backlobe_original[..., np.newaxis]
-    else:
-    # For 1D CNNs: transpose from (n_events, 4, n_samples) to (n_events, n_samples, 4)
+    if requires_transpose:
         training_rcr_for_pred = training_rcr_original.transpose(0, 2, 1)
         training_backlobe_for_pred = training_backlobe_original.transpose(0, 2, 1)
+    else:
+        training_rcr_for_pred = training_rcr_original[..., np.newaxis]
+        training_backlobe_for_pred = training_backlobe_original[..., np.newaxis]
     
     print(f"Predicting on RCR training set ({training_rcr_original.shape[0]} events)...")
     prob_training_rcr = model.predict(training_rcr_for_pred, batch_size=config['keras_batch_size']).flatten()

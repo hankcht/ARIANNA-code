@@ -12,7 +12,7 @@ from tensorflow.keras.layers import (
 )
 
 
-def build_cnn_model(input_shape, learning_rate=0.001):
+def build_cnn_model(input_shape=(4, 256, 1), learning_rate=0.001):
     """
     Builds and compiles the Astrid CNN model architecture (2D CNN).
 
@@ -21,7 +21,7 @@ def build_cnn_model(input_shape, learning_rate=0.001):
         learning_rate (float): Learning rate for the Adam optimizer.
 
     Returns:
-        keras.Model: The compiled Keras model.
+        tuple: (compiled keras.Model, bool requires_transpose)
     """
     model = Sequential(name="Astrid_CNN")
     model.add(Conv2D(20, (4, 10), activation='relu', input_shape=input_shape, groups=1))
@@ -34,10 +34,10 @@ def build_cnn_model(input_shape, learning_rate=0.001):
         loss='binary_crossentropy',
         metrics=['accuracy']
     )
-    return model
+    return model, False
 
 
-def build_1d_model(input_shape, learning_rate=0.001):
+def build_1d_model(input_shape=(256, 4), learning_rate=0.001):
     """
     Builds and compiles a 1D CNN model with sequential multi-scale convolutions.
 
@@ -46,7 +46,7 @@ def build_1d_model(input_shape, learning_rate=0.001):
         learning_rate (float): Learning rate for the Adam optimizer.
 
     Returns:
-        keras.Model: The compiled Keras model.
+        tuple: (compiled keras.Model, bool requires_transpose)
     """
     model = Sequential(name="1D_CNN")
 
@@ -72,10 +72,10 @@ def build_1d_model(input_shape, learning_rate=0.001):
         loss='binary_crossentropy',
         metrics=['accuracy']
     )
-    return model
+    return model, True
 
 
-def build_parallel_model(input_shape, learning_rate=0.001):
+def build_parallel_model(input_shape=(256, 4), learning_rate=0.001):
     """
     Builds and compiles a Keras model with parallel Conv1D branches.
 
@@ -84,7 +84,7 @@ def build_parallel_model(input_shape, learning_rate=0.001):
         learning_rate (float): Learning rate for the Adam optimizer.
 
     Returns:
-        keras.Model: The compiled Keras model.
+        tuple: (compiled keras.Model, bool requires_transpose)
     """
     # 1. Define the input layer - this is the entry point for your data
     inputs = Input(shape=input_shape)
@@ -131,10 +131,10 @@ def build_parallel_model(input_shape, learning_rate=0.001):
         loss='binary_crossentropy',
         metrics=['accuracy']
     )
-    return model
+    return model, True
 
 
-def build_strided_model(input_shape, learning_rate=0.001):
+def build_strided_model(input_shape=(256, 4), learning_rate=0.001):
     """
     Builds and compiles a 1D CNN model using strided convolutions in the first 3 layers.
     This reduces the sequence length progressively while extracting features.
@@ -144,7 +144,7 @@ def build_strided_model(input_shape, learning_rate=0.001):
         learning_rate (float): Learning rate for the Adam optimizer.
 
     Returns:
-        keras.Model: The compiled Keras model.
+        tuple: (compiled keras.Model, bool requires_transpose)
     """
     model = Sequential(name="Strided_CNN")
 
@@ -171,10 +171,10 @@ def build_strided_model(input_shape, learning_rate=0.001):
         loss='binary_crossentropy',
         metrics=['accuracy']
     )
-    return model
+    return model, True
 
 
-def build_parallel_strided_model(input_shape, learning_rate=0.001):
+def build_parallel_strided_model(input_shape=(256, 4), learning_rate=0.001):
     """
     Builds and compiles a parallel Conv1D model with strided convolutions.
     Combines the parallel branch architecture with strided downsampling.
@@ -184,7 +184,7 @@ def build_parallel_strided_model(input_shape, learning_rate=0.001):
         learning_rate (float): Learning rate for the Adam optimizer.
 
     Returns:
-        keras.Model: The compiled Keras model.
+        tuple: (compiled keras.Model, bool requires_transpose)
     """
     # Define the input layer
     inputs = Input(shape=input_shape)
@@ -232,4 +232,4 @@ def build_parallel_strided_model(input_shape, learning_rate=0.001):
         loss='binary_crossentropy',
         metrics=['accuracy']
     )
-    return model
+    return model, True

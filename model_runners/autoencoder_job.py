@@ -46,14 +46,18 @@ if __name__ == "__main__":
     # You would need to add '1d_autoencoder_freq' to model_builder_autoencoder.py
     # and add it to this list to run it.
     model_types = [
-        '1d_autoencoder',
+        # '1d_autoencoder',
+        # '1d_autoencoder_freq',
+        # '1d_autoencoder_tightneck',
+        # '1d_autoencoder_denoising',
+        # '1d_autoencoder_mae',
+        # '1d_autoencoder_dropout',
+        # '1d_autoencoder_sequential',
+        # '1d_autoencoder_parallel'
         '1d_autoencoder_freq',
-        '1d_autoencoder_tightneck',
-        '1d_autoencoder_denoising',
-        '1d_autoencoder_mae',
-        '1d_autoencoder_dropout',
-        '1d_autoencoder_sequential',
-        '1d_autoencoder_parallel'
+        '1d_autoencoder_bottleneck_freq',
+        '1d_autoencoder_denoising_freq',
+        '1d_autoencoder_mae_loss_freq'
     ]
     
     # --- Parameters to sweep for Autoencoder ---

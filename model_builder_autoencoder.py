@@ -510,3 +510,166 @@ def build_autoencoder_sequential_model(input_shape=(256, 4), learning_rate=0.001
     
     # This model expects (samples, channels), so transpose is needed.
     return model, True
+
+
+def build_autoencoder_freq_bottleneck_model(input_shape=(129, 4), learning_rate=0.001):
+    """
+    Step 1: Combines the FFT-based model with a Tighter Bottleneck.
+    
+    The latent space filter count is reduced from 64 to 32 to force
+    a more aggressive compression.
+    """
+    inputs = Input(shape=input_shape)
+
+    # --- Encoder ---
+    # (129, 4) -> (64, 16)
+    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(inputs)
+    x = BatchNormalization()(x)
+    
+    # (64, 16) -> (32, 32)
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # (32, 32) -> (16, 32)  <--- STEP 1 CHANGE
+    # Tighter bottleneck: Reduced filters from 64 to 32
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization(name="latent_space")(x)
+    
+    # --- Decoder ---
+    # (16, 32) -> (32, 32)
+    # This layer's filter count (32) matches the corresponding encoder layer (E2)
+    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # (32, 32) -> (64, 16)
+    # This layer's filter count (16) matches the corresponding encoder layer (E1)
+    x = Conv1DTranspose(16, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # (64, 16) -> (129, 4)
+    outputs = Conv1DTranspose(
+        input_shape[-1], kernel_size=3, padding="valid", activation="linear", strides=2
+    )(x)
+
+    model = Model(inputs=inputs, outputs=outputs, name="Step1_Bottleneck_AE")
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+        loss='mse',
+        metrics=['mae']
+    )
+    
+    return model, True
+
+def build_autoencoder_freq_denoising_model(input_shape=(129, 4), learning_rate=0.001, noise_stddev=0.1):
+    """
+    Step 2: Adds Denoising to the Step 1 (Bottleneck) model.
+    
+    A GaussianNoise layer is added after the input. The model is
+    fed noisy data but must reconstruct the original, clean data,
+    forcing it to learn the true underlying manifold.
+    """
+    inputs = Input(shape=input_shape, name="clean_input")
+
+    # --- STEP 2 CHANGE ---
+    # Add noise to the inputs. The encoder will see this.
+    noisy_inputs = GaussianNoise(stddev=noise_stddev)(inputs)
+    # ---------------------
+
+    # --- Encoder ---
+    # Encoder starts from the NOISY inputs
+    # (129, 4) -> (64, 16)
+    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(noisy_inputs)
+    x = BatchNormalization()(x)
+    
+    # (64, 16) -> (32, 32)
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # (32, 32) -> (16, 32)
+    # Tighter bottleneck (from Step 1)
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization(name="latent_space")(x)
+    
+    # --- Decoder ---
+    # (16, 32) -> (32, 32)
+    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # (32, 32) -> (64, 16)
+    x = Conv1DTranspose(16, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # (64, 16) -> (129, 4)
+    # The final output
+    outputs = Conv1DTranspose(
+        input_shape[-1], kernel_size=3, padding="valid", activation="linear", strides=2
+    )(x)
+
+    # Note: The model's input is the CLEAN data (inputs)
+    # The model's output is the reconstruction (outputs)
+    # The noise is applied internally.
+    model = Model(inputs=inputs, outputs=outputs, name="Step2_Denoising_AE")
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+        loss='mse',
+        metrics=['mae']
+    )
+    
+    return model, True
+
+def build_autoencoder_freq_mae_loss_model(input_shape=(129, 4), learning_rate=0.001, noise_stddev=0.1):
+    """
+    Step 3: Combines the Denoising Bottleneck model with MAE loss.
+    
+    This is the full model from Step 2, but compiled with
+    Mean Absolute Error ('mae') as the loss function, which can be
+    more robust to outliers (i.e., less likely to try and learn
+    the signal's "spiky" frequency features).
+    """
+    inputs = Input(shape=input_shape, name="clean_input")
+
+    # Add noise to the inputs
+    noisy_inputs = GaussianNoise(stddev=noise_stddev)(inputs)
+
+    # --- Encoder ---
+    # (129, 4) -> (64, 16)
+    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(noisy_inputs)
+    x = BatchNormalization()(x)
+    
+    # (64, 16) -> (32, 32)
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # (32, 32) -> (16, 32)
+    # Tighter bottleneck
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization(name="latent_space")(x)
+    
+    # --- Decoder ---
+    # (16, 32) -> (32, 32)
+    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # (32, 32) -> (64, 16)
+    x = Conv1DTranspose(16, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # (64, 16) -> (129, 4)
+    outputs = Conv1DTranspose(
+        input_shape[-1], kernel_size=3, padding="valid", activation="linear", strides=2
+    )(x)
+
+    model = Model(inputs=inputs, outputs=outputs, name="Step3_MAE_Denoise_AE")
+
+    # --- STEP 3 CHANGE ---
+    # Compile with 'mae' loss
+    model.compile(
+        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+        loss='mae',
+        metrics=['mse', 'mae'] # Monitor both
+    )
+    # ---------------------
+    
+    return model, True

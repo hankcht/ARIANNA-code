@@ -26,7 +26,14 @@ sys.path.append(str(Path(__file__).resolve().parents[1] / '200s_time'))
 from A0_Utilities import load_config
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from model_builder_autoencoder import build_autoencoder_model # Import AE builder
+from model_builder_autoencoder import (
+    build_autoencoder_model, # Import AE builder
+    build_autoencoder_dropout_model,
+    build_autoencoder_mae_model,
+    build_autoencoder_freq_model,
+    build_autoencoder_tightneck_model,
+    build_autoencoder_denoising_model
+)
 from data_channel_cycling import cycle_channels
 # Import original data loading functions
 from R01_1D_CNN_train_and_run import (
@@ -39,8 +46,12 @@ from R01_1D_CNN_train_and_run import (
 
 # --- Model Selection (Autoencoders) ---
 MODEL_BUILDERS = {
-    '1d_autoencoder': build_autoencoder_model
-    # '1d_autoencoder_freq': build_autoencoder_model_freq (if you create this)
+    '1d_autoencoder': build_autoencoder_model,
+    '1d_autoencoder_freq': build_autoencoder_freq_model,
+    '1d_autoencoder_tightneck': build_autoencoder_tightneck_model,
+    '1d_autoencoder_denoising': build_autoencoder_denoising_model,
+    '1d_autoencoder_mae': build_autoencoder_mae_model,
+    '1d_autoencoder_dropout': build_autoencoder_dropout_model
 }
 
 

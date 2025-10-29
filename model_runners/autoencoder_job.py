@@ -12,7 +12,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/dfs8/sbarwi
     header += "#SBATCH --partition=standard            ##Partition/queue name\n" 
     header += "#SBATCH --time=0-01:00:00               ##Max runtime D-HH:MM:SS, 1 hour\n"
     header += "#SBATCH --nodes=1                       ##Nodes to be used\n"
-    header += "#SBATCH --ntasks=10                    ##Number of processes to be launched (CPUs)\n" 
+    header += "#SBATCH --ntasks=3                    ##Number of processes to be launched (CPUs)\n" 
     header += "#SBATCH --mem-per-cpu=6G                ##Requesting 6GB memory per CPU\n"
     header += "#SBATCH --output={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.out'))
     header += "#SBATCH --error={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.err'))
@@ -46,7 +46,12 @@ if __name__ == "__main__":
     # You would need to add '1d_autoencoder_freq' to model_builder_autoencoder.py
     # and add it to this list to run it.
     model_types = [
-        '1d_autoencoder'
+        '1d_autoencoder',
+        '1d_autoencoder_freq',
+        '1d_autoencoder_tightneck',
+        '1d_autoencoder_denoising',
+        '1d_autoencoder_mae',
+        '1d_autoencoder_dropout'
     ]
     
     # --- Parameters to sweep for Autoencoder ---

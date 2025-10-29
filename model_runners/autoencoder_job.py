@@ -2,7 +2,7 @@ import os
 import subprocess
 
 # This function is copied from your SlurmJob.py
-def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3/ARIANNA/DeepLearning/'):
+def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/dfs8/sbarwick_lab/ariannaproject/tangch3/'):
     cmd = f'{commandtorun}'
     print(f'running {cmd}')
 
@@ -16,7 +16,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     header += "#SBATCH --mem-per-cpu=6G                ##Requesting 6GB memory per CPU\n"
     header += "#SBATCH --output={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.out'))
     header += "#SBATCH --error={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.err'))
-    header += "#SBATCH --mail-type=FAIL,END\n"
+    header += "#SBATCH --mail-type=FAIL\n"
     header += "#SBATCH --mail-user=tangch3@uci.edu\n"
     header += "export PYTHONPATH=$NuM:$PYTHONPATH\n"
     header += "export PYTHONPATH=$Nu:$PYTHONPATH\n"
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         for lr in learning_rates:
             # Note: Changed to R03_Autoencoder_train_and_run.py
             cmd = (
-                f'python /pub/tangch3/ARIANNA/DeepLearning/code/model_runners/R03_Autoencoder_train_and_run.py '
+                f'python /dfs8/sbarwick_lab/ariannaproject/tangch3/ARIANNA-code/model_runners/R03_Autoencoder_train_and_run.py '
                 f'--learning_rate {lr} '
                 f'--model_type {model_type}'
             )

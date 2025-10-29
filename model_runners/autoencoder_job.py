@@ -51,7 +51,9 @@ if __name__ == "__main__":
         '1d_autoencoder_tightneck',
         '1d_autoencoder_denoising',
         '1d_autoencoder_mae',
-        '1d_autoencoder_dropout'
+        '1d_autoencoder_dropout',
+        '1d_autoencoder_sequential',
+        '1d_autoencoder_parallel'
     ]
     
     # --- Parameters to sweep for Autoencoder ---

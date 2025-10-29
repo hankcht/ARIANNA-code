@@ -32,7 +32,9 @@ from model_builder_autoencoder import (
     build_autoencoder_mae_model,
     build_autoencoder_freq_model,
     build_autoencoder_tightneck_model,
-    build_autoencoder_denoising_model
+    build_autoencoder_denoising_model,
+    build_autoencoder_parallel_model,
+    build_autoencoder_sequential_model
 )
 from data_channel_cycling import cycle_channels
 # Import original data loading functions
@@ -51,7 +53,9 @@ MODEL_BUILDERS = {
     '1d_autoencoder_tightneck': build_autoencoder_tightneck_model,
     '1d_autoencoder_denoising': build_autoencoder_denoising_model,
     '1d_autoencoder_mae': build_autoencoder_mae_model,
-    '1d_autoencoder_dropout': build_autoencoder_dropout_model
+    '1d_autoencoder_dropout': build_autoencoder_dropout_model,
+    '1d_autoencoder_parallel': build_autoencoder_parallel_model,
+    '1d_autoencoder_sequential': build_autoencoder_sequential_model
 }
 
 

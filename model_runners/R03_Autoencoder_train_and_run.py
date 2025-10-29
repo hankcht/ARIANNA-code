@@ -10,11 +10,8 @@ Trains a Convolutional Autoencoder for Anomaly Detection.
 
 import os
 import sys
-import re
-import pickle
 import argparse
 from datetime import datetime
-from glob import glob
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -22,24 +19,19 @@ from matplotlib import pyplot as plt
 from tensorflow import keras
 from tensorflow.keras.models import Model
 from sklearn.manifold import TSNE # Added for latent space plots
-from NuRadioReco.utilities import units
 from pathlib import Path
 
 # --- Local Imports from your project structure ---
 sys.path.append(str(Path(__file__).resolve().parents[1] / '200s_time'))
-from A0_Utilities import load_sim_rcr, load_data, pT, load_config
+from A0_Utilities import load_config
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model_builder_autoencoder import build_autoencoder_model # Import AE builder
 from data_channel_cycling import cycle_channels
 # Import original data loading functions
 from R01_1D_CNN_train_and_run import (
-    load_and_prep_data_for_training, 
-    _compute_frequency_magnitude, 
-    _apply_frequency_edge_filter,
-    save_and_plot_training_history, # Will plot MSE/MAE loss
-    load_2016_backlobe_templates,
-    load_new_coincidence_data
+    load_and_prep_data_for_training,
+    save_and_plot_training_history # Will plot MSE/MAE loss
 )
 
 # --- Model Selection (Autoencoders) ---
@@ -173,19 +165,25 @@ def plot_network_output_histogram_autoencoder(prob_rcr, prob_backlobe, rcr_effic
     domain_suffix = config.get('domain_suffix', '')
     os.makedirs(plot_path, exist_ok=True)
 
+    if len(prob_rcr) == 0 or len(prob_backlobe) == 0:
+        print(f"Skipping network output plot for {dataset_name_suffix}: missing data.")
+        return
+
     plt.figure(figsize=(8, 6))
     
     # Determine plot range
     max_val = max(np.percentile(prob_rcr, 99), np.percentile(prob_backlobe, 99.9))
     min_val = min(np.min(prob_rcr), np.min(prob_backlobe))
-    plot_range = (min_val, max_val * 1.1)
+    upper_bound = max_val * 1.1 if max_val > 0 else max_val + 1e-6
+    plot_range = (min_val, upper_bound)
     
-    plt.hist(prob_backlobe, bins=50, range=plot_range, histtype='step', color='blue', linestyle='solid', label=f'Backlobe {len(prob_backlobe)}', density=True)
-    plt.hist(prob_rcr, bins=50, range=plot_range, histtype='step', color='red', linestyle='solid', label=f'RCR {len(prob_rcr)}', density=True)
+    plt.hist(prob_backlobe, bins=50, range=plot_range, histtype='step', color='blue', linestyle='solid', linewidth=1.5,
+             label=f'Backlobe {len(prob_backlobe)}')
+    plt.hist(prob_rcr, bins=50, range=plot_range, histtype='step', color='red', linestyle='solid', linewidth=1.5,
+             label=f'RCR {len(prob_rcr)}')
 
     plt.xlabel('Reconstruction Loss (MSE)', fontsize=18)
-    plt.ylabel('Normalized Density', fontsize=18)
-    plt.yscale('log')
+    plt.ylabel('Count', fontsize=18)
     
     title_suffix = f"({dataset_name_suffix} set)"
     plt.title(f'{amp}_{domain_label} {model_type} Loss {title_suffix} (LR={learning_rate:.0e})', fontsize=14)
@@ -204,6 +202,74 @@ def plot_network_output_histogram_autoencoder(prob_rcr, prob_backlobe, rcr_effic
     plt.subplots_adjust(left=0.15, right=0.85, bottom=0.15, top=0.9)
 
     hist_file = os.path.join(plot_path, f'{timestamp}_{amp}_{model_type}_network_output_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png')
+    print(f'saving {hist_file}')
+    plt.savefig(hist_file)
+    plt.close()
+
+
+def plot_normalized_network_output_histogram_autoencoder(prob_rcr, prob_backlobe, config, timestamp,
+                                                         learning_rate, model_type, dataset_name_suffix="main",
+                                                         cut_value=0.9):
+    """Normalizes network outputs to [0, 1], plots histograms, and reports efficiencies."""
+
+    amp = config['amp']
+    prefix = config['prefix']
+    domain_label = config.get('domain_label', 'time')
+    domain_suffix = config.get('domain_suffix', '')
+    lr_str = f"lr{learning_rate:.0e}".replace('-', '')
+    plot_path = config['base_plot_path']
+    os.makedirs(plot_path, exist_ok=True)
+
+    if len(prob_rcr) == 0 or len(prob_backlobe) == 0:
+        print(f"Skipping normalized network output plot for {dataset_name_suffix}: missing data.")
+        return
+
+    combined = np.concatenate([prob_rcr, prob_backlobe])
+    min_val = float(np.min(combined))
+    max_val = float(np.max(combined))
+
+    if np.isclose(max_val, min_val):
+        print(f"Warning: network outputs identical for {dataset_name_suffix}; normalized plot will be zero.")
+        norm_rcr = np.zeros_like(prob_rcr, dtype=float)
+        norm_backlobe = np.zeros_like(prob_backlobe, dtype=float)
+    else:
+        denom = max_val - min_val
+        norm_rcr = np.clip((prob_rcr - min_val) / denom, 0.0, 1.0)
+        norm_backlobe = np.clip((prob_backlobe - min_val) / denom, 0.0, 1.0)
+
+    rcr_eff_norm = float(np.mean(norm_rcr > cut_value) * 100) if norm_rcr.size else 0.0
+    backlobe_eff_norm = float(np.mean(norm_backlobe > cut_value) * 100) if norm_backlobe.size else 0.0
+
+    print(f'Normalized RCR efficiency (>{cut_value:.2f}): {rcr_eff_norm:.2f}%')
+    print(f'Normalized Backlobe efficiency (>{cut_value:.2f}): {backlobe_eff_norm:.4f}%')
+
+    plt.figure(figsize=(8, 6))
+    plt.hist(norm_backlobe, bins=50, range=(0.0, 1.0), histtype='step', color='blue', linestyle='solid', linewidth=1.5,
+             label=f'Backlobe {len(norm_backlobe)}')
+    plt.hist(norm_rcr, bins=50, range=(0.0, 1.0), histtype='step', color='red', linestyle='solid', linewidth=1.5,
+             label=f'RCR {len(norm_rcr)}')
+
+    plt.xlabel('Normalized Reconstruction Loss', fontsize=18)
+    plt.ylabel('Count', fontsize=18)
+    title_suffix = f"({dataset_name_suffix} set)"
+    plt.title(f'{amp}_{domain_label} {model_type} Normalized Loss {title_suffix} (LR={learning_rate:.0e})', fontsize=14)
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
+
+    ax = plt.gca()
+    ax.text(0.45, 0.75, f'RCR eff (> {cut_value:.2f}): {rcr_eff_norm:.2f}%', fontsize=12, transform=ax.transAxes)
+    ax.text(0.45, 0.70, f'Backlobe eff (> {cut_value:.2f}): {backlobe_eff_norm:.4f}%', fontsize=12, transform=ax.transAxes)
+    ax.text(0.45, 0.60, f'LR: {learning_rate:.0e}', fontsize=12, transform=ax.transAxes)
+    ax.text(0.45, 0.55, f'Model: {model_type}', fontsize=12, transform=ax.transAxes)
+    plt.axvline(x=cut_value, color='y', linestyle='--', label=f'Cut = {cut_value:.2f}')
+    plt.legend(loc='upper center')
+
+    plt.subplots_adjust(left=0.15, right=0.85, bottom=0.15, top=0.9)
+
+    hist_file = os.path.join(
+        plot_path,
+        f'{timestamp}_{amp}_{model_type}_network_output_normalized_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png'
+    )
     print(f'saving {hist_file}')
     plt.savefig(hist_file)
     plt.close()
@@ -487,6 +553,17 @@ def main():
                                               config, timestamp, learning_rate, model_type,
                                               dataset_name_suffix="main")
 
+    plot_normalized_network_output_histogram_autoencoder(
+        prob_rcr,
+        prob_backlobe,
+        config,
+        timestamp,
+        learning_rate,
+        model_type,
+        dataset_name_suffix="main",
+        cut_value=0.9
+    )
+
     # 2. Plot Original vs. Reconstructed
     print("\n--- Generating Original vs. Reconstructed plots for MAIN dataset ---")
     plot_original_vs_reconstructed(
@@ -503,104 +580,6 @@ def main():
         requires_transpose, timestamp, config, model_type, learning_rate,
         dataset_name_suffix="main"
     )
-
-    # --- NEW: Run evaluation on VALIDATION dataset ---
-    print("\n--- Running evaluation on VALIDATION dataset (2016 BL, Coincidence) ---")
-
-    # Load 2016 backlobe templates
-    template_dir = "/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/"
-    template_paths = sorted(glob(os.path.join(template_dir, "filtered_Event2016_Stn*.npy")))
-    
-    if not (os.path.exists(template_dir) and template_paths):
-        print(f"Warning: 2016 backlobe template directory not found at {template_dir}. Skipping validation run.")
-        print("Script finished.")
-        return
-
-    all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
-    print(f"Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
-    
-    # Load new coincidence data
-    pkl_path = "/dfs8/s_barwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.24.25_CoincidenceDatetimes_passing_cuts_with_all_params_recalcZenAzi_calcPol.pkl"
-    if not os.path.exists(pkl_path):
-        print(f"Warning: Coincidence PKL file not found at {pkl_path}. Skipping validation run.")
-        print("Script finished.")
-        return
-
-    passing_event_ids = [3047, 3432, 10195, 10231, 10273, 10284, 10444, 10449, 10466, 10471, 10554, 11197, 11220, 11230, 11236, 11243]
-    special_event_id = 11230 # Suspected RCR (Signal)
-    special_station_id = 13
-    
-    passing_traces, raw_traces, special_traces, _, _, _ = \
-        load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id, special_station_id)
-
-    if len(passing_traces) == 0 or len(raw_traces) == 0:
-        print(f"Warning: No traces loaded from coincidence data. Skipping validation run.")
-        print("Script finished.")
-        return
-        
-    # --- Prepare Validation Datasets ---
-    # Validation Background = 2016 Backlobes + Passing Coincidence + Raw Coincidence
-    val_background_traces = np.vstack([all_2016_backlobes, passing_traces, raw_traces])
-    
-    # Validation Signal = Special "Suspected RCR" event
-    val_signal_traces = special_traces
-
-    if len(val_signal_traces) == 0:
-        print(f"Warning: No special signal traces (Evt {special_event_id}, Stn {special_station_id}) loaded. Validation run will have no signal.")
-        # Create an empty array with the correct shape to avoid errors
-        val_signal_traces = np.empty((0, val_background_traces.shape[1], val_background_traces.shape[2]), dtype=val_background_traces.dtype)
-    
-    print(f"Validation Background traces shape: {val_background_traces.shape}")
-    print(f"Validation Signal traces shape: {val_signal_traces.shape}")
-    
-    # Apply freq/filtering if necessary (though this AE is time-domain)
-    if is_freq_model:
-        sampling_rate = float(config.get('frequency_sampling_rate', 2.0))
-        use_filtering = bool(config.get('use_filtering', False))
-        
-        print("Converting validation data to frequency domain...")
-        val_background_traces = _compute_frequency_magnitude(val_background_traces, sampling_rate)
-        val_signal_traces = _compute_frequency_magnitude(val_signal_traces, sampling_rate)
-
-        if use_filtering:
-            print("Applying frequency edge filtering to validation data...")
-            val_background_traces = _apply_frequency_edge_filter(val_background_traces)
-            val_signal_traces = _apply_frequency_edge_filter(val_signal_traces)
-
-    # --- Run All Tests on Validation Data ---
-    
-    # 1. Evaluate & plot network output histogram
-    print("\n--- Running evaluation on VALIDATION dataset ---")
-    prob_rcr_val, prob_backlobe_val, rcr_eff_val, bl_eff_val = \
-        evaluate_model_performance_autoencoder(model, val_signal_traces, val_background_traces, 
-                                               output_cut_value, config, model_type, requires_transpose)
-
-    plot_network_output_histogram_autoencoder(prob_rcr_val, prob_backlobe_val, rcr_eff_val, bl_eff_val, 
-                                              config, timestamp, learning_rate, model_type,
-                                              dataset_name_suffix="validation")
-
-    # 2. Plot Original vs. Reconstructed
-    print("\n--- Generating Original vs. Reconstructed plots for VALIDATION dataset ---")
-    if len(val_signal_traces) > 0 and len(val_background_traces) > 0:
-        plot_original_vs_reconstructed(
-            model, val_signal_traces, val_background_traces, 
-            prob_rcr_val, prob_backlobe_val,
-            requires_transpose, timestamp, config, model_type, learning_rate,
-            dataset_name_suffix="validation"
-        )
-    else:
-        print("Skipping validation recon plot (missing signal or background data).")
-
-    # 3. Plot Latent Space
-    print("\n--- Generating Latent Space plot for VALIDATION dataset ---")
-    if len(val_signal_traces) > 0 and len(val_background_traces) > 0:
-        plot_latent_space(
-            model, val_signal_traces, val_background_traces, 
-            requires_transpose, timestamp, config, model_type, learning_rate,
-            dataset_name_suffix="validation"
-        )
-    else:
-        print("Skipping validation latent space plot (missing signal or background data).")
 
     print(f"\nScript finished successfully for Autoencoder model {model_type}, lr {learning_rate}")
 

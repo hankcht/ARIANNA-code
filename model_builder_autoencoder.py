@@ -38,7 +38,7 @@ def build_autoencoder_model(input_shape=(256, 4), learning_rate=0.001):
     
     # (64, 32) -> (32, 64)
     x = Conv1D(64, kernel_size=5, padding="same", activation="relu", strides=2)(x)
-    x = BatchNormalization()(x)
+    x = BatchNormalization(name="latent_space")(x)
     
     # Bottleneck
     # (32, 64)

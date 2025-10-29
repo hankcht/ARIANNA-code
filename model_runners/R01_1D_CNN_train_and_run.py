@@ -391,6 +391,14 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     dense_val = False
     plt.figure(figsize=(8, 6))
 
+    if "autoencoder" in model_type:
+        # If autoencoder, renormalize prob values from [0, max_of_both] to [0, 1]
+        all_probs = np.concatenate([prob_rcr, prob_backlobe])
+        max_prob = np.max(all_probs)
+        prob_rcr = prob_rcr / max_prob
+        prob_backlobe = prob_backlobe / max_prob
+
+
     plt.hist(prob_backlobe, bins=20, range=(0, 1), histtype='step', color='blue', linestyle='solid', label=f'Backlobe {len(prob_backlobe)}', density=dense_val)
     plt.hist(prob_rcr, bins=20, range=(0, 1), histtype='step', color='red', linestyle='solid', label=f'RCR {len(prob_rcr)}', density=dense_val)
 

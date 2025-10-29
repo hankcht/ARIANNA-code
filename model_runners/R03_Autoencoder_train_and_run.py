@@ -31,7 +31,10 @@ from data_channel_cycling import cycle_channels
 # Import original data loading functions
 from R01_1D_CNN_train_and_run import (
     load_and_prep_data_for_training,
-    save_and_plot_training_history # Will plot MSE/MAE loss
+    save_and_plot_training_history,  # Will plot MSE/MAE loss
+    load_new_coincidence_data,
+    _compute_frequency_magnitude,
+    _apply_frequency_edge_filter
 )
 
 # --- Model Selection (Autoencoders) ---
@@ -39,6 +42,83 @@ MODEL_BUILDERS = {
     '1d_autoencoder': build_autoencoder_model
     # '1d_autoencoder_freq': build_autoencoder_model_freq (if you create this)
 }
+
+
+# --- Validation Defaults & Plotting Helpers ---
+DEFAULT_VALIDATION_PKL_PATH = \
+    "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.24.25_CoincidenceDatetimes_passing_cuts_with_all_params_recalcZenAzi_calcPol.pkl"
+DEFAULT_VALIDATION_PASSING_EVENT_IDS = [
+    3047, 3432, 10195, 10231, 10273, 10284, 10444, 10449,
+    10466, 10471, 10554, 11197, 11220, 11230, 11236, 11243
+]
+DEFAULT_VALIDATION_SPECIAL_EVENT_ID = 11230
+DEFAULT_VALIDATION_SPECIAL_STATION_ID = 13
+
+LATENT_COLOR_MAP = {
+    'Backlobe (BG)': 'blue',
+    'RCR (Signal)': 'red',
+    'Validation Passing': 'green',
+    'Validation Raw': 'purple',
+    'Validation Special Event': 'orange'
+}
+
+LATENT_MARKER_MAP = {
+    'Backlobe (BG)': 'o',
+    'RCR (Signal)': 'o',
+    'Validation Passing': 's',
+    'Validation Raw': '^',
+    'Validation Special Event': '*'
+}
+
+HIST_COLOR_MAP = {
+    'Backlobe (BG)': 'blue',
+    'RCR (Signal)': 'red',
+    'Validation Passing': 'green',
+    'Validation Raw': 'purple',
+    'Validation Special Event': 'orange'
+}
+
+
+def _sanitize_label_for_filename(label):
+    """Return a filesystem-friendly string derived from a label."""
+
+    safe_chars = set("abcdefghijklmnopqrstuvwxyz0123456789-_")
+    sanitized = ''.join(ch_lower if ch_lower in safe_chars else '_' for ch_lower in label.lower())
+    # Collapse repeated underscores for readability
+    while '__' in sanitized:
+        sanitized = sanitized.replace('__', '_')
+    return sanitized.strip('_') or 'label'
+
+
+def prepare_data_for_model(input_data, requires_transpose):
+    """Prepare traces for inference based on the model's expected layout."""
+
+    data_array = np.asarray(input_data)
+    if data_array.size == 0:
+        return data_array
+
+    if data_array.ndim != 3:
+        raise ValueError(
+            f"Expected data with shape (events, channels, samples), got {data_array.shape}"
+        )
+
+    if requires_transpose:
+        return data_array.transpose(0, 2, 1)
+
+    # Channels-first layout requires an explicit feature axis
+    return data_array[..., np.newaxis]
+
+
+def calculate_reconstruction_mse(model, prepared_data, config):
+    """Run model inference and compute per-event reconstruction MSE."""
+
+    if prepared_data.size == 0 or prepared_data.shape[0] == 0:
+        return np.array([]), np.empty_like(prepared_data)
+
+    reconstructed = model.predict(prepared_data, batch_size=config['keras_batch_size'])
+    axis = tuple(range(1, reconstructed.ndim))
+    mse = np.mean(np.square(reconstructed - prepared_data), axis=axis)
+    return mse, reconstructed
 
 
 def train_autoencoder_model(training_backlobe, config, learning_rate, model_type):
@@ -181,6 +261,7 @@ def plot_network_output_histogram_autoencoder(prob_rcr, prob_backlobe, rcr_effic
              label=f'Backlobe {len(prob_backlobe)}')
     plt.hist(prob_rcr, bins=50, range=plot_range, histtype='step', color='red', linestyle='solid', linewidth=1.5,
              label=f'RCR {len(prob_rcr)}')
+    plt.yscale('log')
 
     plt.xlabel('Reconstruction Loss (MSE)', fontsize=18)
     plt.ylabel('Count', fontsize=18)
@@ -196,7 +277,7 @@ def plot_network_output_histogram_autoencoder(prob_rcr, prob_backlobe, rcr_effic
     ax.text(0.45, 0.70, f'Backlobe efficiency (BG > Cut): {backlobe_efficiency:.4f}%', fontsize=12, transform=ax.transAxes)
     ax.text(0.45, 0.60, f'LR: {learning_rate:.0e}', fontsize=12, transform=ax.transAxes)
     ax.text(0.45, 0.55, f'Model: {model_type}', fontsize=12, transform=ax.transAxes)
-    plt.axvline(x=output_cut_value, color='y', label=f'Cut = {output_cut_value:.2g}', linestyle='--')
+    # plt.axvline(x=output_cut_value, color='y', label=f'Cut = {output_cut_value:.2g}', linestyle='--')
     plt.legend()
     
     plt.subplots_adjust(left=0.15, right=0.85, bottom=0.15, top=0.9)
@@ -255,6 +336,7 @@ def plot_normalized_network_output_histogram_autoencoder(prob_rcr, prob_backlobe
     plt.title(f'{amp}_{domain_label} {model_type} Normalized Loss {title_suffix} (LR={learning_rate:.0e})', fontsize=14)
     plt.xticks(fontsize=18)
     plt.yticks(fontsize=18)
+    plt.yscale('log')
 
     ax = plt.gca()
     ax.text(0.45, 0.75, f'RCR eff (> {cut_value:.2f}): {rcr_eff_norm:.2f}%', fontsize=12, transform=ax.transAxes)
@@ -371,16 +453,9 @@ def plot_original_vs_reconstructed(model, sim_rcr_all, data_backlobe_traces_rcr_
 # --- NEW FUNCTION: Latent Space ---
 def plot_latent_space(model, sim_rcr_all, data_backlobe_traces_rcr_all,
                       requires_transpose, timestamp, config, model_type, learning_rate,
-                      dataset_name_suffix="main"):
-    """
-    Generates a t-SNE plot of the autoencoder's latent space.
-    
-    Colors points by class (RCR=Signal, Backlobe=Background).
-    Assumes the bottleneck layer is named 'latent_space' in the model definition.
-    
-    Args:
-        dataset_name_suffix (str): Suffix for filename and title.
-    """
+                      dataset_name_suffix="main", extra_datasets=None):
+    """Generate a t-SNE latent space visualization with optional overlays."""
+
     amp = config['amp']
     prefix = config['prefix']
     lr_str = f"lr{learning_rate:.0e}".replace('-', '')
@@ -388,62 +463,116 @@ def plot_latent_space(model, sim_rcr_all, data_backlobe_traces_rcr_all,
     domain_label = config.get('domain_label', 'time')
     domain_suffix = config.get('domain_suffix', '')
     os.makedirs(plot_path, exist_ok=True)
-    
+
+    extra_datasets = extra_datasets or []
+
     # --- 1. Create Encoder-only model ---
     try:
-        # Assumes your bottleneck layer is named 'latent_space' in model_builder_autoencoder.py
         latent_layer = model.get_layer('latent_space')
     except ValueError:
-        print("\n--- LATENT SPACE PLOTTER ERROR ---")
-        print("Error: Layer 'latent_space' not found.")
-        print("Please name your bottleneck layer 'latent_space' in model_builder_autoencoder.py")
-        print("Trying to find smallest layer as a fallback...")
+        print("\n--- LATENT SPACE PLOTTER WARNING ---")
+        print("Layer 'latent_space' not found; searching for smallest layer as fallback.")
         try:
-            # Find layer with minimum number of units/neurons in its output shape
-            # (batch_size, ...dims...)
-            smallest_layer = min(
-                [l for l in model.layers if 'input' not in l.name.lower()], 
-                key=lambda l: np.prod(l.output_shape[1:])
-            )
-            latent_layer = smallest_layer
+            candidates = [l for l in model.layers if 'input' not in l.name.lower()]
+            latent_layer = min(candidates, key=lambda l: np.prod(l.output_shape[1:]))
             print(f"Using layer '{latent_layer.name}' as latent space (shape: {latent_layer.output_shape})")
-        except Exception as e:
-            print(f"Could not find fallback layer: {e}. Skipping latent space plot.")
+        except Exception as exc:
+            print(f"Could not determine latent layer ({exc}). Skipping latent space plot for {dataset_name_suffix}.")
             return
-            
+
     encoder = Model(inputs=model.input, outputs=latent_layer.output)
 
-    # --- 2. Subsample data (t-SNE is slow) ---
+    # --- 2. Collect datasets ---
+    dataset_entries = []
     n_samples = min(2000, len(sim_rcr_all), len(data_backlobe_traces_rcr_all))
     if n_samples == 0:
-        print(f"Skipping latent space plot for {dataset_name_suffix}: not enough data.")
+        print(f"Skipping latent space plot for {dataset_name_suffix}: not enough RCR/Backlobe data.")
         return
-        
-    print(f"Subsampling {n_samples} events from each class for t-SNE plot...")
+
+    print(f"Subsampling {n_samples} events from RCR and Backlobe for latent space plot.")
     rcr_indices = np.random.choice(len(sim_rcr_all), n_samples, replace=False)
     bl_indices = np.random.choice(len(data_backlobe_traces_rcr_all), n_samples, replace=False)
-    
-    rcr_subset = sim_rcr_all[rcr_indices]
-    bl_subset = data_backlobe_traces_rcr_all[bl_indices]
 
-    # --- 3. Prepare and combine data ---
-    rcr_prepped = rcr_subset.transpose(0, 2, 1) if requires_transpose else rcr_subset
-    bl_prepped = bl_subset.transpose(0, 2, 1) if requires_transpose else bl_subset
-    
-    if rcr_prepped.ndim == 3: rcr_prepped = rcr_prepped[..., np.newaxis]
-    if bl_prepped.ndim == 3: bl_prepped = bl_prepped[..., np.newaxis]
-        
-    combined_data = np.vstack([rcr_prepped, bl_prepped])
-    labels = np.array([1] * n_samples + [0] * n_samples) # 1=RCR, 0=Backlobe
+    dataset_entries.append({
+        'label': 'RCR (Signal)',
+        'data': sim_rcr_all[rcr_indices],
+        'color': LATENT_COLOR_MAP.get('RCR (Signal)', 'red'),
+        'marker': LATENT_MARKER_MAP.get('RCR (Signal)', 'o'),
+        'alpha': 0.5
+    })
+
+    dataset_entries.append({
+        'label': 'Backlobe (BG)',
+        'data': data_backlobe_traces_rcr_all[bl_indices],
+        'color': LATENT_COLOR_MAP.get('Backlobe (BG)', 'blue'),
+        'marker': LATENT_MARKER_MAP.get('Backlobe (BG)', 'o'),
+        'alpha': 0.5
+    })
+
+    for extra in extra_datasets:
+        label = extra.get('label', 'Validation')
+        data_array = np.asarray(extra.get('data', []))
+        if data_array.size == 0 or data_array.ndim != 3:
+            print(f"Skipping latent overlay '{label}': data missing or wrong shape {data_array.shape}.")
+            continue
+
+        max_samples = extra.get('max_samples', min(2000, data_array.shape[0]))
+        sample_count = min(max_samples, data_array.shape[0])
+        if sample_count == 0:
+            print(f"Skipping latent overlay '{label}': no samples available.")
+            continue
+
+        if sample_count < data_array.shape[0]:
+            indices = np.random.choice(data_array.shape[0], sample_count, replace=False)
+            data_subset = data_array[indices]
+        else:
+            data_subset = data_array
+
+        color = extra.get('color')
+        if color is None:
+            color = LATENT_COLOR_MAP.get(label, 'gray')
+
+        marker = extra.get('marker', LATENT_MARKER_MAP.get(label, 'o'))
+
+        dataset_entries.append({
+            'label': label,
+            'data': data_subset,
+            'color': color,
+            'marker': marker,
+            'alpha': extra.get('alpha', 0.8),
+            'size': extra.get('size', 60)
+        })
+
+    # --- 3. Prepare inputs for encoder ---
+    combined_batches = []
+    for entry in dataset_entries:
+        try:
+            prepared = prepare_data_for_model(entry['data'], requires_transpose)
+        except ValueError as exc:
+            print(f"Skipping dataset '{entry['label']}' in latent plotting: {exc}")
+            entry['prepared'] = None
+            continue
+
+        if prepared.size == 0 or prepared.shape[0] == 0:
+            print(f"Skipping dataset '{entry['label']}' in latent plotting: empty after preparation.")
+            entry['prepared'] = None
+            continue
+
+        entry['prepared'] = prepared
+        combined_batches.append(prepared)
+
+    if not combined_batches:
+        print(f"No datasets available for latent space plot ({dataset_name_suffix}).")
+        return
+
+    combined_data = np.concatenate(combined_batches, axis=0)
 
     # --- 4. Get latent vectors ---
-    print("Running encoder to get latent vectors...")
+    print(f"Running encoder for latent space ({combined_data.shape[0]} samples total)...")
     latent_vectors = encoder.predict(combined_data)
-    
-    # Flatten if latent space is not already 1D
     if latent_vectors.ndim > 2:
         latent_vectors = latent_vectors.reshape(latent_vectors.shape[0], -1)
-    
+
     print(f"Latent vector shape: {latent_vectors.shape}")
 
     # --- 5. Run t-SNE ---
@@ -452,25 +581,409 @@ def plot_latent_space(model, sim_rcr_all, data_backlobe_traces_rcr_all,
     tsne_results = tsne.fit_transform(latent_vectors)
 
     # --- 6. Plot ---
-    print("Plotting t-SNE results...")
+    print("Plotting t-SNE projection with validation overlays...")
     plt.figure(figsize=(10, 8))
-    
-    rcr_points = tsne_results[labels==1]
-    bl_points = tsne_results[labels==0]
-    
-    plt.scatter(bl_points[:, 0], bl_points[:, 1], label=f'Backlobe (BG) - {n_samples}', alpha=0.5, c='blue')
-    plt.scatter(rcr_points[:, 0], rcr_points[:, 1], label=f'RCR (Signal) - {n_samples}', alpha=0.5, c='red')
-    
+
+    start_idx = 0
+    for entry in dataset_entries:
+        prepared = entry.get('prepared')
+        if prepared is None:
+            continue
+
+        end_idx = start_idx + prepared.shape[0]
+        points = tsne_results[start_idx:end_idx]
+        start_idx = end_idx
+
+        color = entry.get('color') or LATENT_COLOR_MAP.get(entry['label'], 'gray')
+        marker = entry.get('marker', 'o')
+        alpha = entry.get('alpha', 0.6)
+        size = entry.get('size', 40)
+        if entry['label'].startswith('Validation Special Event'):
+            size = 120
+            alpha = entry.get('alpha', 1.0)
+
+        plt.scatter(points[:, 0], points[:, 1],
+                    label=f"{entry['label']} ({prepared.shape[0]})",
+                    color=color,
+                    marker=marker,
+                    alpha=alpha,
+                    s=size,
+                    edgecolors='none' if marker != '*' else 'k')
+
     plt.legend(loc='upper right')
-    plt.title(f't-SNE Latent Space Visualization ({dataset_name_suffix} set)')
+    plt.title(f't-SNE Latent Space Visualization ({domain_label}, {dataset_name_suffix} set)')
     plt.xlabel('t-SNE Component 1')
     plt.ylabel('t-SNE Component 2')
-    
-    plot_file_tsne = os.path.join(plot_path, f'{timestamp}_{amp}_{model_type}_latent_space_tSNE_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png')
+
+    plot_file_tsne = os.path.join(
+        plot_path,
+        f'{timestamp}_{amp}_{model_type}_latent_space_tSNE_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png'
+    )
     plt.savefig(plot_file_tsne)
     plt.close()
     print(f'Saved t-SNE plot to: {plot_file_tsne}')
 
+
+def plot_validation_loss_histogram(loss_entries, config, timestamp, learning_rate, model_type,
+                                   normalized=False, dataset_name_suffix="validation", cut_value=0.9):
+    """Plot reconstruction loss histograms for multiple datasets (raw or normalized)."""
+
+    amp = config['amp']
+    prefix = config['prefix']
+    domain_label = config.get('domain_label', 'time')
+    domain_suffix = config.get('domain_suffix', '')
+    lr_str = f"lr{learning_rate:.0e}".replace('-', '')
+    plot_path = config['base_plot_path']
+    os.makedirs(plot_path, exist_ok=True)
+
+    valid_entries = []
+    for label, values in loss_entries:
+        if values is None:
+            continue
+        values_array = np.asarray(values).flatten()
+        if values_array.size == 0:
+            continue
+        values_array = values_array[np.isfinite(values_array)]
+        if values_array.size == 0:
+            continue
+        valid_entries.append((label, values_array))
+
+    if not valid_entries:
+        mode = "normalized" if normalized else "raw"
+        print(f"Skipping validation loss histogram ({mode}): no data available.")
+        return
+
+    if normalized:
+        combined = np.concatenate([vals for _, vals in valid_entries])
+        min_val = float(np.min(combined))
+        max_val = float(np.max(combined))
+
+        if np.isclose(max_val, min_val):
+            normalized_entries = [(label, np.zeros_like(vals)) for label, vals in valid_entries]
+        else:
+            denom = max_val - min_val
+            normalized_entries = [
+                (label, np.clip((vals - min_val) / denom, 0.0, 1.0))
+                for label, vals in valid_entries
+            ]
+
+        plot_entries = normalized_entries
+        bins = 50
+        range_vals = (0.0, 1.0)
+        xlabel = 'Normalized Reconstruction Loss'
+        filename_suffix = 'normalized'
+    else:
+        plot_entries = valid_entries
+        combined = np.concatenate([vals for _, vals in plot_entries])
+        min_val = float(np.min(combined))
+        upper_percentile = max(float(np.percentile(vals, 99.9)) for _, vals in plot_entries)
+        upper_bound = upper_percentile * 1.1 if upper_percentile > 0 else upper_percentile + 1e-6
+        bins = 50
+        range_vals = (min_val, upper_bound)
+        xlabel = 'Reconstruction Loss (MSE)'
+        filename_suffix = 'raw'
+
+    plt.figure(figsize=(8, 6))
+    max_hist = 0.0
+    for label, vals in plot_entries:
+        base_label = label.split(' (')[0]
+        color = HIST_COLOR_MAP.get(label, HIST_COLOR_MAP.get(base_label, None))
+        counts, _, _ = plt.hist(
+            vals,
+            bins=bins,
+            range=range_vals,
+            histtype='step',
+            linewidth=1.6,
+            color=color,
+            label=f'{label} ({len(vals)})'
+        )
+        if counts.size:
+            max_hist = max(max_hist, counts.max())
+
+    plt.xlabel(xlabel, fontsize=18)
+    plt.ylabel('Count', fontsize=18)
+    title_bits = 'Normalized ' if normalized else ''
+    plt.title(f'{amp}_{domain_label} {model_type} Validation {title_bits}Loss (LR={learning_rate:.0e})', fontsize=14)
+    plt.yscale('log')
+
+    if max_hist > 0:
+        upper = max(10 ** (np.ceil(np.log10(max_hist * 1.1))), 10)
+        plt.ylim(7e-1, upper)
+
+    if normalized:
+        plt.axvline(cut_value, color='y', linestyle='--', linewidth=1.2, label=f'Cut = {cut_value:.2f}')
+    else:
+        plt.axvline(cut_value, color='y', linestyle='--', linewidth=1.2, label=f'Cut = {cut_value:.3g}')
+
+    plt.legend(loc='upper right', fontsize=10)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.tight_layout()
+
+    filename = (
+        f'{timestamp}_{amp}_{model_type}_validation_reconstruction_loss_{filename_suffix}_{prefix}_{lr_str}'
+        f'{domain_suffix}_{dataset_name_suffix}.png'
+    )
+    out_path = os.path.join(plot_path, filename)
+    plt.savefig(out_path)
+    plt.close()
+    print(f'Saved validation {filename_suffix} loss histogram to: {out_path}')
+
+
+def plot_special_event_reconstruction(original_trace, reconstructed_trace, mse_value, timestamp,
+                                      config, model_type, learning_rate, dataset_name_suffix,
+                                      event_label):
+    """Plot original vs reconstructed traces for a single special event."""
+
+    if original_trace is None or reconstructed_trace is None:
+        print("No special event traces provided; skipping special reconstruction plot.")
+        return
+
+    original = np.asarray(original_trace)
+    reconstructed = np.asarray(reconstructed_trace)
+
+    if original.ndim != 2 or reconstructed.ndim != 2:
+        print(f"Skipping special reconstruction plot: expected 2D traces, got {original.shape} & {reconstructed.shape}.")
+        return
+
+    if original.shape != reconstructed.shape:
+        print(f"Skipping special reconstruction plot: shape mismatch {original.shape} vs {reconstructed.shape}.")
+        return
+
+    amp = config['amp']
+    prefix = config['prefix']
+    domain_suffix = config.get('domain_suffix', '')
+    domain_label = config.get('domain_label', 'time')
+    lr_str = f"lr{learning_rate:.0e}".replace('-', '')
+    plot_path = config['base_plot_path']
+    os.makedirs(plot_path, exist_ok=True)
+
+    num_channels, num_samples = original.shape
+    fig, axes = plt.subplots(num_channels, 2, figsize=(15, 3 * num_channels), sharex=True, sharey=True)
+    if num_channels == 1:
+        axes = np.expand_dims(axes, axis=0)
+
+    title_label = event_label or 'Validation Special Event'
+    fig.suptitle(
+        f'{amp} {model_type} - {title_label}\nReconstruction MSE: {mse_value:.4g} ({domain_label}, {dataset_name_suffix})',
+        fontsize=16
+    )
+
+    for idx in range(num_channels):
+        axes[idx, 0].plot(original[idx, :], color='orange')
+        axes[idx, 0].set_ylabel(f'Channel {idx}')
+        axes[idx, 1].plot(reconstructed[idx, :], color='black')
+        if idx == 0:
+            axes[idx, 0].set_title('Original Trace')
+            axes[idx, 1].set_title('Reconstructed Trace')
+
+    axes[-1, 0].set_xlabel('Sample')
+    axes[-1, 1].set_xlabel('Sample')
+
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+    filename_label = _sanitize_label_for_filename(title_label)
+    filename = (
+        f'{timestamp}_{amp}_{model_type}_recon_{filename_label}_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png'
+    )
+    out_path = os.path.join(plot_path, filename)
+    plt.savefig(out_path)
+    plt.close(fig)
+    print(f'Saved validation special event reconstruction plot to: {out_path}')
+
+
+def run_validation_checks(model, requires_transpose, config, timestamp, learning_rate, model_type,
+                          sim_rcr_all, data_backlobe_traces_rcr_all,
+                          prob_rcr_main, prob_backlobe_main):
+    """Run validation-only analysis using the configured coincidence PKL dataset."""
+
+    print("\n--- Running validation checks with coincidence PKL dataset ---")
+
+    validation_pkl_path = config.get('validation_pkl_path', DEFAULT_VALIDATION_PKL_PATH)
+    if not validation_pkl_path:
+        print("Validation PKL path not provided; skipping validation checks.")
+        return
+
+    if not os.path.exists(validation_pkl_path):
+        print(f"Validation PKL not found at {validation_pkl_path}; skipping validation checks.")
+        return
+
+    passing_event_ids = config.get('validation_passing_event_ids', DEFAULT_VALIDATION_PASSING_EVENT_IDS)
+    special_event_id = config.get('validation_special_event_id', DEFAULT_VALIDATION_SPECIAL_EVENT_ID)
+    special_station_id = config.get('validation_special_station_id', DEFAULT_VALIDATION_SPECIAL_STATION_ID)
+
+    passing_traces, raw_traces, special_traces, passing_metadata, raw_metadata, special_metadata = (
+        load_new_coincidence_data(validation_pkl_path, passing_event_ids, special_event_id, special_station_id)
+    )
+
+    reference_channels = sim_rcr_all.shape[1] if sim_rcr_all.ndim == 3 else 4
+    reference_samples = sim_rcr_all.shape[2] if sim_rcr_all.ndim == 3 else 256
+
+    def coerce_traces(traces):
+        arr = np.asarray(traces)
+        if arr.size == 0:
+            return np.empty((0, reference_channels, reference_samples), dtype=np.float32)
+        if arr.ndim == 2:
+            arr = arr[np.newaxis, ...]
+        if arr.ndim != 3:
+            raise ValueError(f"Expected traces with 3 dims, got shape {arr.shape}")
+        return arr.astype(np.float32, copy=False)
+
+    try:
+        passing_traces = coerce_traces(passing_traces)
+        raw_traces = coerce_traces(raw_traces)
+        special_traces = coerce_traces(special_traces)
+    except ValueError as exc:
+        print(f"Skipping validation checks: {exc}")
+        return
+
+    is_freq_model = bool(config.get('is_freq_model', False))
+    sampling_rate = float(config.get('frequency_sampling_rate', 2.0))
+    use_filtering = bool(config.get('use_filtering', False))
+
+    def transform(traces):
+        if traces.shape[0] == 0:
+            return traces
+        transformed = traces.copy()
+        if is_freq_model:
+            transformed = _compute_frequency_magnitude(transformed, sampling_rate)
+            if use_filtering:
+                transformed = _apply_frequency_edge_filter(transformed)
+        return transformed.astype(np.float32, copy=False)
+
+    passing_traces_proc = transform(passing_traces)
+    raw_traces_proc = transform(raw_traces)
+    special_traces_proc = transform(special_traces)
+
+    special_label = 'Validation Special Event'
+    if special_traces_proc.shape[0] > 0:
+        meta = special_metadata.get(0, {})
+        evt = meta.get('event_id')
+        stn = meta.get('station_id')
+        if evt is not None and stn is not None:
+            special_label = f'Validation Special Event (Evt {evt}, Stn {stn})'
+
+    # --- Reconstruction losses ---
+    passing_mse = np.array([])
+    raw_mse = np.array([])
+    special_mse = np.array([])
+    special_trace_for_plot = None
+    special_recon_for_plot = None
+
+    if passing_traces_proc.shape[0] > 0:
+        prepared = prepare_data_for_model(passing_traces_proc, requires_transpose)
+        passing_mse, _ = calculate_reconstruction_mse(model, prepared, config)
+        print(f"Validation passing set size: {len(passing_mse)}, mean MSE: {np.mean(passing_mse):.4g}")
+
+    if raw_traces_proc.shape[0] > 0:
+        prepared = prepare_data_for_model(raw_traces_proc, requires_transpose)
+        raw_mse, _ = calculate_reconstruction_mse(model, prepared, config)
+        print(f"Validation raw set size: {len(raw_mse)}, mean MSE: {np.mean(raw_mse):.4g}")
+
+    if special_traces_proc.shape[0] > 0:
+        prepared = prepare_data_for_model(special_traces_proc, requires_transpose)
+        special_mse, special_recon = calculate_reconstruction_mse(model, prepared, config)
+        special_trace_for_plot = special_traces_proc[0]
+        recon_first = special_recon[0]
+        if requires_transpose:
+            special_recon_for_plot = recon_first.transpose(1, 0)
+        else:
+            special_recon_for_plot = np.squeeze(recon_first, axis=-1)
+        print(f"Validation special event MSE values: {special_mse}")
+
+    # --- Latent space overlay ---
+    validation_overlays = []
+    if passing_traces_proc.shape[0] > 0:
+        validation_overlays.append({
+            'label': 'Validation Passing',
+            'data': passing_traces_proc,
+            'color': LATENT_COLOR_MAP.get('Validation Passing', 'green'),
+            'marker': LATENT_MARKER_MAP.get('Validation Passing', 's'),
+            'alpha': 0.8,
+            'size': 60
+        })
+    if raw_traces_proc.shape[0] > 0:
+        validation_overlays.append({
+            'label': 'Validation Raw',
+            'data': raw_traces_proc,
+            'color': LATENT_COLOR_MAP.get('Validation Raw', 'purple'),
+            'marker': LATENT_MARKER_MAP.get('Validation Raw', '^'),
+            'alpha': 0.8,
+            'size': 60
+        })
+    if special_traces_proc.shape[0] > 0:
+        validation_overlays.append({
+            'label': special_label,
+            'data': special_traces_proc,
+            'color': LATENT_COLOR_MAP.get('Validation Special Event', 'orange'),
+            'marker': LATENT_MARKER_MAP.get('Validation Special Event', '*'),
+            'alpha': 1.0,
+            'size': 160
+        })
+
+    if validation_overlays:
+        plot_latent_space(
+            model,
+            sim_rcr_all,
+            data_backlobe_traces_rcr_all,
+            requires_transpose,
+            timestamp,
+            config,
+            model_type,
+            learning_rate,
+            dataset_name_suffix="validation",
+            extra_datasets=validation_overlays
+        )
+    else:
+        print("No validation traces available for latent space overlay.")
+
+    # --- Loss histograms ---
+    loss_entries = [
+        ('RCR (Signal)', prob_rcr_main),
+        ('Backlobe (BG)', prob_backlobe_main),
+        ('Validation Passing', passing_mse),
+        ('Validation Raw', raw_mse),
+        (special_label, special_mse)
+    ]
+
+    output_cut_value = config.get('output_cut_value', 0.9)
+    plot_validation_loss_histogram(
+        loss_entries,
+        config,
+        timestamp,
+        learning_rate,
+        model_type,
+        normalized=False,
+        dataset_name_suffix="validation",
+        cut_value=output_cut_value
+    )
+
+    plot_validation_loss_histogram(
+        loss_entries,
+        config,
+        timestamp,
+        learning_rate,
+        model_type,
+        normalized=True,
+        dataset_name_suffix="validation",
+        cut_value=0.9
+    )
+
+    # --- Special event reconstruction plot ---
+    if special_trace_for_plot is not None and special_recon_for_plot is not None and special_mse.size > 0:
+        plot_special_event_reconstruction(
+            special_trace_for_plot,
+            special_recon_for_plot,
+            float(special_mse.flatten()[0]),
+            timestamp,
+            config,
+            model_type,
+            learning_rate,
+            dataset_name_suffix="validation",
+            event_label=special_label
+        )
+    else:
+        print("No special event reconstruction plot generated (missing data).")
 
 def main():
     
@@ -579,6 +1092,20 @@ def main():
         model, sim_rcr_all, data_backlobe_traces_rcr_all, 
         requires_transpose, timestamp, config, model_type, learning_rate,
         dataset_name_suffix="main"
+    )
+
+    # --- Validation-only checks ---
+    run_validation_checks(
+        model,
+        requires_transpose,
+        config,
+        timestamp,
+        learning_rate,
+        model_type,
+        sim_rcr_all,
+        data_backlobe_traces_rcr_all,
+        prob_rcr,
+        prob_backlobe
     )
 
     print(f"\nScript finished successfully for Autoencoder model {model_type}, lr {learning_rate}")

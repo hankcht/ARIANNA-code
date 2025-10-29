@@ -18,3 +18,4 @@ code
 venv
 plots/*
 .vscode/settings.json
+.venv/

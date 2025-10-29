@@ -17,7 +17,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/dfs8/sbarwi
     header += "#SBATCH --output={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.out'))
     header += "#SBATCH --error={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.err'))
     header += "#SBATCH --mail-type=FAIL\n"
-    header += "#SBATCH --mail-user=tangch3@uci.edu\n"
+    header += "#SBATCH --mail-user=rricesmi@uci.edu\n"
     header += "export PYTHONPATH=$NuM:$PYTHONPATH\n"
     header += "export PYTHONPATH=$Nu:$PYTHONPATH\n"
     header += "export PYTHONPATH=$Radio:$PYTHONPATH\n"

@@ -870,6 +870,8 @@ def run_validation_checks(model, requires_transpose, config, timestamp, learning
             transformed = _compute_frequency_magnitude(transformed, sampling_rate)
             if use_filtering:
                 transformed = _apply_frequency_edge_filter(transformed)
+            # Also convert to dB scale
+            transformed = 20 * np.log10(np.maximum(transformed, 1e-12))
         return transformed.astype(np.float32, copy=False)
 
     passing_traces_proc = transform(passing_traces)

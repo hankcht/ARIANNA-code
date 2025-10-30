@@ -46,7 +46,8 @@ from R01_1D_CNN_train_and_run import (
     save_and_plot_training_history,  # Will plot MSE/MAE loss
     load_new_coincidence_data,
     _compute_frequency_magnitude,
-    _apply_frequency_edge_filter
+    _apply_frequency_edge_filter,
+    convert_to_db_scale
 )
 
 # --- Model Selection (Autoencoders) ---
@@ -141,17 +142,6 @@ def calculate_reconstruction_mse(model, prepared_data, config):
     mse = np.mean(np.square(reconstructed - prepared_data), axis=axis)
     return mse, reconstructed
 
-
-def convert_to_db_scale(array, min_value=1e-12):
-    """Convert magnitude values to dB, guarding against log(0)."""
-
-    arr = np.asarray(array)
-    if arr.size == 0:
-        return arr.astype(np.float32, copy=False)
-
-    safe = np.maximum(arr, min_value)
-    db = 20.0 * np.log10(safe)
-    return db.astype(np.float32, copy=False)
 
 
 def train_autoencoder_model(training_backlobe, config, learning_rate, model_type):

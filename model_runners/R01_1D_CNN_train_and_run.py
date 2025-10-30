@@ -77,6 +77,16 @@ def _apply_frequency_edge_filter(freq_array, num_bins=10):
     freq_array[..., -num_bins:] = 0
     return freq_array
 
+def convert_to_db_scale(array, min_value=1e-12):
+    """Convert magnitude values to dB, guarding against log(0)."""
+
+    arr = np.asarray(array)
+    if arr.size == 0:
+        return arr.astype(np.float32, copy=False)
+
+    safe = np.maximum(arr, min_value)
+    db = 20.0 * np.log10(safe)
+    return db.astype(np.float32, copy=False)
 
 def load_combined_backlobe_data(combined_pkl_path):
     """
@@ -177,6 +187,12 @@ def load_and_prep_data_for_training(config):
             sim_rcr = _apply_frequency_edge_filter(sim_rcr)
             backlobe_traces_2016 = _apply_frequency_edge_filter(backlobe_traces_2016)
             backlobe_traces_rcr = _apply_frequency_edge_filter(backlobe_traces_rcr)
+
+        if config.get('convert_to_db_scale', False):
+            print('Converting frequency magnitudes to dB scale.')
+            sim_rcr = convert_to_db_scale(sim_rcr)
+            backlobe_traces_2016 = convert_to_db_scale(backlobe_traces_2016)
+            backlobe_traces_rcr = convert_to_db_scale(backlobe_traces_rcr)
 
     print(f'RCR shape: {sim_rcr.shape}, Backlobe 2016 shape: {backlobe_traces_2016.shape}, Backlobe RCR shape: {backlobe_traces_rcr.shape}')
 

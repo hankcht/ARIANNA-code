@@ -4,6 +4,7 @@
 amp: "200s"
 use_frequency_domain: false
 use_filtering: true
+convert_to_db_scale: true
 frequency_sampling_rate: 2.0
 station_ids_200s: [14, 17, 19, 30]
 station_ids_100s: [13, 15, 18]

@@ -807,6 +807,7 @@ def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=1
     z = Sampling()([z_mean, z_log_var])
     
     encoder = Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
+    encoder.summary()
 
     # --- Decoder ---
     latent_inputs = Input(shape=(latent_dim,))
@@ -827,6 +828,7 @@ def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=1
     )(x)
     
     decoder = Model(latent_inputs, decoder_outputs, name="decoder")
+    decoder.summary()
 
     # --- VAE ---
     vae = VAE(encoder, decoder, kl_weight=kl_weight)
@@ -864,6 +866,7 @@ def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, l
     z = Sampling()([z_mean, z_log_var])
     
     encoder = Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
+    encoder.summary()
 
     # --- Decoder ---
     latent_inputs = Input(shape=(latent_dim,))
@@ -884,6 +887,7 @@ def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, l
     )(x)
     
     decoder = Model(latent_inputs, decoder_outputs, name="decoder")
+    decoder.summary()
 
     # --- VAE ---
     vae = VAE(encoder, decoder, kl_weight=kl_weight)
@@ -925,6 +929,7 @@ def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, la
     
     # Encoder model maps from CLEAN inputs to latent space
     encoder = Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
+    encoder.summary()
 
     # --- Decoder ---
     # (Decoder is identical to Step 1)
@@ -939,6 +944,7 @@ def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, la
         input_shape[-1], kernel_size=3, padding="valid", activation="linear", strides=2
     )(x)
     decoder = Model(latent_inputs, decoder_outputs, name="decoder")
+    decoder.summary()
 
     # --- VAE ---
     vae = VAE(encoder, decoder, kl_weight=kl_weight)

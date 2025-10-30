@@ -72,7 +72,8 @@ if __name__ == "__main__":
         for lr in learning_rates:
             # Note: Changed to R03_Autoencoder_train_and_run.py
             cmd = (
-                f'python /dfs8/sbarwick_lab/ariannaproject/tangch3/ARIANNA-code/model_runners/R03_Autoencoder_train_and_run.py '
+                # f'python /dfs8/sbarwick_lab/ariannaproject/tangch3/ARIANNA-code/model_runners/R03_Autoencoder_train_and_run.py '
+                f'python /dfs8/sbarwick_lab/ariannaproject/tangch3/ARIANNA-code/model_runners/R04_VAE_train_and_run.py '
                 f'--learning_rate {lr} '
                 f'--model_type {model_type}'
             )

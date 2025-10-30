@@ -179,7 +179,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         factor=0.2,
         patience=10,
         verbose=1,
-        min_lr=1e-7
+        min_lr=1e-8
     )
 
 

@@ -200,7 +200,6 @@ def train_autoencoder_model(training_backlobe, config, learning_rate, model_type
         patience=config['early_stopping_patience']
     )]
 
-    model.summary()
 
     history = model.fit(x_train, y_train,
                         validation_split=0.25,
@@ -208,6 +207,8 @@ def train_autoencoder_model(training_backlobe, config, learning_rate, model_type
                         batch_size=config['keras_batch_size'],
                         verbose=config['verbose_fit'],
                         callbacks=callbacks_list)
+
+    model.summary()
 
     return model, history, requires_transpose
 

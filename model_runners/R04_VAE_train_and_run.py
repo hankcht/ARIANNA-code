@@ -1228,8 +1228,8 @@ def _save_vae_model_artifacts(
     decoder_dir = os.path.join(model_dir, 'decoder')
     os.makedirs(model_dir, exist_ok=True)
 
-    print(f'Saving full VAE to: {model_dir}')
-    model.save(model_dir)
+    # print(f'Saving full VAE to: {model_dir}')
+    # model.save(model_dir)
 
     print(f'Saving encoder to: {encoder_dir}')
     model.encoder.save(encoder_dir)

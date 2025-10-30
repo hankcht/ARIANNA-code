@@ -142,6 +142,18 @@ def calculate_reconstruction_mse(model, prepared_data, config):
     return mse, reconstructed
 
 
+def convert_to_db_scale(array, min_value=1e-12):
+    """Convert magnitude values to dB, guarding against log(0)."""
+
+    arr = np.asarray(array)
+    if arr.size == 0:
+        return arr.astype(np.float32, copy=False)
+
+    safe = np.maximum(arr, min_value)
+    db = 20.0 * np.log10(safe)
+    return db.astype(np.float32, copy=False)
+
+
 def train_autoencoder_model(training_backlobe, config, learning_rate, model_type):
     """
     Trains the Autoencoder model.
@@ -870,8 +882,7 @@ def run_validation_checks(model, requires_transpose, config, timestamp, learning
             transformed = _compute_frequency_magnitude(transformed, sampling_rate)
             if use_filtering:
                 transformed = _apply_frequency_edge_filter(transformed)
-            # Also convert to dB scale
-            transformed = 20 * np.log10(np.maximum(transformed, 1e-12))
+            transformed = convert_to_db_scale(transformed)
         return transformed.astype(np.float32, copy=False)
 
     passing_traces_proc = transform(passing_traces)

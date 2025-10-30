@@ -54,10 +54,14 @@ if __name__ == "__main__":
         # '1d_autoencoder_dropout',
         # '1d_autoencoder_sequential',
         # '1d_autoencoder_parallel'
-        '1d_autoencoder_freq',
-        '1d_autoencoder_bottleneck_freq',
-        '1d_autoencoder_denoising_freq',
-        '1d_autoencoder_mae_loss_freq'
+        # '1d_autoencoder_freq',
+        # '1d_autoencoder_bottleneck_freq',
+        # '1d_autoencoder_denoising_freq',
+        # '1d_autoencoder_mae_loss_freq'
+        '1d_vae_freq',
+        '1d_vae_bottleneck_freq',
+        '1d_vae_denoising_freq',
+        '1d_vae_mae_loss_freq'
     ]
     
     # --- Parameters to sweep for Autoencoder ---

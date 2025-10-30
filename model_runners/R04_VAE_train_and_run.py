@@ -525,22 +525,38 @@ def plot_original_vs_reconstructed(
     worst_rcr_mse = prob_rcr[worst_rcr_idx]
     rcr_original = sim_rcr_all[worst_rcr_idx]
 
+    best_rcr_idx = np.argmin(prob_rcr)
+    best_rcr_mse = prob_rcr[best_rcr_idx]
+    rcr_original_best = sim_rcr_all[best_rcr_idx]
+
     best_bl_idx = np.argmin(prob_backlobe)
     best_bl_mse = prob_backlobe[best_bl_idx]
     bl_original = data_backlobe_traces_rcr_all[best_bl_idx]
 
-    rcr_prepped = rcr_original.transpose(1, 0) if requires_transpose else rcr_original
-    bl_prepped = bl_original.transpose(1, 0) if requires_transpose else bl_original
+    worst_bl_idx = np.argmax(prob_backlobe)
+    worst_bl_mse = prob_backlobe[worst_bl_idx]
+    bl_original_worst = data_backlobe_traces_rcr_all[worst_bl_idx]
 
-    rcr_prepped = rcr_prepped[np.newaxis, ...]
-    bl_prepped = bl_prepped[np.newaxis, ...]
+    worst_rcr_prepped = rcr_original.transpose(1, 0) if requires_transpose else rcr_original
+    best_bl_prepped = bl_original.transpose(1, 0) if requires_transpose else bl_original
+    best_rcr_prepped = rcr_original_best.transpose(1, 0) if requires_transpose else rcr_original_best
+    worst_bl_prepped = bl_original_worst.transpose(1, 0) if requires_transpose else bl_original_worst
 
-    rcr_reconstructed = model.predict(rcr_prepped)[0]
-    bl_reconstructed = model.predict(bl_prepped)[0]
+    worst_rcr_prepped = worst_rcr_prepped[np.newaxis, ...]
+    best_bl_prepped = bl_prepped[np.newaxis, ...]
+    best_rcr_prepped = best_rcr_prepped[np.newaxis, ...]
+    worst_bl_prepped = worst_bl_prepped[np.newaxis, ...]
+
+    worst_rcr_reconstructed = model.predict(worst_rcr_prepped)[0]
+    best_bl_reconstructed = model.predict(best_bl_prepped)[0]
+    best_rcr_reconstructed = model.predict(best_rcr_prepped)[0]
+    worst_bl_reconstructed = model.predict(worst_bl_prepped)[0]
 
     if requires_transpose:
-        rcr_reconstructed = rcr_reconstructed.transpose(1, 0)
-        bl_reconstructed = bl_reconstructed.transpose(1, 0)
+        worst_rcr_reconstructed = worst_rcr_reconstructed.transpose(1, 0)
+        best_bl_reconstructed = best_bl_reconstructed.transpose(1, 0)
+        best_rcr_reconstructed = best_rcr_reconstructed.transpose(1, 0)
+        worst_bl_reconstructed = worst_bl_reconstructed.transpose(1, 0)
 
     fig, axes = plt.subplots(4, 2, figsize=(15, 10), sharex=True, sharey=True)
     fig.suptitle(
@@ -554,14 +570,14 @@ def plot_original_vs_reconstructed(
     for i in range(4):
         axes[i, 0].plot(rcr_original[i, :], color='red', label=f'Channel {i}')
         axes[i, 0].set_ylabel(f'Channel {i}')
-        axes[i, 1].plot(rcr_reconstructed[i, :], color='black', label=f'Recon Chan {i}')
+        axes[i, 1].plot(worst_rcr_reconstructed[i, :], color='black', label=f'Recon Chan {i}')
 
     axes[-1, 0].set_xlabel('Sample')
     axes[-1, 1].set_xlabel('Sample')
 
     plot_file_rcr = os.path.join(
         plot_path,
-        f'{timestamp}_{amp}_{model_type}_recon_RCR_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png',
+        f'{timestamp}_{amp}_{model_type}_recon_worst_RCR_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png',
     )
     plt.savefig(plot_file_rcr)
     plt.close(fig)
@@ -579,19 +595,68 @@ def plot_original_vs_reconstructed(
     for i in range(4):
         axes[i, 0].plot(bl_original[i, :], color='blue', label=f'Channel {i}')
         axes[i, 0].set_ylabel(f'Channel {i}')
-        axes[i, 1].plot(bl_reconstructed[i, :], color='black', label=f'Recon Chan {i}')
+        axes[i, 1].plot(best_bl_reconstructed[i, :], color='black', label=f'Recon Chan {i}')
 
     axes[-1, 0].set_xlabel('Sample')
     axes[-1, 1].set_xlabel('Sample')
 
     plot_file_bl = os.path.join(
         plot_path,
-        f'{timestamp}_{amp}_{model_type}_recon_Backlobe_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png',
+        f'{timestamp}_{amp}_{model_type}_recon_best_Backlobe_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png',
     )
     plt.savefig(plot_file_bl)
     plt.close(fig)
     print(f'Saved best Backlobe reconstruction plot to: {plot_file_bl}')
 
+    fig, axes = plt.subplots(4, 2, figsize=(15, 10), sharex=True, sharey=True)
+    fig.suptitle(
+        f'{amp} {model_type} - BEST Reconstructed RCR (Signal) - MSE: {best_rcr_mse:.4g}\n(Dataset: {dataset_name_suffix})',
+        fontsize=16,
+    )
+
+    axes[0, 0].set_title('Original Trace')
+    axes[0, 1].set_title('Reconstructed Trace')
+
+    for i in range(4):
+        axes[i, 0].plot(rcr_original_best[i, :], color='red', label=f'Channel {i}')
+        axes[i, 0].set_ylabel(f'Channel {i}')
+        axes[i, 1].plot(best_rcr_reconstructed[i, :], color='black', label=f'Recon Chan {i}')
+
+    axes[-1, 0].set_xlabel('Sample')
+    axes[-1, 1].set_xlabel('Sample')
+
+    plot_file_rcr_best = os.path.join(
+        plot_path,
+        f'{timestamp}_{amp}_{model_type}_recon_best_RCR_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png',
+    )
+    plt.savefig(plot_file_rcr_best)
+    plt.close(fig)
+    print(f'Saved best RCR reconstruction plot to: {plot_file_rcr_best}')
+
+    fig, axes = plt.subplots(4, 2, figsize=(15, 10), sharex=True, sharey=True)
+    fig.suptitle(
+        f'{amp} {model_type} - WORST Reconstructed Backlobe (BG) - MSE: {worst_bl_mse:.4g}\n(Dataset: {dataset_name_suffix})',
+        fontsize=16,
+    )   
+
+    axes[0, 0].set_title('Original Trace')
+    axes[0, 1].set_title('Reconstructed Trace')
+
+    for i in range(4):
+        axes[i, 0].plot(bl_original_worst[i, :], color='blue', label=f'Channel {i}')
+        axes[i, 0].set_ylabel(f'Channel {i}')
+        axes[i, 1].plot(worst_bl_reconstructed[i, :], color='black', label=f'Recon Chan {i}')
+
+    axes[-1, 0].set_xlabel('Sample')
+    axes[-1, 1].set_xlabel('Sample')
+
+    plot_file_bl_worst = os.path.join(
+        plot_path,
+        f'{timestamp}_{amp}_{model_type}_recon_worst_Backlobe_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png',
+    )
+    plt.savefig(plot_file_bl_worst)
+    plt.close(fig)
+    print(f'Saved worst Backlobe reconstruction plot to: {plot_file_bl_worst}')
 
 def _extract_latent_vectors(model, prepared_batch):
     """Return deterministic latent representations for VAE inputs."""

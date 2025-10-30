@@ -21,6 +21,7 @@ from tensorflow import keras
 from tensorflow.keras.models import Model
 from sklearn.manifold import TSNE
 from pathlib import Path
+from tensorflow.keras.callbacks import ReduceLROnPlateau
 
 # --- Local Imports from project structure ---
 sys.path.append(str(Path(__file__).resolve().parents[1] / '200s_time'))
@@ -167,12 +168,20 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         x_train = np.expand_dims(x_train, axis=-1)
         y_train = np.expand_dims(y_train, axis=-1)
 
-    callbacks_list = [
-        keras.callbacks.EarlyStopping(
-            monitor='val_loss',
-            patience=config['early_stopping_patience'],
-        )
-    ]
+    # callbacks_list = [
+    #     keras.callbacks.EarlyStopping(
+    #         monitor='val_loss',
+    #         patience=config['early_stopping_patience'],
+    #     )
+    # ]
+    lr_scheduler = ReduceLROnPlateau(
+        monitor='val_loss',
+        factor=0.2,
+        patience=10,
+        verbose=1,
+        min_lr=1e-7
+    )
+
 
     history = model.fit(
         x_train,
@@ -181,7 +190,8 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         epochs=config['keras_epochs'],
         batch_size=config['keras_batch_size'],
         verbose=config['verbose_fit'],
-        callbacks=callbacks_list,
+        callbacks=[lr_scheduler]
+        # callbacks=callbacks_list,
     )
 
     return model, history, requires_transpose

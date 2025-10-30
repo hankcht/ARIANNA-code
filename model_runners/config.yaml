@@ -50,8 +50,8 @@ base_plot_path: "/dfs8/sbarwick_lab/ariannaproject/tangch3/plots2/"
 if_1D: False # currently used in checks.py to evaluate transposed events
 prefix : "1D_CNN"
 train_cut: 8000
-early_stopping_patience: 100
-keras_epochs: 200
+early_stopping_patience: 50
+keras_epochs: 300
 keras_batch_size: 64
 verbose_fit: 2
 model_filename_template: "{timestamp}_{amp}_{prefix}_model_2Layer.h5"

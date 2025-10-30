@@ -77,7 +77,7 @@ def _apply_frequency_edge_filter(freq_array, num_bins=10):
     freq_array[..., -num_bins:] = 0
     return freq_array
 
-def convert_to_db_scale(array, min_value=1e-12):
+def convert_to_db_scale(array, min_value=1e-2):
     """Convert magnitude values to dB, guarding against log(0)."""
 
     arr = np.asarray(array)

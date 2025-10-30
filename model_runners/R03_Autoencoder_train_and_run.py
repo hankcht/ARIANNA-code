@@ -872,7 +872,8 @@ def run_validation_checks(model, requires_transpose, config, timestamp, learning
             transformed = _compute_frequency_magnitude(transformed, sampling_rate)
             if use_filtering:
                 transformed = _apply_frequency_edge_filter(transformed)
-            transformed = convert_to_db_scale(transformed)
+            if config.get('convert_to_db_scale', False):
+                transformed = convert_to_db_scale(transformed)
         return transformed.astype(np.float32, copy=False)
 
     passing_traces_proc = transform(passing_traces)

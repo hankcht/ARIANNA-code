@@ -188,6 +188,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         restore_best_weights=True,
     )
 
+    # Requires rewriting my VAE model, so commenting out for now
     # model_checkpoint = ModelCheckpoint(
     #     'best_model.keras',
     #     monitor='val_loss',

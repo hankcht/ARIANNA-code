@@ -65,7 +65,7 @@ if __name__ == "__main__":
     ]
     
     # --- Parameters to sweep for Autoencoder ---
-    learning_rates = [1e-3, 1e-4, 5e-5, 1e-5, 5e-6, 1e-6, 5e-7, 1e-7]
+    learning_rates = [1e-3, 1e-4, 5e-5, 1e-5, 5e-6, 1e-6, 5e-7]
     
     # Iterate over model types and learning rates
     for model_type in model_types:

@@ -21,7 +21,7 @@ from tensorflow import keras
 from tensorflow.keras.models import Model
 from sklearn.manifold import TSNE
 from pathlib import Path
-from tensorflow.keras.callbacks import ReduceLROnPlateau
+from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping, ModelCheckpoint
 
 # --- Local Imports from project structure ---
 sys.path.append(str(Path(__file__).resolve().parents[1] / '200s_time'))
@@ -182,6 +182,17 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         min_lr=1e-7
     )
 
+    early_stopper = EarlyStopping(
+        monitor='val_loss',
+        patience=config['early_stopping_patience'],
+        restore_best_weights=True,
+    )
+
+    model_checkpoint = ModelCheckpoint(
+        'best_model.keras',
+        monitor='val_loss',
+        save_best_only=True
+    )
 
     history = model.fit(
         x_train,
@@ -190,7 +201,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         epochs=config['keras_epochs'],
         batch_size=config['keras_batch_size'],
         verbose=config['verbose_fit'],
-        callbacks=[lr_scheduler]
+        callbacks=[lr_scheduler, early_stopper, model_checkpoint]
         # callbacks=callbacks_list,
     )
 

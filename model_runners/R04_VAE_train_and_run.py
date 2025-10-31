@@ -177,7 +177,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     lr_scheduler = ReduceLROnPlateau(
         monitor='val_loss',
         factor=0.2,
-        patience=10,
+        patience=50,
         verbose=1,
         min_lr=1e-7
     )

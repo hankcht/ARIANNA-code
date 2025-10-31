@@ -858,6 +858,7 @@ def plot_latent_space(
                     )
                 ax.set_xlim(dim_ranges[col])
                 ax.set_title(f'Latent {col}', fontsize=10)
+                ax.set_yscale('log')
                 if col == 0:
                     ax.set_ylabel('Count')
             elif row > col:

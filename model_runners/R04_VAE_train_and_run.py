@@ -188,11 +188,11 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         restore_best_weights=True,
     )
 
-    model_checkpoint = ModelCheckpoint(
-        'best_model.keras',
-        monitor='val_loss',
-        save_best_only=True
-    )
+    # model_checkpoint = ModelCheckpoint(
+    #     'best_model.keras',
+    #     monitor='val_loss',
+    #     save_best_only=True
+    # )
 
     history = model.fit(
         x_train,
@@ -201,7 +201,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         epochs=config['keras_epochs'],
         batch_size=config['keras_batch_size'],
         verbose=config['verbose_fit'],
-        callbacks=[lr_scheduler, early_stopper, model_checkpoint]
+        callbacks=[lr_scheduler, early_stopper]
         # callbacks=callbacks_list,
     )
 

@@ -543,7 +543,7 @@ def plot_original_vs_reconstructed(
     worst_bl_prepped = bl_original_worst.transpose(1, 0) if requires_transpose else bl_original_worst
 
     worst_rcr_prepped = worst_rcr_prepped[np.newaxis, ...]
-    best_bl_prepped = bl_prepped[np.newaxis, ...]
+    best_bl_prepped = best_bl_prepped[np.newaxis, ...]
     best_rcr_prepped = best_rcr_prepped[np.newaxis, ...]
     worst_bl_prepped = worst_bl_prepped[np.newaxis, ...]
 

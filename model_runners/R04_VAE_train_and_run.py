@@ -177,7 +177,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     lr_scheduler = ReduceLROnPlateau(
         monitor='val_loss',
         factor=0.2,
-        patience=50,
+        patience=10,
         verbose=1,
         min_lr=1e-7
     )
@@ -691,7 +691,7 @@ def plot_latent_space(
     dataset_name_suffix="main",
     extra_datasets=None,
 ):
-    """Generate a t-SNE latent space visualization with optional overlays."""
+    """Generate an n×n latent-space pair plot with histograms on the diagonal."""
 
     amp = config['amp']
     prefix = config['prefix']
@@ -722,6 +722,7 @@ def plot_latent_space(
             'color': LATENT_COLOR_MAP.get('RCR (Signal)', 'red'),
             'marker': LATENT_MARKER_MAP.get('RCR (Signal)', 'o'),
             'alpha': 0.5,
+            'size': 40,
         }
     )
 
@@ -732,6 +733,7 @@ def plot_latent_space(
             'color': LATENT_COLOR_MAP.get('Backlobe (BG)', 'blue'),
             'marker': LATENT_MARKER_MAP.get('Backlobe (BG)', 'o'),
             'alpha': 0.5,
+            'size': 40,
         }
     )
 
@@ -756,10 +758,7 @@ def plot_latent_space(
         else:
             data_subset = data_array
 
-        color = extra.get('color')
-        if color is None:
-            color = LATENT_COLOR_MAP.get(label, 'gray')
-
+        color = extra.get('color', LATENT_COLOR_MAP.get(label, 'gray'))
         marker = extra.get('marker', LATENT_MARKER_MAP.get(label, 'o'))
 
         dataset_entries.append(
@@ -773,88 +772,153 @@ def plot_latent_space(
             }
         )
 
-    combined_batches = []
+    plottable_entries = []
     for entry in dataset_entries:
         try:
             prepared = prepare_data_for_model(entry['data'], requires_transpose)
         except ValueError as exc:
-            print(
-                f"Skipping dataset '{entry['label']}' in latent plotting: {exc}"
-            )
-            entry['prepared'] = None
+            print(f"Skipping dataset '{entry['label']}' in latent plotting: {exc}")
             continue
 
         if prepared.size == 0 or prepared.shape[0] == 0:
             print(
                 f"Skipping dataset '{entry['label']}' in latent plotting: empty after preparation."
             )
-            entry['prepared'] = None
+            continue
+
+        latent_vectors = _extract_latent_vectors(model, prepared)
+        if latent_vectors.ndim > 2:
+            latent_vectors = latent_vectors.reshape(latent_vectors.shape[0], -1)
+
+        if latent_vectors.size == 0 or latent_vectors.shape[0] == 0:
+            print(
+                f"Skipping dataset '{entry['label']}' in latent plotting: encoder returned empty output."
+            )
             continue
 
         entry['prepared'] = prepared
-        combined_batches.append(prepared)
+        entry['latent'] = latent_vectors
+        entry['legend_label'] = f"{entry['label']} ({prepared.shape[0]})"
+        plottable_entries.append(entry)
 
-    if not combined_batches:
+    if not plottable_entries:
         print(f"No datasets available for latent space plot ({dataset_name_suffix}).")
         return
 
-    combined_data = np.concatenate(combined_batches, axis=0)
+    latent_dim = plottable_entries[0]['latent'].shape[1]
+    if latent_dim == 0:
+        print("Latent space has zero dimensions; skipping plot.")
+        return
 
-    print(f"Running encoder for latent space ({combined_data.shape[0]} samples total)...")
-    latent_vectors = _extract_latent_vectors(model, combined_data)
-    if latent_vectors.ndim > 2:
-        latent_vectors = latent_vectors.reshape(latent_vectors.shape[0], -1)
+    for entry in plottable_entries:
+        if entry['latent'].shape[1] != latent_dim:
+            print(
+                f"Dataset '{entry['label']}' latent dimension mismatch; expected {latent_dim}, got {entry['latent'].shape[1]}."
+            )
+            return
 
-    print("Running t-SNE (this may take a minute)...")
-    tsne = TSNE(n_components=2, verbose=1, perplexity=40, n_iter=300)
-    tsne_results = tsne.fit_transform(latent_vectors)
-
-    print("Plotting t-SNE projection with validation overlays...")
-    plt.figure(figsize=(10, 8))
-
-    start_idx = 0
-    for entry in dataset_entries:
-        prepared = entry.get('prepared')
-        if prepared is None:
-            continue
-
-        end_idx = start_idx + prepared.shape[0]
-        points = tsne_results[start_idx:end_idx]
-        start_idx = end_idx
-
-        color = entry.get('color') or LATENT_COLOR_MAP.get(entry['label'], 'gray')
-        marker = entry.get('marker', 'o')
-        alpha = entry.get('alpha', 0.6)
-        size = entry.get('size', 40)
-        if entry['label'].startswith('Validation Special Event'):
-            size = 120
-            alpha = entry.get('alpha', 1.0)
-
-        plt.scatter(
-            points[:, 0],
-            points[:, 1],
-            label=f"{entry['label']} ({prepared.shape[0]})",
-            color=color,
-            marker=marker,
-            alpha=alpha,
-            s=size,
-            edgecolors='none' if marker != '*' else 'k',
+    if latent_dim > 10:
+        print(
+            f"Latent dimension {latent_dim} is large; resulting plot may be hard to interpret."
         )
 
-    plt.legend(loc='upper right')
-    plt.title(
-        f't-SNE Latent Space Visualization ({domain_label}, {dataset_name_suffix} set)'
-    )
-    plt.xlabel('t-SNE Component 1')
-    plt.ylabel('t-SNE Component 2')
+    dim_ranges = []
+    for dim in range(latent_dim):
+        dim_values = np.concatenate([entry['latent'][:, dim] for entry in plottable_entries], axis=0)
+        dim_min = float(np.min(dim_values))
+        dim_max = float(np.max(dim_values))
+        span = dim_max - dim_min
+        pad = 0.05 * span if span > 0 else 1.0
+        dim_ranges.append((dim_min - pad, dim_max + pad))
 
-    plot_file_tsne = os.path.join(
-        plot_path,
-        f'{timestamp}_{amp}_{model_type}_latent_space_tSNE_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png',
+    base_size = 3.0
+    fig, axes = plt.subplots(
+        latent_dim,
+        latent_dim,
+        figsize=(base_size * latent_dim, base_size * latent_dim),
     )
-    plt.savefig(plot_file_tsne)
-    plt.close()
-    print(f'Saved t-SNE plot to: {plot_file_tsne}')
+    if latent_dim == 1:
+        axes = np.array([[axes]])
+
+    for row in range(latent_dim):
+        for col in range(latent_dim):
+            ax = axes[row, col]
+            if row == col:
+                for entry in plottable_entries:
+                    data = entry['latent'][:, col]
+                    ax.hist(
+                        data,
+                        bins=40,
+                        histtype='step',
+                        color=entry['color'],
+                        alpha=entry['alpha'],
+                        linewidth=1.5,
+                    )
+                ax.set_xlim(dim_ranges[col])
+                ax.set_title(f'Latent {col}', fontsize=10)
+                if col == 0:
+                    ax.set_ylabel('Count')
+            elif row > col:
+                for entry in plottable_entries:
+                    x_vals = entry['latent'][:, col]
+                    y_vals = entry['latent'][:, row]
+                    ax.scatter(
+                        x_vals,
+                        y_vals,
+                        color=entry['color'],
+                        marker=entry['marker'],
+                        alpha=entry['alpha'],
+                        s=entry['size'],
+                        edgecolors='k' if entry['marker'] == '*' else 'none',
+                        linewidths=0.6 if entry['marker'] == '*' else 0.0,
+                    )
+                ax.set_xlim(dim_ranges[col])
+                ax.set_ylim(dim_ranges[row])
+                if row == latent_dim - 1:
+                    ax.set_xlabel(f'Latent {col}')
+                if col == 0:
+                    ax.set_ylabel(f'Latent {row}')
+            else:
+                ax.axis('off')
+
+    fig.suptitle(
+        f'Latent Space Pair Plot ({domain_label}, {dataset_name_suffix} set)',
+        fontsize=16,
+    )
+
+    marker_symbol_map = {
+        'o': '\u25CF',
+        's': '\u25A0',
+        '^': '\u25B2',
+        'v': '\u25BC',
+        '*': '\u2605',
+        'd': '\u25C6',
+        'D': '\u25C6',
+    }
+    text_y = 0.95
+    line_height = 0.04
+    for entry in plottable_entries:
+        marker_symbol = marker_symbol_map.get(entry['marker'], '\u25CF')
+        fig.text(
+            0.98,
+            text_y,
+            f'{marker_symbol} {entry["legend_label"]}',
+            color=entry['color'],
+            ha='right',
+            va='top',
+            fontsize=10,
+        )
+        text_y -= line_height
+
+    plt.tight_layout(rect=[0.02, 0.02, 0.9, 0.9])
+
+    plot_file = os.path.join(
+        plot_path,
+        f'{timestamp}_{amp}_{model_type}_latent_space_pairplot_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png',
+    )
+    plt.savefig(plot_file, dpi=200)
+    plt.close(fig)
+    print(f'Saved latent space pair plot to: {plot_file}')
 
 
 def plot_validation_loss_histogram(

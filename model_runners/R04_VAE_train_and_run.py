@@ -23,6 +23,8 @@ from sklearn.manifold import TSNE
 from pathlib import Path
 from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping, ModelCheckpoint
 
+import umap
+
 # --- Local Imports from project structure ---
 sys.path.append(str(Path(__file__).resolve().parents[1] / '200s_time'))
 from A0_Utilities import load_config
@@ -919,6 +921,76 @@ def plot_latent_space(
     plt.savefig(plot_file, dpi=200)
     plt.close(fig)
     print(f'Saved latent space pair plot to: {plot_file}')
+
+
+    # --- Now plotting UMAP ---
+    print("Generating UMAP plot...")
+    # 1. Combine all latent vectors into one array
+    all_latent_vectors = np.concatenate(
+        [entry['latent'] for entry in plottable_entries], axis=0
+    )
+
+    if all_latent_vectors.shape[0] < 5:
+        print(f"Not enough total samples ({all_latent_vectors.shape[0]}) for UMAP. Skipping.")
+        return
+
+    # 2. Initialize and fit UMAP
+    # Use n_neighbors=5 as requested. Set random_state for reproducibility.
+    reducer = umap.UMAP(
+        n_neighbors=5,
+        n_components=2,
+        random_state=42,
+        min_dist=0.1,  # Default, good starting point
+    )
+    embedding = reducer.fit_transform(all_latent_vectors)
+
+    # 3. Plot the 2D embedding
+    fig_umap, ax_umap = plt.subplots(figsize=(11, 9))
+
+    # 4. Split the embedding back into datasets and plot
+    start_idx = 0
+    for entry in plottable_entries:
+        n_samples_in_entry = entry['latent'].shape[0]
+        end_idx = start_idx + n_samples_in_entry
+        
+        # Get the 2D embedding for this dataset
+        entry_embedding = embedding[start_idx:end_idx, :]
+        
+        # Re-use the scatter plot settings from the pair plot
+        ax_umap.scatter(
+            entry_embedding[:, 0],
+            entry_embedding[:, 1],
+            color=entry['color'],
+            marker=entry['marker'],
+            alpha=entry['alpha'],
+            s=entry['size'],
+            label=entry['legend_label'],
+            edgecolors='k' if entry['marker'] == '*' else 'none',
+            linewidths=0.6 if entry['marker'] == '*' else 0.0,
+        )
+        start_idx = end_idx
+
+    ax_umap.set_title(
+        f'UMAP Projection of Latent Space ({domain_label}, {dataset_name_suffix} set)',
+        fontsize=16,
+    )
+    ax_umap.set_xlabel('UMAP Component 1')
+    ax_umap.set_ylabel('UMAP Component 2')
+    ax_umap.grid(True, linestyle='--', alpha=0.3)
+    
+    # Add legend
+    ax_umap.legend(loc='best', fontsize=10)
+    
+    plt.tight_layout()
+
+    # 5. Save the UMAP plot
+    umap_plot_file = os.path.join(
+        plot_path,
+        f'{timestamp}_{amp}_{model_type}_latent_space_UMAP_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png',
+    )
+    plt.savefig(umap_plot_file, dpi=200)
+    plt.close(fig_umap)
+    print(f'Saved UMAP plot to: {umap_plot_file}')
 
 
 def plot_validation_loss_histogram(

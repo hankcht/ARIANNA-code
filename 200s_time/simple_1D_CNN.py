@@ -71,6 +71,7 @@ def build_1d_cnn_model(n_samples, n_channels):
     model = Sequential()
     model.add(Conv1D(20, kernel_size=4, activation='relu', padding='same', input_shape=(n_samples, n_channels)))
     model.add(Dropout(0.5))
+    model.add(GlobalAveragePooling1D())
     model.add(Dense(1, activation='sigmoid'))
     model.compile(optimizer='Adam',  
                   loss='binary_crossentropy',

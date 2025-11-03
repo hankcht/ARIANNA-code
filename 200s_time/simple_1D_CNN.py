@@ -71,7 +71,6 @@ def build_1d_cnn_model(n_samples, n_channels):
     model = Sequential()
     model.add(Conv1D(20, kernel_size=4, activation='relu', padding='same', input_shape=(n_samples, n_channels)))
     model.add(Dropout(0.5))
-    model.add(GlobalAveragePooling1D())
     model.add(Dense(1, activation='sigmoid'))
     model.compile(optimizer='Adam',  
                   loss='binary_crossentropy',
@@ -199,7 +198,7 @@ def plot_check_hist(prob_2016, prob_coinc, prob_one, amp, ts):
     plt.xlabel('Network Output'); plt.ylabel('Events')
     plt.text(0.05, 0.85, f'Sample RCR: {prob_one.item():.2f}', transform=plt.gca().transAxes)
     plt.legend()
-    out = f"{amp}_network_output_check_{ts}.png"
+    out = os.path.join('/dfs8/sbarwick_lab/ariannaproject/tangch3/plots/', '{amp}_network_output_check_{ts}.png')
     plt.savefig(out)
     plt.close()
     print(f"Saved network output check to {out}")
@@ -245,7 +244,7 @@ def main():
     sample_prob = model_check.predict(np.expand_dims(coinc[1297], axis=0))
     plot_check_hist(prob_bl_2016.flatten(), prob_coinc.flatten(), sample_prob.flatten(), amp, ts)
 
-    print("✅ Script finished successfully.")
+    print("Script finished successfully.")
 
 
 if __name__ == "__main__":

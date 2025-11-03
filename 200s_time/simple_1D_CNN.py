@@ -199,7 +199,7 @@ def plot_check_hist(prob_2016, prob_coinc, prob_one, amp, ts):
     plt.xlabel('Network Output'); plt.ylabel('Events')
     plt.text(0.05, 0.85, f'Sample RCR: {prob_one.item():.2f}', transform=plt.gca().transAxes)
     plt.legend()
-    out = os.path.join('/dfs8/sbarwick_lab/ariannaproject/tangch3/plots/', '{amp}_network_output_check_{ts}.png')
+    out = os.path.join('/dfs8/sbarwick_lab/ariannaproject/tangch3/plots/', f'{amp}_network_output_check_{ts}.png')
     plt.savefig(out)
     plt.close()
     print(f"Saved network output check to {out}")

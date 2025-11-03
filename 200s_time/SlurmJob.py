@@ -78,20 +78,20 @@ if __name__ == "__main__":
     # multi_run = True
     # main(multi_run=multi_run)
 
-    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
-    # RunMultipleJobs(cmd, jobName='converter')
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simple_1D_CNN.py'
+    RunMultipleJobs(cmd, jobName='simple_1D_CNN')
 
-    # Define available model types
-    model_types = ['1d_cnn', 'parallel', 'strided', 'astrid_2d'] # 'parallel_strided', need debug
+    # # Define available model types
+    # model_types = ['1d_cnn', 'parallel', 'strided', 'astrid_2d'] # 'parallel_strided', need debug
     
-    # Run refactored model with multiple learning rate settings and model types
-    learning_rates = [1e-4, 5e-5, 1e-5, 5e-6, 1e-6]
+    # # Run refactored model with multiple learning rate settings and model types
+    # learning_rates = [1e-4, 5e-5, 1e-5, 5e-6, 1e-6]
     
-    # Iterate over both model types and learning rates
-    for model_type in model_types:
-        for lr in learning_rates:
-            cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/R01_1D_CNN_train_and_run.py --learning_rate {lr} --model_type {model_type}'
-            RunMultipleJobs(cmd, jobName=f'{model_type}_lr_{lr}')
+    # # Iterate over both model types and learning rates
+    # for model_type in model_types:
+    #     for lr in learning_rates:
+    #         cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/R01_1D_CNN_train_and_run.py --learning_rate {lr} --model_type {model_type}'
+    #         RunMultipleJobs(cmd, jobName=f'{model_type}_lr_{lr}')
     
     # Original single runs (commented out for reference)
     # for lr in learning_rates:

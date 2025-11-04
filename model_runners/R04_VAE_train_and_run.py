@@ -30,12 +30,14 @@ sys.path.append(str(Path(__file__).resolve().parents[1] / '200s_time'))
 from A0_Utilities import load_config
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from model_builder_autoencoder import (
+from model_builder_VAE import (
     build_vae_model_freq,
     build_vae_bottleneck_model_freq,
     build_vae_denoising_model_freq,
     build_vae_mae_loss_model_freq,
-    KLAnnealingCallback
+    KLAnnealingCallback,
+    KLCyclicalAnnealingCallback,
+    CyclicalLRCallback
 )
 from data_channel_cycling import cycle_channels
 from R01_1D_CNN_train_and_run import (
@@ -177,19 +179,19 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     #         patience=config['early_stopping_patience'],
     #     )
     # ]
-    lr_scheduler = ReduceLROnPlateau(
-        monitor='val_loss',
-        factor=0.2,
-        patience=10,
-        verbose=1,
-        min_lr=1e-7
-    )
-
-    # early_stopper = EarlyStopping(
+    # lr_scheduler = ReduceLROnPlateau(
     #     monitor='val_loss',
-    #     patience=config['early_stopping_patience'],
-    #     restore_best_weights=True,
+    #     factor=0.2,
+    #     patience=10,
+    #     verbose=1,
+    #     min_lr=1e-7
     # )
+
+    early_stopper = EarlyStopping(
+        monitor='val_loss',
+        patience=config['early_stopping_patience'],
+        restore_best_weights=True,
+    )
 
     # Requires rewriting my VAE model, so commenting out for now
     # model_checkpoint = ModelCheckpoint(
@@ -199,11 +201,29 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     # )
 
     # KL Annealing Callback
-    kl_annealing_callback = KLAnnealingCallback(
-        kl_weight_target=1.0,   # Final weight
-        kl_anneal_epochs=50,    # Number of epochs to reach target weight
-        kl_warmup_epochs=10     # Number of epochs to wait before starting annealing
+    # kl_annealing_callback = KLAnnealingCallback(
+    #     kl_weight_target=1.0,   # Final weight
+    #     kl_anneal_epochs=50,    # Number of epochs to reach target weight
+    #     kl_warmup_epochs=10     # Number of epochs to wait before starting annealing
+    # )
+    WARMUP_EPOCHS = 10
+    CYCLE_LENGTH = 25
+    RAMP_FRACTION = 0.8
+
+    kl_cyclical_callback = KLCyclicalAnnealingCallback(
+        kl_weight_target=1.0,   # Peak weight (beta)
+        cycle_length_epochs=CYCLE_LENGTH, # Number of epochs for full cycle
+        kl_warmup_epochs=WARMUP_EPOCHS,    # Number of epochs to wait at 0
+        ramp_up_fraction=RAMP_FRACTION    # 80% of cycle to ramp up, 20% at peak
     )
+    lr_cyclical_callback = CyclicalLRCallback(
+        max_lr=learning_rate,
+        min_lr=learning_rate*0.01,
+        cycle_length=CYCLE_LENGTH,
+        kl_warmup_epochs=WARMUP_EPOCHS,
+        ramp_up_fraction=RAMP_FRACTION
+    )
+
 
     history = model.fit(
         x_train,
@@ -212,7 +232,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         epochs=config['keras_epochs'],
         batch_size=config['keras_batch_size'],
         verbose=config['verbose_fit'],
-        callbacks=[lr_scheduler, kl_annealing_callback]
+        callbacks=[lr_cyclical_callback, early_stopper, kl_cyclical_callback]
         # callbacks=callbacks_list,
     )
 

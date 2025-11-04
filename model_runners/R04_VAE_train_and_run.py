@@ -219,7 +219,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     lr_cyclical_callback = CyclicalLRCallback(
         max_lr=learning_rate,
         min_lr=learning_rate*0.01,
-        cycle_length=CYCLE_LENGTH,
+        cycle_length_epochs=CYCLE_LENGTH,
         kl_warmup_epochs=WARMUP_EPOCHS,
         ramp_up_fraction=RAMP_FRACTION
     )

@@ -318,6 +318,7 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
     plt.plot(history.history['val_loss'], label='Validation Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
+    plt.yscale('log')
     plt.title(f'{model_type} Training vs Validation Loss ({domain_label}, LR={learning_rate:.0e})')
     plt.legend()
     loss_plot_file = os.path.join(plot_path, f'{timestamp}_{amp}_{model_type}_loss_{prefix}_{lr_str}{domain_suffix}.png')

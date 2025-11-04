@@ -12,6 +12,8 @@ from tensorflow.keras.layers import (
     GaussianNoise, Dropout, Concatenate,
     Dense, Reshape, Layer, Flatten
 )
+from tensorflow.keras.callbacks import Callback
+import numpy as np
 
 
 def build_autoencoder_model(input_shape=(256, 4), learning_rate=0.001):
@@ -702,7 +704,10 @@ class VAE(Model):
         super(VAE, self).__init__(**kwargs)
         self.encoder = encoder
         self.decoder = decoder
-        self.kl_weight = kl_weight
+
+        # KL annealing
+        self.kl_weight = tf.Variable(kl_weight, trainable=False, dtype=tf.float32, name="kl_weight")
+
         self.total_loss_tracker = keras.metrics.Mean(name="total_loss")
         self.recon_loss_tracker = keras.metrics.Mean(name="recon_loss")
         self.kl_loss_tracker = keras.metrics.Mean(name="kl_loss")
@@ -781,9 +786,56 @@ class VAE(Model):
             "kl_loss": self.kl_loss_tracker.result(),
         }
 
+# VAE KL Annealing Callback
+class KLAnnealingCallback(Callback):
+    """
+    Callback to anneal the KL weight (beta) from 0.0 to a target value.
+    """
+    def __init__(self, kl_weight_target, kl_anneal_epochs, kl_warmup_epochs=0, verbose=1):
+        """
+        Args:
+            kl_weight_target (float): The final target value for the KL weight.
+            kl_anneal_epochs (int): The number of epochs over which to ramp up the weight.
+            kl_warmup_epochs (int): The number of epochs to wait at weight=0.0 before starting.
+            verbose (int): Set to 1 to print the weight at the end of each epoch.
+        """
+        super(KLAnnealingCallback, self).__init__()
+        self.kl_weight_target = float(kl_weight_target)
+        self.kl_anneal_epochs = float(kl_anneal_epochs)
+        self.kl_warmup_epochs = float(kl_warmup_epochs)
+        self.verbose = verbose
+        self.current_kl_weight = 0.0 # Start at 0
+
+    def on_epoch_begin(self, epoch, logs=None):
+        epoch_float = float(epoch)
+        
+        if epoch_float < self.kl_warmup_epochs:
+            # We are in the warmup phase
+            self.current_kl_weight = 0.0
+        else:
+            # We are in the annealing phase
+            # Calculate the progress of the ramp
+            ramp_progress = (epoch_float - self.kl_warmup_epochs) / self.kl_anneal_epochs
+            # Clip progress to be between 0.0 and 1.0
+            ramp_progress_clipped = np.clip(ramp_progress, 0.0, 1.0)
+            # Calculate the new weight
+            self.current_kl_weight = self.kl_weight_target * ramp_progress_clipped
+        
+        # Set the model's kl_weight variable
+        K.set_value(self.model.kl_weight, self.current_kl_weight)
+
+    def on_epoch_end(self, epoch, logs=None):
+        # Log the current KL weight so it appears in training history
+        if logs is not None:
+            logs["kl_weight"] = self.current_kl_weight
+        
+        # Print the current weight if verbose is set
+        if self.verbose > 0 and (epoch == 0 or (epoch + 1) % self.verbose == 0):
+            print(f" - kl_weight: {self.current_kl_weight:.6f}")
+
 # --- VAE Builder Function ---
 
-def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=16, kl_weight=0.01):
+def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=16, kl_weight_initial=0.0):
     """
     Builds a 1D Convolutional Variational Autoencoder.
     """
@@ -831,7 +883,7 @@ def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=1
     decoder.summary()
 
     # --- VAE ---
-    vae = VAE(encoder, decoder, kl_weight=kl_weight)
+    vae = VAE(encoder, decoder, kl_weight=kl_weight_initial)
     
     vae.compile(
         optimizer=Adam(learning_rate=learning_rate),
@@ -840,7 +892,7 @@ def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=1
     
     return vae, True
 
-def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight=0.01):
+def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight_initial=0.0):
     """
     Step 1: VAE with a Tighter Convolutional Bottleneck (32 filters).
     """
@@ -890,7 +942,7 @@ def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, l
     decoder.summary()
 
     # --- VAE ---
-    vae = VAE(encoder, decoder, kl_weight=kl_weight)
+    vae = VAE(encoder, decoder, kl_weight=kl_weight_initial)
     
     vae.compile(
         optimizer=Adam(learning_rate=learning_rate),
@@ -899,7 +951,7 @@ def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, l
     
     return vae, True
 
-def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight=0.01, noise_stddev=0.1):
+def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight_initial=0.0, noise_stddev=0.1):
     """
     Step 2: Denoising VAE with Tighter Bottleneck.
     Includes a GaussianNoise layer in the encoder.
@@ -947,7 +999,7 @@ def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, la
     decoder.summary()
 
     # --- VAE ---
-    vae = VAE(encoder, decoder, kl_weight=kl_weight)
+    vae = VAE(encoder, decoder, kl_weight=kl_weight_initial)
     
     vae.compile(
         optimizer=Adam(learning_rate=learning_rate),
@@ -956,7 +1008,7 @@ def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, la
     
     return vae, True
 
-def build_vae_mae_loss_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight=0.01, noise_stddev=0.1):
+def build_vae_mae_loss_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight_initial=0.0, noise_stddev=0.1):
     """
     Step 3: Denoising VAE Bottleneck model compiled with MAE loss.
     """
@@ -992,7 +1044,7 @@ def build_vae_mae_loss_model_freq(input_shape=(129, 4), learning_rate=0.001, lat
     decoder = Model(latent_inputs, decoder_outputs, name="decoder")
 
     # --- VAE ---
-    vae = VAE(encoder, decoder, kl_weight=kl_weight)
+    vae = VAE(encoder, decoder, kl_weight=kl_weight_initial)
     
     # --- STEP 3 CHANGE ---
     vae.compile(

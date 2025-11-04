@@ -35,6 +35,7 @@ from model_builder_autoencoder import (
     build_vae_bottleneck_model_freq,
     build_vae_denoising_model_freq,
     build_vae_mae_loss_model_freq,
+    KLAnnealingCallback
 )
 from data_channel_cycling import cycle_channels
 from R01_1D_CNN_train_and_run import (
@@ -197,6 +198,13 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     #     save_best_only=True
     # )
 
+    # KL Annealing Callback
+    kl_annealing_callback = KLAnnealingCallback(
+        kl_weight_target=1.0,   # Final weight
+        kl_anneal_epochs=50,    # Number of epochs to reach target weight
+        kl_warmup_epochs=10     # Number of epochs to wait before starting annealing
+    )
+
     history = model.fit(
         x_train,
         y_train,
@@ -204,7 +212,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         epochs=config['keras_epochs'],
         batch_size=config['keras_batch_size'],
         verbose=config['verbose_fit'],
-        callbacks=[lr_scheduler, early_stopper]
+        callbacks=[lr_scheduler, early_stopper, kl_annealing_callback]
         # callbacks=callbacks_list,
     )
 

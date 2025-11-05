@@ -187,11 +187,11 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     #     min_lr=1e-7
     # )
 
-    early_stopper = EarlyStopping(
-        monitor='val_loss',
-        patience=config['early_stopping_patience'],
-        restore_best_weights=True,
-    )
+    # early_stopper = EarlyStopping(
+    #     monitor='val_loss',
+    #     patience=config['early_stopping_patience'],
+    #     restore_best_weights=True,
+    # )
 
     # Requires rewriting my VAE model, so commenting out for now
     # model_checkpoint = ModelCheckpoint(
@@ -206,9 +206,9 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     #     kl_anneal_epochs=50,    # Number of epochs to reach target weight
     #     kl_warmup_epochs=10     # Number of epochs to wait before starting annealing
     # )
-    WARMUP_EPOCHS = 50
-    CYCLE_LENGTH = 50
-    RAMP_FRACTION = 0.5
+    WARMUP_EPOCHS = 100
+    CYCLE_LENGTH = 100
+    RAMP_FRACTION = 0.8
 
     kl_cyclical_callback = KLCyclicalAnnealingCallback(
         kl_weight_target=1.0,   # Peak weight (beta)
@@ -218,7 +218,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     )
     lr_cyclical_callback = CyclicalLRCallback(
         max_lr=learning_rate,
-        min_lr=learning_rate*0.01,
+        min_lr=min(learning_rate*0.01, 1e-7),
         cycle_length_epochs=CYCLE_LENGTH,
         kl_warmup_epochs=WARMUP_EPOCHS,
         ramp_up_fraction=RAMP_FRACTION
@@ -228,11 +228,11 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     history = model.fit(
         x_train,
         y_train,
-        validation_split=0.25,
+        validation_split=0.2,
         epochs=config['keras_epochs'],
         batch_size=config['keras_batch_size'],
         verbose=config['verbose_fit'],
-        callbacks=[lr_cyclical_callback, early_stopper, kl_cyclical_callback]
+        callbacks=[lr_cyclical_callback, kl_cyclical_callback]
         # callbacks=callbacks_list,
     )
 

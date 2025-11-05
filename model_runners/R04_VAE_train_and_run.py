@@ -211,7 +211,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     RAMP_FRACTION = 0.5
 
     kl_cyclical_callback = KLCyclicalAnnealingCallback(
-        kl_weight_target=1.0,   # Peak weight (beta)
+        kl_weight_target=5.0,   # Peak weight (beta)
         cycle_length_epochs=CYCLE_LENGTH, # Number of epochs for full cycle
         kl_warmup_epochs=WARMUP_EPOCHS,    # Number of epochs to wait at 0
         ramp_up_fraction=RAMP_FRACTION    # % of cycle to ramp up, rest at peak

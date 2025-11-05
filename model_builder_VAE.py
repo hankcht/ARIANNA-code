@@ -306,7 +306,7 @@ class CyclicalLRCallback(Callback):
 
 # --- VAE Builder Function ---
 
-def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=64, kl_weight_initial=0.0):
+def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=32, kl_weight_initial=0.0):
     """
     Builds a 1D Convolutional Variational Autoencoder.
     """

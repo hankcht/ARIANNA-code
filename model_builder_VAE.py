@@ -358,7 +358,7 @@ def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=3
     
     vae.compile(
         optimizer=Adam(learning_rate=learning_rate),
-        loss=keras.losses.MeanSquaredError() # This is the reconstruction loss
+        loss=keras.losses.MeanAbsoluteError() # This is the reconstruction loss
     )
     
     return vae, True
@@ -417,7 +417,7 @@ def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, l
     
     vae.compile(
         optimizer=Adam(learning_rate=learning_rate),
-        loss=keras.losses.MeanSquaredError()
+        loss=keras.losses.MeanAbsoluteError()
     )
     
     return vae, True
@@ -474,7 +474,7 @@ def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, la
     
     vae.compile(
         optimizer=Adam(learning_rate=learning_rate),
-        loss=keras.losses.MeanSquaredError()
+        loss=keras.losses.MeanAbsoluteError()
     )
     
     return vae, True
@@ -520,7 +520,8 @@ def build_vae_mae_loss_model_freq(input_shape=(129, 4), learning_rate=0.001, lat
     # --- STEP 3 CHANGE ---
     vae.compile(
         optimizer=Adam(learning_rate=learning_rate),
-        loss=keras.losses.MeanAbsoluteError() # Use MAE for reconstruction
+        loss=tf.keras.losses.Huber()
+        # loss=keras.losses.MeanAbsoluteError() # Use MAE for reconstruction
     )
     # ---------------------
     

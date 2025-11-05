@@ -4,8 +4,8 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import (
-    Conv1D, BatchNormalization, ReLU, Input, 
-    Conv1DTranspose, MaxPooling1D, UpSampling1D,
+    Conv1D, Conv2D, BatchNormalization, ReLU, Input, 
+    Conv1DTranspose, Conv2DTranspose, MaxPooling1D, UpSampling1D,
     GaussianNoise, Dropout, Concatenate,
     Dense, Reshape, Layer, Flatten
 )
@@ -524,5 +524,186 @@ def build_vae_mae_loss_model_freq(input_shape=(129, 4), learning_rate=0.001, lat
         # loss=keras.losses.MeanAbsoluteError() # Use MAE for reconstruction
     )
     # ---------------------
+    
+    return vae, True
+
+custom_weights = np.ones(129)
+custom_weights[0:10] = 0.0 # De-emphasize samples 0-9 (~0-77 Hz)
+custom_weights[11:14] = 5.0  # Emphasize samples 11, 12, 13 (~85-116 Hz)
+custom_weights[24:27] = 3.0  # Emphasize samples 24, 25, 26 (~193-217 Hz)
+custom_weights[120:] = 0.0 # De-emphasize highest frequencies
+
+def build_vae_custom_loss_model_freq_samplewise(input_shape=(129, 4), 
+                                                learning_rate=0.001, 
+                                                latent_dim=32, 
+                                                kl_weight_initial=0.0, 
+                                                noise_stddev=0.1,
+                                                sample_weights=custom_weights):
+    """
+    Step 4 (Alternative): Denoising VAE Bottleneck model with a custom
+    SAMPLE-WISE WEIGHTED loss.
+    
+    This model allows for applying different weights to the reconstruction
+    loss for each sample (the dimension of 129).
+    """
+    
+    # --- Define the Custom Weighted Loss Function ---
+    
+    def create_weighted_mae_loss(weights_list):
+        """
+        A closure that creates a weighted MAE loss function.
+        Weights are applied to the sample dimension (e.g., length 129).
+        """
+        # Use default weights (all 1.0) if none are provided
+        if weights_list is None:
+            weights_list = [1.0] * input_shape[0] # Use input_shape[0]
+            
+        # Ensure weights list matches the number of samples
+        if len(weights_list) != input_shape[0]:
+            raise ValueError(f"Length of sample_weights ({len(weights_list)}) "
+                             f"must match the number of input samples ({input_shape[0]})")
+
+        # Convert weights to a tensor, shape (1, num_samples, 1)
+        # This shape is required for broadcasting against the (batch, 129, 4) output
+        weights = tf.constant(weights_list, dtype=tf.float32)
+        weights = tf.reshape(weights, [1, len(weights_list), 1]) # Change shape here
+
+        def weighted_mae(y_true, y_pred):
+            # Calculate element-wise absolute error
+            # Shape: (batch, 129, 4)
+            error = tf.abs(y_true - y_pred)
+            
+            # Apply weights via broadcasting
+            # (batch, 129, 4) * (1, 129, 1) -> (batch, 129, 4)
+            weighted_error = error * weights
+            
+            # Return the mean of the weighted errors
+            return tf.reduce_mean(weighted_error)
+        
+        return weighted_mae
+
+    # --- Instantiate the custom loss ---
+    custom_loss = create_weighted_mae_loss(sample_weights)
+
+    # --- Encoder ---
+    # (Identical to Step 2/3)
+    encoder_inputs = Input(shape=input_shape, name="clean_input")
+    noisy_inputs = GaussianNoise(stddev=noise_stddev)(encoder_inputs)
+    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(noisy_inputs)
+    x = BatchNormalization()(x)
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    x = Flatten()(x)
+    z_mean = Dense(latent_dim, name="z_mean")(x)
+    z_log_var = Dense(latent_dim, name="z_log_var")(x)
+    z = Sampling()([z_mean, z_log_var])
+    encoder = Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
+    # encoder.summary() 
+
+    # --- Decoder ---
+    # (Identical to Step 2/3)
+    latent_inputs = Input(shape=(latent_dim,))
+    x = Dense(16 * 32, activation="relu")(latent_inputs)
+    x = Reshape((16, 32))(x)
+    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    x = Conv1DTranspose(16, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    decoder_outputs = Conv1DTranspose(
+        input_shape[-1], kernel_size=3, padding="valid", activation="linear", strides=2
+    )(x)
+    decoder = Model(latent_inputs, decoder_outputs, name="decoder")
+    # decoder.summary()
+
+    # --- VAE ---
+    vae = VAE(encoder, decoder, kl_weight=kl_weight_initial)
+    
+    # --- STEP 4 (Alt) CHANGE ---
+    vae.compile(
+        optimizer=Adam(learning_rate=learning_rate),
+        loss=custom_loss  # Use the new sample-wise weighted MAE loss
+    )
+    # ---------------------------
+    
+    return vae, True
+
+
+def build_vae_model_freq_2d_input(input_shape=(129, 4), 
+                                  learning_rate=0.001, 
+                                  latent_dim=32, 
+                                  kl_weight_initial=0.0):
+    """
+    Builds a VAE that uses 2D Convolutions for the encoder/decoder.
+    This treats the (129, 4) input as a 2D patch (129x4x1).
+    Based on the original 'build_vae_model_freq'.
+    """
+    
+    # --- Encoder ---
+    encoder_inputs = Input(shape=input_shape)
+    
+    # Reshape (129, 4) to (129, 4, 1) to use Conv2D
+    x = Reshape((input_shape[0], input_shape[1], 1))(encoder_inputs)
+
+    # (129, 4, 1) -> (63, 2, 16)
+    x = Conv2D(16, kernel_size=(5, 3), padding="valid", activation="relu", strides=(2, 1))(x)
+    x = BatchNormalization()(x)
+    
+    # (63, 2, 16) -> (32, 2, 32)
+    x = Conv2D(32, kernel_size=(5, 2), padding="same", activation="relu", strides=(2, 1))(x)
+    x = BatchNormalization()(x)
+    
+    # (32, 2, 32) -> (16, 2, 64)
+    x = Conv2D(64, kernel_size=(5, 2), padding="same", activation="relu", strides=(2, 1))(x)
+    x = BatchNormalization()(x)
+    
+    # Save shape for decoder
+    pre_flatten_shape = K.int_shape(x)[1:] # (16, 2, 64)
+    pre_flatten_dim = np.prod(pre_flatten_shape) # 16 * 2 * 64
+
+    # Flatten features and get probabilistic latent space
+    x = Flatten()(x)
+    z_mean = Dense(latent_dim, name="z_mean")(x)
+    z_log_var = Dense(latent_dim, name="z_log_var")(x)
+    z = Sampling()([z_mean, z_log_var])
+    
+    encoder = Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
+    encoder.summary()
+
+    # --- Decoder ---
+    latent_inputs = Input(shape=(latent_dim,))
+    
+    # Project back to the shape before flattening
+    x = Dense(pre_flatten_dim, activation="relu")(latent_inputs)
+    x = Reshape(pre_flatten_shape)(x) # (16, 2, 64)
+    
+    # (16, 2, 64) -> (32, 2, 32)
+    x = Conv2DTranspose(32, kernel_size=(5, 2), padding="same", activation="relu", strides=(2, 1))(x)
+    x = BatchNormalization()(x)
+
+    # (32, 2, 32) -> (64, 2, 16)
+    x = Conv2DTranspose(16, kernel_size=(5, 2), padding="same", activation="relu", strides=(2, 1))(x)
+    x = BatchNormalization()(x)
+
+    # (64, 2, 16) -> (129, 4, 1)
+    # This layer reverses the first Conv2D(k=(3,3), s=(2,1), p='valid')
+    x = Conv2DTranspose(
+        1, kernel_size=(3, 3), padding="valid", activation="linear", strides=(2, 1)
+    )(x)
+    
+    # Reshape (129, 4, 1) back to (129, 4)
+    decoder_outputs = Reshape((input_shape[0], input_shape[1]))(x)
+    
+    decoder = Model(latent_inputs, decoder_outputs, name="decoder")
+    decoder.summary()
+
+    # --- VAE ---
+    vae = VAE(encoder, decoder, kl_weight=kl_weight_initial)
+    
+    vae.compile(
+        optimizer=Adam(learning_rate=learning_rate),
+        loss=keras.losses.MeanAbsoluteError() # Use standard MAE loss
+    )
     
     return vae, True

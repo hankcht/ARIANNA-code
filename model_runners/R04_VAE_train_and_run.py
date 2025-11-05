@@ -35,6 +35,8 @@ from model_builder_VAE import (
     build_vae_bottleneck_model_freq,
     build_vae_denoising_model_freq,
     build_vae_mae_loss_model_freq,
+    build_vae_custom_loss_model_freq,
+    build_vae_model_freq_2d_input,
     KLAnnealingCallback,
     KLCyclicalAnnealingCallback,
     CyclicalLRCallback
@@ -54,6 +56,8 @@ MODEL_BUILDERS = {
     '1d_vae_bottleneck_freq': build_vae_bottleneck_model_freq,
     '1d_vae_denoising_freq': build_vae_denoising_model_freq,
     '1d_vae_mae_loss_freq': build_vae_mae_loss_model_freq,
+    '1d_vae_custom_loss_freq': build_vae_custom_loss_model_freq
+    '2d_vae_freq': build_vae_model_freq_2d_input
 }
 
 DEFAULT_VALIDATION_PKL_PATH = (

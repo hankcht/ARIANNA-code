@@ -61,7 +61,9 @@ if __name__ == "__main__":
         '1d_vae_freq',
         '1d_vae_bottleneck_freq',
         '1d_vae_denoising_freq',
-        '1d_vae_mae_loss_freq'
+        '1d_vae_mae_loss_freq',
+        '1d_vae_custom_loss_freq',
+        '2d_vae_freq'
     ]
     
     # --- Parameters to sweep for Autoencoder ---

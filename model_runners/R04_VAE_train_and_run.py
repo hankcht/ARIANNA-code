@@ -206,8 +206,8 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     #     kl_anneal_epochs=50,    # Number of epochs to reach target weight
     #     kl_warmup_epochs=10     # Number of epochs to wait before starting annealing
     # )
-    WARMUP_EPOCHS = 100
-    CYCLE_LENGTH = 500
+    WARMUP_EPOCHS = 10
+    CYCLE_LENGTH = 50
     RAMP_FRACTION = 0.5
 
     kl_cyclical_callback = KLCyclicalAnnealingCallback(

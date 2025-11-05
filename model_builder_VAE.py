@@ -306,7 +306,7 @@ class CyclicalLRCallback(Callback):
 
 # --- VAE Builder Function ---
 
-def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=16, kl_weight_initial=0.0):
+def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=64, kl_weight_initial=0.0):
     """
     Builds a 1D Convolutional Variational Autoencoder.
     """
@@ -363,7 +363,7 @@ def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=1
     
     return vae, True
 
-def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight_initial=0.0):
+def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=32, kl_weight_initial=0.0):
     """
     Step 1: VAE with a Tighter Convolutional Bottleneck (32 filters).
     """
@@ -422,7 +422,7 @@ def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, l
     
     return vae, True
 
-def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight_initial=0.0, noise_stddev=0.1):
+def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=32, kl_weight_initial=0.0, noise_stddev=0.1):
     """
     Step 2: Denoising VAE with Tighter Bottleneck.
     Includes a GaussianNoise layer in the encoder.
@@ -479,7 +479,7 @@ def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, la
     
     return vae, True
 
-def build_vae_mae_loss_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight_initial=0.0, noise_stddev=0.1):
+def build_vae_mae_loss_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=32, kl_weight_initial=0.0, noise_stddev=0.1):
     """
     Step 3: Denoising VAE Bottleneck model compiled with MAE loss.
     """

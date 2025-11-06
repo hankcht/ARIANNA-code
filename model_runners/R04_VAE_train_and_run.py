@@ -1562,26 +1562,26 @@ def main():
     )
 
     data = load_and_prep_data_for_training(config)
-    file_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.1.25/'
-    training_backlobe = []
-    for file in os.listdir(file_path):
-        # load all numpy files with the substring "Traces" that don't have "_0evts" in their name
-        if "Traces" in file and "_0evts" not in file:
-            data_array = np.load(os.path.join(file_path, file))
-            training_backlobe.append(data_array)
-    training_backlobe = np.concatenate(training_backlobe, axis=0)
-    print(f"Training data shape: {training_backlobe.shape}")
-    if is_freq_model:
-        training_backlobe = _compute_frequency_magnitude(
-            training_backlobe, config.get('frequency_sampling_rate', 2.0)
-        )
-        if config.get('use_filtering', False):
-            training_backlobe = _apply_frequency_edge_filter(training_backlobe)
-        if config.get('convert_to_db_scale', False):
-            training_backlobe = convert_to_db_scale(training_backlobe)
-        print(f"Is freq model, training data shape: {training_backlobe.shape}")
+    # file_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.1.25/'
+    # training_backlobe = []
+    # for file in os.listdir(file_path):
+    #     # load all numpy files with the substring "Traces" that don't have "_0evts" in their name
+    #     if "Traces" in file and "_0evts" not in file:
+    #         data_array = np.load(os.path.join(file_path, file))
+    #         training_backlobe.append(data_array)
     # training_backlobe = np.concatenate(training_backlobe, axis=0)
-    # training_backlobe = data['training_backlobe']
+    # print(f"Training data shape: {training_backlobe.shape}")
+    # if is_freq_model:
+    #     training_backlobe = _compute_frequency_magnitude(
+    #         training_backlobe, config.get('frequency_sampling_rate', 2.0)
+    #     )
+    #     if config.get('use_filtering', False):
+    #         training_backlobe = _apply_frequency_edge_filter(training_backlobe)
+    #     if config.get('convert_to_db_scale', False):
+    #         training_backlobe = convert_to_db_scale(training_backlobe)
+    #     print(f"Is freq model, training data shape: {training_backlobe.shape}")
+    # training_backlobe = np.concatenate(training_backlobe, axis=0)
+    training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
 

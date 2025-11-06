@@ -12,7 +12,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/dfs8/sbarwi
     header += "#SBATCH --partition=standard            ##Partition/queue name\n" 
     header += "#SBATCH --time=3-00:00:00               ##Max runtime D-HH:MM:SS, 1 hour\n"
     header += "#SBATCH --nodes=1                       ##Nodes to be used\n"
-    header += "#SBATCH --ntasks=20                    ##Number of processes to be launched (CPUs)\n" 
+    header += "#SBATCH --ntasks=3                    ##Number of processes to be launched (CPUs)\n" 
     header += "#SBATCH --mem-per-cpu=6G                ##Requesting 6GB memory per CPU\n"
     header += "#SBATCH --output={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.out'))
     header += "#SBATCH --error={}\n".format(os.path.join(runDirectory, 'logs', f'{jobName}.err'))

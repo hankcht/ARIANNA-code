@@ -78,8 +78,8 @@ if __name__ == "__main__":
     # multi_run = True
     # main(multi_run=multi_run)
 
-    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/simple_1D_CNN.py'
-    RunMultipleJobs(cmd, jobName='simple_1D_CNN')
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
+    RunMultipleJobs(cmd, jobName='converter')
 
     # # Define available model types
     # model_types = ['1d_cnn', 'parallel', 'strided', 'astrid_2d'] # 'parallel_strided', need debug

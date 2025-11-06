@@ -1548,12 +1548,21 @@ def main():
     )
 
     data = load_and_prep_data_for_training(config)
-    training_backlobe = data['training_backlobe']
+    file_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.1.25/'
+    training_backlobe = []
+    for file in file_path:
+        # load all numpy files with the substring "Traces" that don't have "_0evts" in their name
+        if "Traces" in file and "_0evts" not in file:
+            data_array = np.load(os.path.join(file_path, file))
+            training_backlobe.append(data_array)
+    training_backlobe = np.concatenate(training_backlobe, axis=0)
+    # training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
 
-    print("Applying channel cycling augmentation to Backlobe training data...")
-    training_backlobe_aug = cycle_channels(training_backlobe.copy(), channel_axis=1)
+    # print("Applying channel cycling augmentation to Backlobe training data...")
+    # training_backlobe_aug = cycle_channels(training_backlobe.copy(), channel_axis=1)
+    training_backlobe_aug = training_backlobe
 
     model, history, requires_transpose = train_vae_model(
         training_backlobe_aug, config, learning_rate, model_type

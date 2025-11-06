@@ -1555,7 +1555,9 @@ def main():
         if "Traces" in file and "_0evts" not in file:
             data_array = np.load(os.path.join(file_path, file))
             training_backlobe.append(data_array)
-    training_backlobe = np.concatenate(training_backlobe, axis=0)
+    training_backlobe = np.array(training_backlobe)
+    print(f"Training data shape: {training_backlobe.shape}")
+    # training_backlobe = np.concatenate(training_backlobe, axis=0)
     # training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']

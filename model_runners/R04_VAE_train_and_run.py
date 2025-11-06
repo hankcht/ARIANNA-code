@@ -1562,6 +1562,9 @@ def main():
     )
 
     data = load_and_prep_data_for_training(config)
+
+    # Alternative loading of all station data
+
     # file_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.1.25/'
     # training_backlobe = []
     # for file in os.listdir(file_path):
@@ -1581,6 +1584,7 @@ def main():
     #         training_backlobe = convert_to_db_scale(training_backlobe)
     #     print(f"Is freq model, training data shape: {training_backlobe.shape}")
     # training_backlobe = np.concatenate(training_backlobe, axis=0)
+
     training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']

@@ -1565,6 +1565,7 @@ def main():
             training_backlobe = _apply_frequency_edge_filter(training_backlobe)
         if config.get('convert_to_db_scale', False):
             training_backlobe = convert_to_db_scale(training_backlobe)
+        print(f"Is freq model, training data shape: {training_backlobe.shape}")
     # training_backlobe = np.concatenate(training_backlobe, axis=0)
     # training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']

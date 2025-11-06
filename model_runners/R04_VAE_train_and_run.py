@@ -183,13 +183,13 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     #         patience=config['early_stopping_patience'],
     #     )
     # ]
-    # lr_scheduler = ReduceLROnPlateau(
-    #     monitor='val_loss',
-    #     factor=0.2,
-    #     patience=10,
-    #     verbose=1,
-    #     min_lr=1e-7
-    # )
+    lr_scheduler = ReduceLROnPlateau(
+        monitor='val_loss',
+        factor=0.2,
+        patience=25,
+        verbose=1,
+        min_lr=1e-7
+    )
 
     # early_stopper = EarlyStopping(
     #     monitor='val_loss',
@@ -215,18 +215,18 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     RAMP_FRACTION = 0.5
 
     kl_cyclical_callback = KLCyclicalAnnealingCallback(
-        kl_weight_target=0.5,   # Peak weight (beta)
+        kl_weight_target=10,   # Peak weight (beta)
         cycle_length_epochs=CYCLE_LENGTH, # Number of epochs for full cycle
         kl_warmup_epochs=WARMUP_EPOCHS,    # Number of epochs to wait at 0
         ramp_up_fraction=RAMP_FRACTION    # % of cycle to ramp up, rest at peak
     )
-    lr_cyclical_callback = CyclicalLRCallback(
-        max_lr=learning_rate,
-        min_lr=max(learning_rate*0.01, 1e-7),
-        cycle_length_epochs=CYCLE_LENGTH,
-        kl_warmup_epochs=WARMUP_EPOCHS,
-        ramp_up_fraction=RAMP_FRACTION
-    )
+    # lr_cyclical_callback = CyclicalLRCallback(
+    #     max_lr=learning_rate,
+    #     min_lr=max(learning_rate*0.01, 1e-7),
+    #     cycle_length_epochs=CYCLE_LENGTH,
+    #     kl_warmup_epochs=WARMUP_EPOCHS,
+    #     ramp_up_fraction=RAMP_FRACTION
+    # )
 
 
     history = model.fit(
@@ -236,7 +236,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         epochs=config['keras_epochs'],
         batch_size=config['keras_batch_size'],
         verbose=config['verbose_fit'],
-        callbacks=[lr_cyclical_callback, kl_cyclical_callback]
+        callbacks=[lr_scheduler, kl_cyclical_callback]
         # callbacks=callbacks_list,
     )
 

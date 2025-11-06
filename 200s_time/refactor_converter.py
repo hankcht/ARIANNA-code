@@ -287,7 +287,7 @@ if __name__ == '__main__':
         combined_backlobe_data[key] = np.array(combined_backlobe_data[key])
 
     # Save combined backlobe data across all stations
-    combined_save_path = f'/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/5000evt_10.17.25/above_curve_combined.pkl'
+    combined_save_path = f'/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/toy_data_11.6.25/toy_data_combined.pkl'
     os.makedirs(os.path.dirname(combined_save_path), exist_ok=True)
     with open(combined_save_path, 'wb') as f:
         pickle.dump(combined_backlobe_data, f)

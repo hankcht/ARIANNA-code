@@ -275,7 +275,7 @@ def apply_chi_and_bin_cuts(snr_values, chi_values, chi_threshold=0.6, max_bin_co
     cut_mask = np.ones(len(snr_values), dtype=bool)
     
     # Apply chi threshold cut
-    chi_cut_mask = chi_values >= chi_threshold
+    chi_cut_mask = chi_values < chi_threshold # changed from >= to <
     cut_mask &= chi_cut_mask
     
     # Create 2D histogram to identify bins with high counts

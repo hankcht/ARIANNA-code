@@ -197,13 +197,13 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     #         patience=config['early_stopping_patience'],
     #     )
     # ]
-    lr_scheduler = ReduceLROnPlateau(
-        monitor='val_loss',
-        factor=0.2,
-        patience=25,
-        verbose=1,
-        min_lr=1e-7
-    )
+    # lr_scheduler = ReduceLROnPlateau(
+    #     monitor='val_loss',
+    #     factor=0.2,
+    #     patience=25,
+    #     verbose=1,
+    #     min_lr=1e-7
+    # )
 
     # early_stopper = EarlyStopping(
     #     monitor='val_loss',
@@ -224,9 +224,9 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     #     kl_anneal_epochs=50,    # Number of epochs to reach target weight
     #     kl_warmup_epochs=10     # Number of epochs to wait before starting annealing
     # )
-    WARMUP_EPOCHS = 10
+    WARMUP_EPOCHS = 1
     CYCLE_LENGTH = 50
-    RAMP_FRACTION = 0.5
+    RAMP_FRACTION = 0.1
 
     kl_cyclical_callback = KLCyclicalAnnealingCallback(
         kl_weight_target=10,   # Peak weight (beta)
@@ -234,13 +234,13 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         kl_warmup_epochs=WARMUP_EPOCHS,    # Number of epochs to wait at 0
         ramp_up_fraction=RAMP_FRACTION    # % of cycle to ramp up, rest at peak
     )
-    # lr_cyclical_callback = CyclicalLRCallback(
-    #     max_lr=learning_rate,
-    #     min_lr=max(learning_rate*0.01, 1e-7),
-    #     cycle_length_epochs=CYCLE_LENGTH,
-    #     kl_warmup_epochs=WARMUP_EPOCHS,
-    #     ramp_up_fraction=RAMP_FRACTION
-    # )
+    lr_cyclical_callback = CyclicalLRCallback(
+        max_lr=learning_rate,
+        min_lr=max(learning_rate*0.01, 1e-7),
+        cycle_length_epochs=CYCLE_LENGTH,
+        kl_warmup_epochs=WARMUP_EPOCHS,
+        ramp_up_fraction=RAMP_FRACTION
+    )
 
 
     history = model.fit(
@@ -250,7 +250,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         epochs=config['keras_epochs'],
         batch_size=config['keras_batch_size'],
         verbose=config['verbose_fit'],
-        callbacks=[lr_scheduler, kl_cyclical_callback]
+        callbacks=[lr_cyclical_callback, kl_cyclical_callback]
         # callbacks=callbacks_list,
     )
 
@@ -1562,35 +1562,39 @@ def main():
     )
 
     data = load_and_prep_data_for_training(config)
-    file_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.1.25/'
-    training_backlobe = []
-    for file in os.listdir(file_path):
-        # load all numpy files with the substring "Traces" that don't have "_0evts" in their name
-        if "Traces" in file and "_0evts" not in file:
-            data_array = np.load(os.path.join(file_path, file))
-            training_backlobe.append(data_array)
-    training_backlobe = np.concatenate(training_backlobe, axis=0)
-    print(f"Training data shape: {training_backlobe.shape}")
-    if is_freq_model:
-        training_backlobe = _compute_frequency_magnitude(
-            training_backlobe, config.get('frequency_sampling_rate', 2.0)
-        )
-        if config.get('use_filtering', False):
-            training_backlobe = _apply_frequency_edge_filter(training_backlobe)
-        if config.get('convert_to_db_scale', False):
-            training_backlobe = convert_to_db_scale(training_backlobe)
-        print(f"Is freq model, training data shape: {training_backlobe.shape}")
+
+    # Alternative loading of all station data
+
+    # file_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.1.25/'
+    # training_backlobe = []
+    # for file in os.listdir(file_path):
+    #     # load all numpy files with the substring "Traces" that don't have "_0evts" in their name
+    #     if "Traces" in file and "_0evts" not in file:
+    #         data_array = np.load(os.path.join(file_path, file))
+    #         training_backlobe.append(data_array)
     # training_backlobe = np.concatenate(training_backlobe, axis=0)
-    # training_backlobe = data['training_backlobe']
+    # print(f"Training data shape: {training_backlobe.shape}")
+    # if is_freq_model:
+    #     training_backlobe = _compute_frequency_magnitude(
+    #         training_backlobe, config.get('frequency_sampling_rate', 2.0)
+    #     )
+    #     if config.get('use_filtering', False):
+    #         training_backlobe = _apply_frequency_edge_filter(training_backlobe)
+    #     if config.get('convert_to_db_scale', False):
+    #         training_backlobe = convert_to_db_scale(training_backlobe)
+    #     print(f"Is freq model, training data shape: {training_backlobe.shape}")
+    # training_backlobe = np.concatenate(training_backlobe, axis=0)
+
+    training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
 
     # print("Applying channel cycling augmentation to Backlobe training data...")
-    # training_backlobe_aug = cycle_channels(training_backlobe.copy(), channel_axis=1)
+    training_backlobe_aug = cycle_channels(training_backlobe.copy(), channel_axis=1)
 
     model, history, requires_transpose = train_vae_model(
-        training_backlobe, config, learning_rate, model_type
-        # training_backlobe_aug, config, learning_rate, model_type
+        # training_backlobe, config, learning_rate, model_type
+        training_backlobe_aug, config, learning_rate, model_type
     )
     print('------> VAE Training is Done!')
 

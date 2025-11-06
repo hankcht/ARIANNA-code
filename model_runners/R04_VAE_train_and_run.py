@@ -1564,10 +1564,10 @@ def main():
 
     # print("Applying channel cycling augmentation to Backlobe training data...")
     # training_backlobe_aug = cycle_channels(training_backlobe.copy(), channel_axis=1)
-    training_backlobe_aug = training_backlobe
 
     model, history, requires_transpose = train_vae_model(
-        training_backlobe_aug, config, learning_rate, model_type
+        training_backlobe, config, learning_rate, model_type
+        # training_backlobe_aug, config, learning_rate, model_type
     )
     print('------> VAE Training is Done!')
 

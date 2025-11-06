@@ -41,6 +41,14 @@ from model_builder_VAE import (
     KLCyclicalAnnealingCallback,
     CyclicalLRCallback
 )
+from model_builder_VAE_time import (
+    build_vae_model_time,
+    build_vae_bottleneck_model_time,
+    build_vae_denoising_model_time,
+    build_vae_mae_loss_model_time,
+    build_vae_custom_loss_model_time_samplewise,
+    build_vae_model_time_2d_input,
+)
 from data_channel_cycling import cycle_channels
 from R01_1D_CNN_train_and_run import (
     load_and_prep_data_for_training,
@@ -57,7 +65,13 @@ MODEL_BUILDERS = {
     '1d_vae_denoising_freq': build_vae_denoising_model_freq,
     '1d_vae_mae_loss_freq': build_vae_mae_loss_model_freq,
     '1d_vae_custom_loss_freq': build_vae_custom_loss_model_freq_samplewise,
-    '2d_vae_freq': build_vae_model_freq_2d_input
+    '2d_vae_freq': build_vae_model_freq_2d_input,
+    '1d_vae': build_vae_model_time,
+    '1d_vae_bottleneck': build_vae_bottleneck_model_time,
+    '1d_vae_denoising': build_vae_denoising_model_time,
+    '1d_vae_mae_loss': build_vae_mae_loss_model_time,
+    '1d_vae_custom_loss': build_vae_custom_loss_model_time_samplewise,
+    '2d_vae': build_vae_model_time_2d_input,
 }
 
 DEFAULT_VALIDATION_PKL_PATH = (

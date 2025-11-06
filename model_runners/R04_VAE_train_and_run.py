@@ -1550,12 +1550,12 @@ def main():
     data = load_and_prep_data_for_training(config)
     file_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.1.25/'
     training_backlobe = []
-    for file in file_path:
+    for file in os.listdir(file_path):
         # load all numpy files with the substring "Traces" that don't have "_0evts" in their name
         if "Traces" in file and "_0evts" not in file:
             data_array = np.load(os.path.join(file_path, file))
             training_backlobe.append(data_array)
-    training_backlobe = np.array(training_backlobe)
+    training_backlobe = np.concatenate(training_backlobe, axis=0)
     print(f"Training data shape: {training_backlobe.shape}")
     # training_backlobe = np.concatenate(training_backlobe, axis=0)
     # training_backlobe = data['training_backlobe']

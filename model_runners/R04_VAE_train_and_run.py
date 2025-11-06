@@ -1557,6 +1557,14 @@ def main():
             training_backlobe.append(data_array)
     training_backlobe = np.concatenate(training_backlobe, axis=0)
     print(f"Training data shape: {training_backlobe.shape}")
+    if is_freq_model:
+        training_backlobe = _compute_frequency_magnitude(
+            training_backlobe, config.get('frequency_sampling_rate', 2.0)
+        )
+        if config.get('use_filtering', False):
+            training_backlobe = _apply_frequency_edge_filter(training_backlobe)
+        if config.get('convert_to_db_scale', False):
+            training_backlobe = convert_to_db_scale(training_backlobe)
     # training_backlobe = np.concatenate(training_backlobe, axis=0)
     # training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']

@@ -197,19 +197,19 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     #         patience=config['early_stopping_patience'],
     #     )
     # ]
-    # lr_scheduler = ReduceLROnPlateau(
-    #     monitor='val_loss',
-    #     factor=0.2,
-    #     patience=25,
-    #     verbose=1,
-    #     min_lr=1e-7
-    # )
+    lr_scheduler = ReduceLROnPlateau(
+        monitor='val_loss',
+        factor=0.2,
+        patience=25,
+        verbose=1,
+        min_lr=1e-7
+    )
 
-    # early_stopper = EarlyStopping(
-    #     monitor='val_loss',
-    #     patience=config['early_stopping_patience'],
-    #     restore_best_weights=True,
-    # )
+    early_stopper = EarlyStopping(
+        monitor='val_loss',
+        patience=config['early_stopping_patience'],
+        restore_best_weights=True,
+    )
 
     # Requires rewriting my VAE model, so commenting out for now
     # model_checkpoint = ModelCheckpoint(
@@ -219,28 +219,28 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     # )
 
     # KL Annealing Callback
-    # kl_annealing_callback = KLAnnealingCallback(
-    #     kl_weight_target=1.0,   # Final weight
-    #     kl_anneal_epochs=50,    # Number of epochs to reach target weight
-    #     kl_warmup_epochs=10     # Number of epochs to wait before starting annealing
-    # )
+    kl_annealing_callback = KLAnnealingCallback(
+        kl_weight_target=0.1,   # Final weight
+        kl_anneal_epochs=100,    # Number of epochs to reach target weight
+        kl_warmup_epochs=50     # Number of epochs to wait before starting annealing
+    )
     WARMUP_EPOCHS = 50
-    CYCLE_LENGTH = 50
+    CYCLE_LENGTH = 100
     RAMP_FRACTION = 0.5
 
-    kl_cyclical_callback = KLCyclicalAnnealingCallback(
-        kl_weight_target=0.1,   # Peak weight (beta)
-        cycle_length_epochs=CYCLE_LENGTH, # Number of epochs for full cycle
-        kl_warmup_epochs=WARMUP_EPOCHS,    # Number of epochs to wait at 0
-        ramp_up_fraction=RAMP_FRACTION    # % of cycle to ramp up, rest at peak
-    )
-    lr_cyclical_callback = CyclicalLRCallback(
-        max_lr=learning_rate,
-        min_lr=max(learning_rate*0.01, 1e-7),
-        cycle_length_epochs=CYCLE_LENGTH,
-        kl_warmup_epochs=WARMUP_EPOCHS,
-        ramp_up_fraction=RAMP_FRACTION
-    )
+    # kl_cyclical_callback = KLCyclicalAnnealingCallback(
+    #     kl_weight_target=0.1,   # Peak weight (beta)
+    #     cycle_length_epochs=CYCLE_LENGTH, # Number of epochs for full cycle
+    #     kl_warmup_epochs=WARMUP_EPOCHS,    # Number of epochs to wait at 0
+    #     ramp_up_fraction=RAMP_FRACTION    # % of cycle to ramp up, rest at peak
+    # )
+    # lr_cyclical_callback = CyclicalLRCallback(
+    #     max_lr=learning_rate,
+    #     min_lr=max(learning_rate*0.01, 1e-7),
+    #     cycle_length_epochs=CYCLE_LENGTH,
+    #     kl_warmup_epochs=WARMUP_EPOCHS,
+    #     ramp_up_fraction=RAMP_FRACTION
+    # )
 
 
     history = model.fit(
@@ -250,7 +250,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         epochs=config['keras_epochs'],
         batch_size=config['keras_batch_size'],
         verbose=config['verbose_fit'],
-        callbacks=[lr_cyclical_callback, kl_cyclical_callback]
+        callbacks=[lr_scheduler, kl_annealing_callback, early_stopper],
         # callbacks=callbacks_list,
     )
 
@@ -987,7 +987,7 @@ def plot_latent_space(
         n_neighbors=5,
         n_components=2,
         random_state=42,
-        min_dist=0.1,  # Default, good starting point
+        min_dist=0.0,  # 0.0 for maximum clumping, 0.1 is default
     )
     embedding = reducer.fit_transform(all_latent_vectors)
 

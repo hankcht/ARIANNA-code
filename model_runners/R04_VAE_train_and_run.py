@@ -224,12 +224,12 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     #     kl_anneal_epochs=50,    # Number of epochs to reach target weight
     #     kl_warmup_epochs=10     # Number of epochs to wait before starting annealing
     # )
-    WARMUP_EPOCHS = 10
+    WARMUP_EPOCHS = 50
     CYCLE_LENGTH = 50
     RAMP_FRACTION = 0.5
 
     kl_cyclical_callback = KLCyclicalAnnealingCallback(
-        kl_weight_target=1,   # Peak weight (beta)
+        kl_weight_target=0.1,   # Peak weight (beta)
         cycle_length_epochs=CYCLE_LENGTH, # Number of epochs for full cycle
         kl_warmup_epochs=WARMUP_EPOCHS,    # Number of epochs to wait at 0
         ramp_up_fraction=RAMP_FRACTION    # % of cycle to ramp up, rest at peak

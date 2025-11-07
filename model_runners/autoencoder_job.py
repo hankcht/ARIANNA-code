@@ -58,18 +58,18 @@ if __name__ == "__main__":
         # '1d_autoencoder_bottleneck_freq',
         # '1d_autoencoder_denoising_freq',
         # '1d_autoencoder_mae_loss_freq'
-        # '1d_vae_freq',
-        # '1d_vae_bottleneck_freq',
-        # '1d_vae_denoising_freq',
-        # '1d_vae_mae_loss_freq',
-        # '1d_vae_custom_loss_freq',
+        '1d_vae_freq',
+        '1d_vae_bottleneck_freq',
+        '1d_vae_denoising_freq',
+        '1d_vae_mae_loss_freq',
+        '1d_vae_custom_loss_freq',
         '2d_vae_freq',
-        '1d_vae'
-        # '1d_vae_bottleneck',
-        # '1d_vae_denoising',
-        # '1d_vae_mae_loss',
-        # '1d_vae_custom_loss',
-        # '2d_vae'
+        '1d_vae',
+        '1d_vae_bottleneck',
+        '1d_vae_denoising',
+        '1d_vae_mae_loss',
+        '1d_vae_custom_loss',
+        '2d_vae'
     ]
     
     # --- Parameters to sweep for Autoencoder ---

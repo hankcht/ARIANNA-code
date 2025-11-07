@@ -99,6 +99,7 @@ def load_combined_backlobe_data(combined_pkl_path):
         combined_pkl_path (str): Path to the combined pickle file containing all stations' data.
                                 Default location from refactor_converter.py:
                                 '/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/5000evt_10.17.25/above_curve_combined.pkl'
+                                '/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/toy_data_11.6.25/toy_data_combined.pkl'
     
     Returns:
         tuple: (snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR)

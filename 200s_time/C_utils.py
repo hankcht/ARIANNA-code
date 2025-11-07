@@ -247,49 +247,52 @@ def timeInTimes(times_list):
 
 
 def apply_chi_and_bin_cuts(snr_values, chi_values, chi_threshold=0.6, max_bin_count=75, 
-                           snr_bins=None, chi_bins=None, random_state=None):
+                           snr_bins=None, chi_bins=None):
     """
     Apply two-fold cuts on event data:
     1. Chi value threshold cut (e.g., ChiRCR > 0.6)
-    2. For each 2D histogram bin exceeding max_bin_count, keep a random subset of size max_bin_count.
-       (No bins are completely removed.)
+    2. Remove events from histogram bins with excessive counts
+    
+    Args:
+        snr_values (np.array): SNR values for all events
+        chi_values (np.array): Chi values (e.g., ChiRCR) for all events
+        chi_threshold (float): Minimum chi value to keep (default 0.6)
+        max_bin_count (int): Maximum number of events allowed per 2D histogram bin (default 75)
+        snr_bins (np.array): Bin edges for SNR axis (default: logspace from 10^0.477 to 10^2, 80 bins)
+        chi_bins (np.array): Bin edges for Chi axis (default: 0 to 1.0001 in steps of 0.01)
     
     Returns:
-        np.array: Boolean mask indicating which events pass both cuts (True = keep)
+        np.array: Boolean mask indicating which events pass both cuts (True = pass)
     """
-    rng = np.random.default_rng(random_state)
     
-    # Default bins
+    # Default bin definitions matching the hist2d in refactor_converter.py
     if snr_bins is None:
         snr_bins = np.logspace(0.477, 2, num=80)
     if chi_bins is None:
         chi_bins = np.arange(0, 1.0001, 0.01)
     
-    # Start with all True
+    # Initialize mask - all events start as True
     cut_mask = np.ones(len(snr_values), dtype=bool)
     
-    # Apply chi threshold
-    chi_cut_mask = chi_values < chi_threshold
+    # Apply chi threshold cut
+    chi_cut_mask = chi_values >= chi_threshold
     cut_mask &= chi_cut_mask
     
-    # Compute 2D histogram bin indices
+    # Create 2D histogram to identify bins with high counts
+    hist, _, _ = np.histogram2d(snr_values, chi_values, bins=[snr_bins, chi_bins])
+    
+    # Find which bin each event belongs to
     snr_bin_indices = np.digitize(snr_values, snr_bins) - 1
     chi_bin_indices = np.digitize(chi_values, chi_bins) - 1
+    
+    # Clip indices to valid range (handles edge cases)
     snr_bin_indices = np.clip(snr_bin_indices, 0, len(snr_bins) - 2)
     chi_bin_indices = np.clip(chi_bin_indices, 0, len(chi_bins) - 2)
     
-    # Group indices per (snr_bin, chi_bin)
-    bin_map = {}
-    for i, (sb, cb) in enumerate(zip(snr_bin_indices, chi_bin_indices)):
-        bin_map.setdefault((sb, cb), []).append(i)
-    
-    # Apply random capping
-    for indices in bin_map.values():
-        if len(indices) > max_bin_count:
-            # Randomly keep only max_bin_count of them
-            keep_indices = rng.choice(indices, size=max_bin_count, replace=False)
-            remove_indices = set(indices) - set(keep_indices)
-            cut_mask[list(remove_indices)] = False
-        # else: keep all (do nothing)
+    # Apply bin count cut - reject events in bins exceeding max_bin_count
+    for i in range(len(snr_values)):
+        bin_count = hist[snr_bin_indices[i], chi_bin_indices[i]]
+        if bin_count > max_bin_count:
+            cut_mask[i] = False
     
     return cut_mask

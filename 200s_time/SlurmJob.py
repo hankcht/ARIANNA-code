@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3/ARIANNA/DeepLearning/'):
+def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3/ARIANNA/DeepLearning/', python_env='default'):
     cmd = f'{commandtorun}'
     print(f'running {cmd}')
 
@@ -28,8 +28,12 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     header += "export PYTHONPATH=$Nu:$PYTHONPATH\n"
     header += "export PYTHONPATH=$Radio:$PYTHONPATH\n"
    
-    header += "module load python/3.8.0\n"
-    header += "cd $pub/FROG\n"
+    header += "module purge\n"
+    if python_env == 'hgq2':
+        header += "module load python/3.10.2\n"
+        header += "source /pub/tangch3/hgq2_env/bin/activate\n"
+    else:
+        header += "module load python/3.8.0\n"
 
 
 

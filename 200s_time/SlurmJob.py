@@ -85,6 +85,10 @@ if __name__ == "__main__":
     cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
     RunMultipleJobs(cmd, jobName='converter')
 
+    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/HGQ_1D_CNN.py'
+    RunMultipleJobs(cmd, jobName='HGQ2_test', python_env='hgq2')
+
+
     # # Define available model types
     # model_types = ['1d_cnn', 'parallel', 'strided', 'astrid_2d'] # 'parallel_strided', need debug
     

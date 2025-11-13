@@ -41,7 +41,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     print(f'running cmd {cmd}')
     with open(slurm_name, 'w') as fout:
         fout.write(header)
-        fout.write(cmd)
+        fout.write(cmd + "\n")
     fout.close()
 
     slurm_name = 'sbatch ' + slurm_name
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
     # RunMultipleJobs(cmd, jobName='converter')
 
-    cmd = f"$PYTHON_EXEC /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/HGQ_1D_CNN.py"
+    cmd = f"/pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/hgq2_env/bin/python /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/HGQ_1D_CNN.py"
     RunMultipleJobs(cmd, jobName='HGQ2_test', python_env='hgq2')
 
 

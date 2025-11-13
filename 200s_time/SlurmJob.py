@@ -82,8 +82,8 @@ if __name__ == "__main__":
     # multi_run = True
     # main(multi_run=multi_run)
 
-    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
-    RunMultipleJobs(cmd, jobName='converter')
+    # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
+    # RunMultipleJobs(cmd, jobName='converter')
 
     cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/HGQ_1D_CNN.py'
     RunMultipleJobs(cmd, jobName='HGQ2_test', python_env='hgq2')

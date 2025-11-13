@@ -30,7 +30,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
    
     header += "module purge\n"
     if python_env == 'hgq2':
-        header += "module load python/3.10.2\n"
+        header += "module purge\n"
         header += "source /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/hgq2_env/bin/activate\n"
     else:
         header += "module load python/3.8.0\n"
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
     # RunMultipleJobs(cmd, jobName='converter')
 
-    cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/HGQ_1D_CNN.py'
+    cmd = f"$PYTHON_EXEC /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/HGQ_1D_CNN.py"
     RunMultipleJobs(cmd, jobName='HGQ2_test', python_env='hgq2')
 
 

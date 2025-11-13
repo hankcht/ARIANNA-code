@@ -31,7 +31,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     header += "module purge\n"
     if python_env == 'hgq2':
         header += "module load python/3.10.2\n"
-        header += "source /pub/tangch3/hgq2_env/bin/activate\n"
+        header += "source /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/hgq2_env/bin/activate\n"
     else:
         header += "module load python/3.8.0\n"
 

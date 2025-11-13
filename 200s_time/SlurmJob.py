@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
     # RunMultipleJobs(cmd, jobName='converter')
 
-    cmd = f"/pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/hgq2_env/bin/python /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/HGQ_1D_CNN.py"
+    cmd = f"/pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/hgq2_env/bin/python3.10 /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/HGQ_1D_CNN.py"
     RunMultipleJobs(cmd, jobName='HGQ2_test', python_env='hgq2')
 
 

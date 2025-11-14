@@ -194,13 +194,13 @@ def _run_hdbscan_with_retries(latent_vectors, config, dataset_label='Above Curve
         )
         return np.zeros(sample_count, dtype=int), None, {'reason': 'missing_package'}
 
-    default_min_cluster_size = int(config.get('hdbscan_min_cluster_size', 25))
+    default_min_cluster_size = int(config.get('hdbscan_min_cluster_size', 5))
     default_min_cluster_size = max(2, default_min_cluster_size)
     default_min_cluster_size = min(default_min_cluster_size, max(2, sample_count - 1))
 
     configured_min_samples = config.get('hdbscan_min_samples', None)
     if configured_min_samples is not None:
-        configured_min_samples = max(1, int(configured_min_samples))
+        configured_min_samples = max(4, int(configured_min_samples))
 
     candidate_sizes = set()
     upscale = [1.0, 1.5, 2.0, 3.0, 4.0]

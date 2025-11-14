@@ -181,7 +181,14 @@ def build_vae_model_scattering(input_shape=(256, 4), learning_rate=0.001, latent
     
     # Instantiate the Scattering1D layer
     # This layer is "fixed" and not trained.
-    scattering = Scattering1D(J=J, T=T, Q=Q, shape=(T,))
+    # scattering = Scattering1D(J=J, T=T, Q=Q, shape=(T,))
+
+    # Instantiate the Scattering1D operation (it's a tf.Module)
+    # This op is "fixed" and not trained.
+    scattering_op = Scattering1D(J=J, T=T, Q=Q, shape=(T,))
+
+    # Wrap the op in a Keras Lambda layer to handle symbolic tensors
+    scattering_layer = Lambda(lambda x: scattering_op(x))
 
     channel_outputs = []
     for i in range(N_channels):
@@ -189,7 +196,7 @@ def build_vae_model_scattering(input_shape=(256, 4), learning_rate=0.001, latent
         channel_slice = Lambda(lambda x: x[..., i])(encoder_inputs)
         
         # Apply scattering transform (shape: (batch, n_coeffs, n_timesteps))
-        channel_coeffs = scattering(channel_slice)
+        channel_coeffs = scattering_layer(channel_slice)
         
         # Flatten the coefficients for this channel
         channel_coeffs_flat = Flatten()(channel_coeffs)

@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 
 def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3/ARIANNA/DeepLearning/', python_env='default'):
     cmd = f'{commandtorun}'
@@ -33,6 +34,15 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
         header += "module load python/3.10.2\n"
         header += "source /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/hgq2_env/bin/activate\n"
         header += "which python\n"
+        header += "echo which python"
+        header += "echo python --version"
+
+        header += "python - <<'EOF'"
+
+
+
+
+
     else:
         header += "module load python/3.8.0\n"
 

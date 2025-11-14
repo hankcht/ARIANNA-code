@@ -17,6 +17,7 @@ import matplotlib
 
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
+from matplotlib import colors as mcolors
 from tensorflow import keras
 from tensorflow.keras.models import Model
 from sklearn.manifold import TSNE
@@ -24,6 +25,10 @@ from pathlib import Path
 from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping, ModelCheckpoint
 
 import umap
+try:
+    import hdbscan
+except ImportError:
+    hdbscan = None
 
 # --- Local Imports from project structure ---
 sys.path.append(str(Path(__file__).resolve().parents[1] / '200s_time'))
@@ -49,11 +54,15 @@ from model_builder_VAE_time import (
     build_vae_custom_loss_model_time_samplewise,
     build_vae_model_time_2d_input,
 )
+from model_builder_scattering_VAE import (
+    build_vae_model_scattering
+)
 from data_channel_cycling import cycle_channels
 from R01_1D_CNN_train_and_run import (
     load_and_prep_data_for_training,
     save_and_plot_training_history,
     load_new_coincidence_data,
+    load_combined_backlobe_data,
     _compute_frequency_magnitude,
     _apply_frequency_edge_filter,
     convert_to_db_scale,
@@ -72,6 +81,7 @@ MODEL_BUILDERS = {
     '1d_vae_mae_loss': build_vae_mae_loss_model_time,
     '1d_vae_custom_loss': build_vae_custom_loss_model_time_samplewise,
     '2d_vae': build_vae_model_time_2d_input,
+    '1d_vae_scattering': build_vae_model_scattering
 }
 
 DEFAULT_VALIDATION_PKL_PATH = (
@@ -99,12 +109,18 @@ DEFAULT_VALIDATION_PASSING_EVENT_IDS = [
 DEFAULT_VALIDATION_SPECIAL_EVENT_ID = 11230
 DEFAULT_VALIDATION_SPECIAL_STATION_ID = 13
 
+DEFAULT_ABOVE_CURVE_PKL_PATH = (
+    "/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/"
+    "5000evt_10.17.25/above_curve_combined.pkl"
+)
+
 LATENT_COLOR_MAP = {
     'Backlobe (BG)': 'blue',
     'RCR (Signal)': 'red',
     'Validation Passing': 'green',
     'Validation Raw': 'purple',
     'Validation Special Event': 'orange',
+    'Above Curve': 'cyan',
 }
 
 LATENT_MARKER_MAP = {
@@ -113,6 +129,7 @@ LATENT_MARKER_MAP = {
     'Validation Passing': 's',
     'Validation Raw': '^',
     'Validation Special Event': '*',
+    'Above Curve': 'd',
 }
 
 HIST_COLOR_MAP = {
@@ -121,6 +138,7 @@ HIST_COLOR_MAP = {
     'Validation Passing': 'green',
     'Validation Raw': 'purple',
     'Validation Special Event': 'orange',
+    'Above Curve': 'cyan',
 }
 
 
@@ -771,6 +789,7 @@ def plot_latent_space(
             'marker': LATENT_MARKER_MAP.get('RCR (Signal)', 'o'),
             'alpha': 0.5,
             'size': 40,
+            'category': 'simulation',
         }
     )
 
@@ -782,6 +801,7 @@ def plot_latent_space(
             'marker': LATENT_MARKER_MAP.get('Backlobe (BG)', 'o'),
             'alpha': 0.5,
             'size': 40,
+            'category': 'background',
         }
     )
 
@@ -794,7 +814,11 @@ def plot_latent_space(
             )
             continue
 
-        max_samples = extra.get('max_samples', min(2000, data_array.shape[0]))
+        category = extra.get('category', 'overlay')
+        if category == 'above_curve':
+            max_samples = extra.get('max_samples', data_array.shape[0])
+        else:
+            max_samples = extra.get('max_samples', min(2000, data_array.shape[0]))
         sample_count = min(max_samples, data_array.shape[0])
         if sample_count == 0:
             print(f"Skipping latent overlay '{label}': no samples available.")
@@ -817,6 +841,8 @@ def plot_latent_space(
                 'marker': marker,
                 'alpha': extra.get('alpha', 0.8),
                 'size': extra.get('size', 60),
+                'category': category,
+                'source_meta': extra,
             }
         )
 
@@ -844,6 +870,7 @@ def plot_latent_space(
             )
             continue
 
+        entry.setdefault('category', 'overlay')
         entry['prepared'] = prepared
         entry['latent'] = latent_vectors
         entry['legend_label'] = f"{entry['label']} ({prepared.shape[0]})"
@@ -870,6 +897,167 @@ def plot_latent_space(
             f"Latent dimension {latent_dim} is large; resulting plot may be hard to interpret."
         )
 
+    def _category_priority(category):
+        mapping = {
+            'simulation': 0,
+            'background': 0,
+            'above_curve': 1,
+            'validation': 2,
+        }
+        return mapping.get(category, 1)
+
+    def _color_to_hex(color_value):
+        try:
+            return mcolors.to_hex(color_value)
+        except (ValueError, TypeError):
+            try:
+                return mcolors.to_hex(mcolors.to_rgba(color_value))
+            except Exception:
+                return color_value
+
+    above_curve_entry = next(
+        (entry for entry in plottable_entries if entry['label'] == 'Above Curve'),
+        None,
+    )
+
+    if above_curve_entry is not None:
+        if hdbscan is None:
+            print("hdbscan package not available; skipping clustering for Above Curve dataset.")
+        else:
+            sample_count = above_curve_entry['latent'].shape[0]
+            min_cluster_size = int(config.get('hdbscan_min_cluster_size', 5))
+            if min_cluster_size < 2:
+                min_cluster_size = 2
+            if min_cluster_size > sample_count:
+                adjusted_min = max(2, sample_count // 2)
+                if adjusted_min < min_cluster_size:
+                    print(
+                        f"Adjusting hdbscan min_cluster_size from {min_cluster_size} to {adjusted_min}"
+                        f" based on available Above Curve samples ({sample_count})."
+                    )
+                min_cluster_size = adjusted_min
+            min_samples_cfg = config.get('hdbscan_min_samples', None)
+            if sample_count < max(5, min_cluster_size):
+                print(
+                    f"Not enough Above Curve samples ({sample_count}) to run HDBSCAN"
+                    f" (min_cluster_size={min_cluster_size}). Skipping clustering."
+                )
+            else:
+                cluster_kwargs = {'min_cluster_size': max(2, min_cluster_size)}
+                if min_samples_cfg is not None:
+                    cluster_kwargs['min_samples'] = max(1, int(min_samples_cfg))
+                try:
+                    clusterer = hdbscan.HDBSCAN(**cluster_kwargs)
+                    cluster_labels = clusterer.fit_predict(above_curve_entry['latent'])
+                    above_curve_entry['cluster_labels'] = cluster_labels
+                    above_curve_entry['clusterer'] = clusterer
+                    unique_labels = np.unique(cluster_labels)
+                    n_clusters = int(np.sum(unique_labels >= 0))
+                    noise_points = int(np.sum(cluster_labels < 0))
+                    print(
+                        f"HDBSCAN identified {n_clusters} cluster(s) in Above Curve dataset"
+                        f" (noise points: {noise_points})."
+                    )
+                except Exception as exc:
+                    print(f"HDBSCAN clustering failed for Above Curve dataset: {exc}")
+
+    all_plot_groups = []
+
+    for entry in plottable_entries:
+        entry_category = entry.get('category', 'overlay')
+        base_color = _color_to_hex(entry.get('color', 'gray'))
+        base_marker = entry.get('marker', 'o')
+        base_alpha = entry.get('alpha', 0.7)
+        base_size = entry.get('size', 40)
+        highlight_marker = base_marker == '*'
+        latent = entry['latent']
+        num_points = latent.shape[0]
+
+        labels = entry.get('cluster_labels') if entry['label'] == 'Above Curve' else None
+        if labels is None or labels.size != num_points:
+            labels = None
+
+        if labels is None:
+            group = {
+                'name': entry['label'],
+                'legend_text': entry['legend_label'],
+                'color': base_color,
+                'marker': base_marker,
+                'alpha': base_alpha,
+                'size': base_size,
+                'latent': latent,
+                'indices': np.arange(num_points),
+                'count': num_points,
+                'category': entry_category,
+                'priority': _category_priority(entry_category),
+                'edge_highlight': highlight_marker,
+                'entry': entry,
+            }
+            entry['plot_groups'] = [group]
+            all_plot_groups.append(group)
+        else:
+            unique_labels = np.unique(labels)
+            positive_labels = sorted(lbl for lbl in unique_labels if lbl >= 0)
+            cluster_id_map = {lbl: idx for idx, lbl in enumerate(positive_labels)}
+            cmap_size = max(len(cluster_id_map), 1)
+            cmap = plt.cm.get_cmap('tab20', cmap_size if cmap_size > 0 else 1)
+            entry_groups = []
+            for lbl in sorted(unique_labels, key=lambda value: (value < 0, value)):
+                mask = labels == lbl
+                count = int(np.sum(mask))
+                if count == 0:
+                    continue
+                if lbl == -1:
+                    display_name = 'Above Curve Noise'
+                    color = '#808080'
+                else:
+                    display_idx = cluster_id_map.get(lbl, lbl)
+                    color = _color_to_hex(cmap(display_idx % cmap.N))
+                    display_name = f'Above Curve Cluster {display_idx}'
+                group = {
+                    'name': display_name,
+                    'legend_text': f'{display_name} (N={count})',
+                    'color': color,
+                    'marker': base_marker,
+                    'alpha': base_alpha,
+                    'size': base_size,
+                    'latent': latent[mask],
+                    'indices': np.where(mask)[0],
+                    'count': count,
+                    'category': 'above_curve',
+                    'priority': _category_priority('above_curve'),
+                    'edge_highlight': highlight_marker,
+                    'entry': entry,
+                    'cluster_label': int(lbl),
+                }
+                entry_groups.append(group)
+                all_plot_groups.append(group)
+
+            if entry_groups:
+                entry['plot_groups'] = entry_groups
+            else:
+                group = {
+                    'name': entry['label'],
+                    'legend_text': entry['legend_label'],
+                    'color': base_color,
+                    'marker': base_marker,
+                    'alpha': base_alpha,
+                    'size': base_size,
+                    'latent': latent,
+                    'indices': np.arange(num_points),
+                    'count': num_points,
+                    'category': entry_category,
+                    'priority': _category_priority(entry_category),
+                    'edge_highlight': highlight_marker,
+                    'entry': entry,
+                }
+                entry['plot_groups'] = [group]
+                all_plot_groups.append(group)
+
+    if not all_plot_groups:
+        print("No plottable groups available after processing; skipping latent plots.")
+        return
+
     dim_ranges = []
     for dim in range(latent_dim):
         dim_values = np.concatenate([entry['latent'][:, dim] for entry in plottable_entries], axis=0)
@@ -878,6 +1066,16 @@ def plot_latent_space(
         span = dim_max - dim_min
         pad = 0.05 * span if span > 0 else 1.0
         dim_ranges.append((dim_min - pad, dim_max + pad))
+
+    groups_by_priority = {}
+    for group in all_plot_groups:
+        groups_by_priority.setdefault(group['priority'], []).append(group)
+
+    groups_for_plot = []
+    for priority in sorted(groups_by_priority.keys()):
+        groups_for_plot.extend(groups_by_priority[priority])
+
+    legend_groups = groups_for_plot
 
     base_size = 3.0
     fig, axes = plt.subplots(
@@ -892,14 +1090,16 @@ def plot_latent_space(
         for col in range(latent_dim):
             ax = axes[row, col]
             if row == col:
-                for entry in plottable_entries:
-                    data = entry['latent'][:, col]
+                for group in groups_for_plot:
+                    data = group['latent'][:, col]
+                    if data.size == 0:
+                        continue
                     ax.hist(
                         data,
                         bins=40,
                         histtype='step',
-                        color=entry['color'],
-                        alpha=entry['alpha'],
+                        color=group['color'],
+                        alpha=group['alpha'],
                         linewidth=1.5,
                     )
                 ax.set_xlim(dim_ranges[col])
@@ -908,18 +1108,20 @@ def plot_latent_space(
                 if col == 0:
                     ax.set_ylabel('Count')
             elif row > col:
-                for entry in plottable_entries:
-                    x_vals = entry['latent'][:, col]
-                    y_vals = entry['latent'][:, row]
+                for group in groups_for_plot:
+                    data = group['latent']
+                    if data.size == 0:
+                        continue
                     ax.scatter(
-                        x_vals,
-                        y_vals,
-                        color=entry['color'],
-                        marker=entry['marker'],
-                        alpha=entry['alpha'],
-                        s=entry['size'],
-                        edgecolors='k' if entry['marker'] == '*' else 'none',
-                        linewidths=0.6 if entry['marker'] == '*' else 0.0,
+                        data[:, col],
+                        data[:, row],
+                        color=group['color'],
+                        marker=group['marker'],
+                        alpha=group['alpha'],
+                        s=group['size'],
+                        edgecolors='k' if group['edge_highlight'] else 'none',
+                        linewidths=0.6 if group['edge_highlight'] else 0.0,
+                        zorder=group['priority'] + 1,
                     )
                 ax.set_xlim(dim_ranges[col])
                 ax.set_ylim(dim_ranges[row])
@@ -946,13 +1148,13 @@ def plot_latent_space(
     }
     text_y = 0.95
     line_height = 0.04
-    for entry in plottable_entries:
-        marker_symbol = marker_symbol_map.get(entry['marker'], '\u25CF')
+    for group in legend_groups:
+        marker_symbol = marker_symbol_map.get(group['marker'], '\u25CF')
         fig.text(
             0.98,
             text_y,
-            f'{marker_symbol} {entry["legend_label"]}',
-            color=entry['color'],
+            f'{marker_symbol} {group["legend_text"]}',
+            color=group['color'],
             ha='right',
             va='top',
             fontsize=10,
@@ -972,50 +1174,63 @@ def plot_latent_space(
 
     # --- Now plotting UMAP ---
     print("Generating UMAP plot...")
-    # 1. Combine all latent vectors into one array
     all_latent_vectors = np.concatenate(
         [entry['latent'] for entry in plottable_entries], axis=0
     )
 
     if all_latent_vectors.shape[0] < 5:
-        print(f"Not enough total samples ({all_latent_vectors.shape[0]}) for UMAP. Skipping.")
+        print(
+            f"Not enough total samples ({all_latent_vectors.shape[0]}) for UMAP. Skipping."
+        )
         return
 
-    # 2. Initialize and fit UMAP
-    # Use n_neighbors=5 as requested. Set random_state for reproducibility.
     reducer = umap.UMAP(
         n_neighbors=5,
         n_components=2,
         random_state=42,
-        min_dist=0.0,  # 0.0 for maximum clumping, 0.1 is default
+        min_dist=0.0,
     )
     embedding = reducer.fit_transform(all_latent_vectors)
 
-    # 3. Plot the 2D embedding
-    fig_umap, ax_umap = plt.subplots(figsize=(11, 9))
-
-    # 4. Split the embedding back into datasets and plot
     start_idx = 0
     for entry in plottable_entries:
         n_samples_in_entry = entry['latent'].shape[0]
         end_idx = start_idx + n_samples_in_entry
-        
-        # Get the 2D embedding for this dataset
-        entry_embedding = embedding[start_idx:end_idx, :]
-        
-        # Re-use the scatter plot settings from the pair plot
-        ax_umap.scatter(
-            entry_embedding[:, 0],
-            entry_embedding[:, 1],
-            color=entry['color'],
-            marker=entry['marker'],
-            alpha=entry['alpha'],
-            s=entry['size'],
-            label=entry['legend_label'],
-            edgecolors='k' if entry['marker'] == '*' else 'none',
-            linewidths=0.6 if entry['marker'] == '*' else 0.0,
-        )
+        entry['embedding'] = embedding[start_idx:end_idx, :]
         start_idx = end_idx
+
+    for group in all_plot_groups:
+        indices = group['indices']
+        if isinstance(indices, (list, tuple)):
+            indices = np.asarray(indices)
+        group['indices'] = indices
+        if indices.size == 0:
+            group['embedding'] = np.empty((0, 2))
+        else:
+            group['embedding'] = group['entry']['embedding'][indices, :]
+
+    fig_umap, ax_umap = plt.subplots(figsize=(11, 9))
+    used_labels = set()
+    for group in groups_for_plot:
+        embed = group.get('embedding', np.empty((0, 2)))
+        if embed.size == 0:
+            continue
+        label = group['legend_text']
+        label_to_use = label if label not in used_labels else None
+        if label_to_use:
+            used_labels.add(label_to_use)
+        ax_umap.scatter(
+            embed[:, 0],
+            embed[:, 1],
+            color=group['color'],
+            marker=group['marker'],
+            alpha=group['alpha'],
+            s=group['size'],
+            label=label_to_use,
+            edgecolors='k' if group['edge_highlight'] else 'none',
+            linewidths=0.6 if group['edge_highlight'] else 0.0,
+            zorder=group['priority'] + 1,
+        )
 
     ax_umap.set_title(
         f'UMAP Projection of Latent Space ({domain_label}, {dataset_name_suffix} set)',
@@ -1024,13 +1239,9 @@ def plot_latent_space(
     ax_umap.set_xlabel('UMAP Component 1')
     ax_umap.set_ylabel('UMAP Component 2')
     ax_umap.grid(True, linestyle='--', alpha=0.3)
-    
-    # Add legend
     ax_umap.legend(loc='best', fontsize=10)
-    
     plt.tight_layout()
 
-    # 5. Save the UMAP plot
     umap_plot_file = os.path.join(
         plot_path,
         f'{timestamp}_{amp}_{model_type}_latent_space_UMAP_{prefix}_{lr_str}{domain_suffix}_{dataset_name_suffix}.png',
@@ -1337,6 +1548,68 @@ def run_validation_checks(
     raw_traces_proc = transform(raw_traces)
     special_traces_proc = transform(special_traces)
 
+    above_curve_traces_proc = np.empty((0, reference_channels, reference_samples), dtype=np.float32)
+    above_curve_pkl_path = config.get('above_curve_pkl_path', DEFAULT_ABOVE_CURVE_PKL_PATH)
+    if above_curve_pkl_path:
+        if os.path.exists(above_curve_pkl_path):
+            try:
+                (
+                    _,
+                    _,
+                    _,
+                    _,
+                    above_curve_traces2016,
+                    above_curve_tracesRCR,
+                    _,
+                    _,
+                ) = load_combined_backlobe_data(above_curve_pkl_path)
+
+                combined_above_curve = []
+                for subset in (above_curve_traces2016, above_curve_tracesRCR):
+                    if subset is None:
+                        continue
+                    try:
+                        coerced = coerce_traces(subset)
+                    except ValueError as exc:
+                        print(
+                            f"Skipping Above Curve subset due to incompatible shape: {exc}"
+                        )
+                        continue
+                    if coerced.size == 0:
+                        continue
+                    if (
+                        coerced.shape[1] != reference_channels
+                        and coerced.shape[2] == reference_channels
+                    ):
+                        coerced = coerced.transpose(0, 2, 1)
+                    if coerced.shape[1] != reference_channels:
+                        print(
+                            f"Skipping Above Curve subset: expected {reference_channels} channels, got {coerced.shape[1]}."
+                        )
+                        continue
+                    if coerced.shape[2] != reference_samples:
+                        print(
+                            f"Skipping Above Curve subset: expected {reference_samples} samples, got {coerced.shape[2]}."
+                        )
+                        continue
+                    combined_above_curve.append(coerced.astype(np.float32, copy=False))
+
+                if combined_above_curve:
+                    above_curve_traces = np.concatenate(combined_above_curve, axis=0)
+                    above_curve_traces_proc = transform(above_curve_traces)
+                else:
+                    print(
+                        "Above Curve dataset contained no usable traces after preprocessing; skipping."
+                    )
+            except Exception as exc:
+                print(
+                    f"Failed to load Above Curve dataset from {above_curve_pkl_path}: {exc}"
+                )
+        else:
+            print(
+                f"Above Curve PKL not found at {above_curve_pkl_path}; skipping additional validation dataset."
+            )
+
     special_label = 'Validation Special Event'
     if special_traces_proc.shape[0] > 0:
         meta = special_metadata.get(0, {})
@@ -1348,6 +1621,7 @@ def run_validation_checks(
     passing_mse = np.array([])
     raw_mse = np.array([])
     special_mse = np.array([])
+    above_curve_mse = np.array([])
     special_trace_for_plot = None
     special_recon_for_plot = None
 
@@ -1374,6 +1648,14 @@ def run_validation_checks(
             special_recon_for_plot = np.squeeze(recon_first, axis=-1)
         print(f"Validation special event MSE values: {special_mse}")
 
+    if above_curve_traces_proc.shape[0] > 0:
+        prepared = prepare_data_for_model(above_curve_traces_proc, requires_transpose)
+        above_curve_mse, _ = calculate_reconstruction_mse(model, prepared, config)
+        if above_curve_mse.size > 0:
+            print(
+                f"Above Curve set size: {len(above_curve_mse)}, mean MSE: {np.mean(above_curve_mse):.4g}"
+            )
+
     validation_overlays = []
     if passing_traces_proc.shape[0] > 0:
         validation_overlays.append(
@@ -1384,6 +1666,7 @@ def run_validation_checks(
                 'marker': LATENT_MARKER_MAP.get('Validation Passing', 's'),
                 'alpha': 0.8,
                 'size': 60,
+                'category': 'validation',
             }
         )
     if raw_traces_proc.shape[0] > 0:
@@ -1395,6 +1678,7 @@ def run_validation_checks(
                 'marker': LATENT_MARKER_MAP.get('Validation Raw', '^'),
                 'alpha': 0.8,
                 'size': 60,
+                'category': 'validation',
             }
         )
     if special_traces_proc.shape[0] > 0:
@@ -1406,6 +1690,20 @@ def run_validation_checks(
                 'marker': LATENT_MARKER_MAP.get('Validation Special Event', '*'),
                 'alpha': 1.0,
                 'size': 160,
+                'category': 'validation',
+            }
+        )
+    if above_curve_traces_proc.shape[0] > 0:
+        validation_overlays.append(
+            {
+                'label': 'Above Curve',
+                'data': above_curve_traces_proc,
+                'color': LATENT_COLOR_MAP.get('Above Curve', 'cyan'),
+                'marker': LATENT_MARKER_MAP.get('Above Curve', 'd'),
+                'alpha': 0.7,
+                'size': 60,
+                'category': 'above_curve',
+                'max_samples': above_curve_traces_proc.shape[0],
             }
         )
 
@@ -1431,6 +1729,7 @@ def run_validation_checks(
         ('Validation Passing', passing_mse),
         ('Validation Raw', raw_mse),
         (special_label, special_mse),
+        ('Above Curve', above_curve_mse),
     ]
 
     output_cut_value = config.get('output_cut_value', 0.9)

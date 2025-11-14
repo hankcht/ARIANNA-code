@@ -69,7 +69,8 @@ if __name__ == "__main__":
         '1d_vae_denoising',
         '1d_vae_mae_loss',
         '1d_vae_custom_loss',
-        '2d_vae'
+        '2d_vae',
+        '1d_vae_scattering'
     ]
     
     # --- Parameters to sweep for Autoencoder ---

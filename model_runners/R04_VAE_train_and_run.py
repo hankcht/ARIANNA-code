@@ -25,10 +25,7 @@ from pathlib import Path
 from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping, ModelCheckpoint
 
 import umap
-try:
-    import hdbscan
-except ImportError:
-    hdbscan = None
+import hdbscan
 
 # --- Local Imports from project structure ---
 sys.path.append(str(Path(__file__).resolve().parents[1] / '200s_time'))

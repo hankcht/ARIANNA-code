@@ -34,10 +34,10 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
         header += "module load python/3.10.2\n"
         header += "source /pub/tangch3/ARIANNA/DeepLearning/code/HGQ2/hgq2_env/bin/activate\n"
         header += "which python\n"
-        header += "echo which python"
-        header += "echo python --version"
+        header += "echo which python\n"
+        header += "echo python --version\n"
 
-        header += "python - <<'EOF'"
+        header += "python - <<'EOF'\n"
 
     else:
         header += "module load python/3.8.0\n"

@@ -168,8 +168,8 @@ def load_and_prep_data_for_training(config):
 
     # Load combined backlobe data from the pickle file saved by refactor_converter.py
     # This file contains data from all stations after chi and bin cuts
-    # combined_pkl_path = f'/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/5000evt_10.17.25/above_curve_combined.pkl'
-    combined_pkl_path = f'/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/toy_data_11.6.25/toy_data_combined.pkl'
+    combined_pkl_path = f'/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/5000evt_10.17.25/above_curve_combined.pkl'
+    # combined_pkl_path = f'/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/toy_data_11.6.25/toy_data_combined.pkl'
     snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_combined_backlobe_data(combined_pkl_path)
 
     # Convert to numpy arrays (they should already be arrays from the pickle, but ensure consistency)

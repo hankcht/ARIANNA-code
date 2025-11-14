@@ -22,6 +22,9 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/dfs8/sbarwi
     header += "export PYTHONPATH=$Nu:$PYTHONPATH\n"
     header += "export PYTHONPATH=$Radio:$PYTHONPATH\n"
     header += "module load python/3.8.0\n"
+
+    header += "source /dfs8/sbarwick_lab/ariannaproject/tangch3/ARIANNA-code/env/bin/activate\n"    # Load virtual environment
+
     header += "cd $pub/FROG\n"
 
     slurm_name = os.path.join(runDirectory, 'sh', os.path.basename(jobName)) + ".sh"
@@ -69,7 +72,8 @@ if __name__ == "__main__":
         '1d_vae_denoising',
         '1d_vae_mae_loss',
         '1d_vae_custom_loss',
-        '2d_vae'
+        '2d_vae',
+        '1d_vae_scattering'
     ]
     
     # --- Parameters to sweep for Autoencoder ---

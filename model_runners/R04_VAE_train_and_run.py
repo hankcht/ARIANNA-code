@@ -1642,7 +1642,7 @@ def run_validation_checks(
                     _,
                 ) = load_combined_backlobe_data(above_curve_pkl_path)
 
-                combined_above_curve = []
+                processed_above_curve = []
                 for subset in (above_curve_traces2016, above_curve_tracesRCR):
                     if subset is None:
                         continue
@@ -1665,16 +1665,30 @@ def run_validation_checks(
                             f"Skipping Above Curve subset: expected {reference_channels} channels, got {coerced.shape[1]}."
                         )
                         continue
-                    if coerced.shape[2] != reference_samples:
+                    if coerced.shape[2] != reference_samples and not is_freq_model:
                         print(
                             f"Skipping Above Curve subset: expected {reference_samples} samples, got {coerced.shape[2]}."
                         )
                         continue
-                    combined_above_curve.append(coerced.astype(np.float32, copy=False))
 
-                if combined_above_curve:
-                    above_curve_traces = np.concatenate(combined_above_curve, axis=0)
-                    above_curve_traces_proc = transform(above_curve_traces)
+                    coerced = coerced.astype(np.float32, copy=False)
+                    transformed_subset = transform(coerced)
+                    if transformed_subset.shape[1] != reference_channels:
+                        print(
+                            "Skipping Above Curve subset after transform: channel count mismatch "
+                            f"{transformed_subset.shape[1]} (expected {reference_channels})."
+                        )
+                        continue
+                    if transformed_subset.shape[2] != reference_samples:
+                        print(
+                            "Skipping Above Curve subset after transform: sample count mismatch "
+                            f"{transformed_subset.shape[2]} (expected {reference_samples})."
+                        )
+                        continue
+                    processed_above_curve.append(transformed_subset)
+
+                if processed_above_curve:
+                    above_curve_traces_proc = np.concatenate(processed_above_curve, axis=0)
                 else:
                     print(
                         "Above Curve dataset contained no usable traces after preprocessing; skipping."
@@ -1683,10 +1697,12 @@ def run_validation_checks(
                 print(
                     f"Failed to load Above Curve dataset from {above_curve_pkl_path}: {exc}"
                 )
+                quit()
         else:
             print(
-                f"Above Curve PKL not found at {above_curve_pkl_path}; skipping additional validation dataset."
+                f"Above Curve PKL not found at {above_curve_pkl_path}; quitting."
             )
+            quit()
 
     special_label = 'Validation Special Event'
     if special_traces_proc.shape[0] > 0:

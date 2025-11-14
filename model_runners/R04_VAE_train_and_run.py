@@ -181,6 +181,117 @@ def calculate_reconstruction_mse(model, prepared_data, config):
     return mse, reconstructed
 
 
+def _run_hdbscan_with_retries(latent_vectors, config, dataset_label='Above Curve'):
+    """Cluster latent vectors with HDBSCAN, retrying with varied parameters until a cluster forms."""
+
+    sample_count = latent_vectors.shape[0]
+    if sample_count == 0:
+        return np.empty((0,), dtype=int), None, {'reason': 'empty_dataset'}
+
+    if hdbscan is None:
+        print(
+            f"hdbscan package not available; assigning a single fallback cluster for {dataset_label}."
+        )
+        return np.zeros(sample_count, dtype=int), None, {'reason': 'missing_package'}
+
+    default_min_cluster_size = int(config.get('hdbscan_min_cluster_size', 25))
+    default_min_cluster_size = max(2, default_min_cluster_size)
+    default_min_cluster_size = min(default_min_cluster_size, max(2, sample_count - 1))
+
+    configured_min_samples = config.get('hdbscan_min_samples', None)
+    if configured_min_samples is not None:
+        configured_min_samples = max(1, int(configured_min_samples))
+
+    candidate_sizes = set()
+    upscale = [1.0, 1.5, 2.0, 3.0, 4.0]
+    downscale = [0.75, 0.5, 0.33, 0.25]
+    for factor in upscale + downscale:
+        candidate_sizes.add(int(round(default_min_cluster_size * factor)))
+    candidate_sizes.update(
+        [
+            default_min_cluster_size,
+            max(2, sample_count // 2),
+            max(2, sample_count // 3),
+            max(2, sample_count // 4),
+            max(2, sample_count // 5),
+            max(2, int(np.sqrt(sample_count))),
+            sample_count - 1,
+        ]
+    )
+
+    sanitized_sizes = []
+    for size in candidate_sizes:
+        size = max(2, size)
+        size = min(size, max(2, sample_count - 1))
+        sanitized_sizes.append(size)
+    candidate_sizes = sorted(set(sanitized_sizes), reverse=True)
+
+    tried = set()
+    for min_cluster_size in candidate_sizes:
+        min_samples_options = []
+        if configured_min_samples is not None:
+            min_samples_options.append(min(configured_min_samples, min_cluster_size))
+        min_samples_options.extend(
+            [
+                None,
+                max(1, min_cluster_size // 2),
+                max(1, int(np.sqrt(min_cluster_size))),
+                1,
+            ]
+        )
+
+        seen_ms = set()
+        ordered_min_samples = []
+        for option in min_samples_options:
+            if option is not None and option > min_cluster_size:
+                option = min_cluster_size
+            key = option if option is not None else 'auto'
+            if key in seen_ms:
+                continue
+            seen_ms.add(key)
+            ordered_min_samples.append(option)
+
+        for min_samples in ordered_min_samples:
+            attempt_key = (min_cluster_size, min_samples if min_samples is not None else 'auto')
+            if attempt_key in tried:
+                continue
+            tried.add(attempt_key)
+
+            kwargs = {'min_cluster_size': min_cluster_size}
+            if min_samples is not None:
+                kwargs['min_samples'] = min_samples
+
+            try:
+                clusterer = hdbscan.HDBSCAN(**kwargs)
+                labels = clusterer.fit_predict(latent_vectors)
+                clusters_found = int(np.sum(labels >= 0))
+                noise_points = int(np.sum(labels < 0))
+
+                if clusters_found > 0:
+                    print(
+                        f"HDBSCAN clustering succeeded with min_cluster_size={min_cluster_size},"
+                        f" min_samples={kwargs.get('min_samples', 'auto')}"
+                        f" (clusters={clusters_found}, noise={noise_points})."
+                    )
+                    return labels, clusterer, kwargs
+
+                print(
+                    f"HDBSCAN attempt produced only noise (min_cluster_size={min_cluster_size},"
+                    f" min_samples={kwargs.get('min_samples', 'auto')})."
+                )
+            except Exception as exc:
+                print(
+                    f"HDBSCAN attempt failed (min_cluster_size={min_cluster_size},"
+                    f" min_samples={kwargs.get('min_samples', 'auto')}): {exc}"
+                )
+
+    print(
+        f"HDBSCAN could not identify clusters for {dataset_label} after {len(tried)} attempts;"
+        " assigning a single fallback cluster."
+    )
+    return np.zeros(sample_count, dtype=int), None, {'reason': 'fallback'}
+
+
 def train_vae_model(training_backlobe, config, learning_rate, model_type):
     """Train the selected VAE using only background data."""
 
@@ -918,45 +1029,15 @@ def plot_latent_space(
     )
 
     if above_curve_entry is not None:
-        if hdbscan is None:
-            print("hdbscan package not available; skipping clustering for Above Curve dataset.")
-        else:
-            sample_count = above_curve_entry['latent'].shape[0]
-            min_cluster_size = int(config.get('hdbscan_min_cluster_size', 5))
-            if min_cluster_size < 2:
-                min_cluster_size = 2
-            if min_cluster_size > sample_count:
-                adjusted_min = max(2, sample_count // 2)
-                if adjusted_min < min_cluster_size:
-                    print(
-                        f"Adjusting hdbscan min_cluster_size from {min_cluster_size} to {adjusted_min}"
-                        f" based on available Above Curve samples ({sample_count})."
-                    )
-                min_cluster_size = adjusted_min
-            min_samples_cfg = config.get('hdbscan_min_samples', None)
-            if sample_count < max(5, min_cluster_size):
-                print(
-                    f"Not enough Above Curve samples ({sample_count}) to run HDBSCAN"
-                    f" (min_cluster_size={min_cluster_size}). Skipping clustering."
-                )
-            else:
-                cluster_kwargs = {'min_cluster_size': max(2, min_cluster_size)}
-                if min_samples_cfg is not None:
-                    cluster_kwargs['min_samples'] = max(1, int(min_samples_cfg))
-                try:
-                    clusterer = hdbscan.HDBSCAN(**cluster_kwargs)
-                    cluster_labels = clusterer.fit_predict(above_curve_entry['latent'])
-                    above_curve_entry['cluster_labels'] = cluster_labels
-                    above_curve_entry['clusterer'] = clusterer
-                    unique_labels = np.unique(cluster_labels)
-                    n_clusters = int(np.sum(unique_labels >= 0))
-                    noise_points = int(np.sum(cluster_labels < 0))
-                    print(
-                        f"HDBSCAN identified {n_clusters} cluster(s) in Above Curve dataset"
-                        f" (noise points: {noise_points})."
-                    )
-                except Exception as exc:
-                    print(f"HDBSCAN clustering failed for Above Curve dataset: {exc}")
+        cluster_labels, clusterer, _ = _run_hdbscan_with_retries(
+            above_curve_entry['latent'],
+            config,
+            dataset_label=above_curve_entry['label'],
+        )
+        above_curve_entry['cluster_labels'] = cluster_labels
+        above_curve_entry['clusterer'] = clusterer
+    else:
+        print("No 'Above Curve' dataset found; assigning fallback single cluster.")
 
     all_plot_groups = []
 
@@ -1798,10 +1879,12 @@ def _save_vae_model_artifacts(
     # model.save(model_dir)
 
     print(f'Saving encoder to: {encoder_dir}')
-    model.encoder.save(encoder_dir)
+    # model.encoder.save(encoder_dir)
+    model.encoder.save_weights(encoder_dir)
 
     print(f'Saving decoder to: {decoder_dir}')
-    model.decoder.save(decoder_dir)
+    # model.decoder.save(decoder_dir)
+    model.decoder.save_weights(decoder_dir)
 
     weights_path = os.path.join(model_dir, 'weights.h5')
     model.save_weights(weights_path)

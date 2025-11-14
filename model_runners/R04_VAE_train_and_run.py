@@ -24,7 +24,7 @@ from sklearn.manifold import TSNE
 from pathlib import Path
 from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping, ModelCheckpoint
 
-import umap
+import umap.umap_ as umap
 import hdbscan
 
 # --- Local Imports from project structure ---

@@ -39,10 +39,6 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
 
         header += "python - <<'EOF'"
 
-
-
-
-
     else:
         header += "module load python/3.8.0\n"
 

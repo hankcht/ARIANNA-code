@@ -11,7 +11,7 @@ from keras.models import Sequential
 from keras.layers import Conv2D, Dropout, Flatten, Dense
 from pathlib import Path
 import pickle
-import templateCrossCorr as txc
+# import templateCrossCorr as txc
 import NuRadioReco
 from NuRadioReco.utilities import units, fft
 from NuRadioReco.utilities.io_utilities import read_pickle

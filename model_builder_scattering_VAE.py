@@ -249,4 +249,4 @@ def build_vae_model_scattering(input_shape=(256, 4), learning_rate=0.001, latent
     )
     
     # Return False for requires_transpose, as this model expects (Batch, 256, 4)
-    return vae, False
+    return vae, True

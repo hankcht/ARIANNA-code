@@ -181,7 +181,7 @@ def build_vae_model_scattering(input_shape=(256, 4), learning_rate=0.001, latent
     
     # Instantiate the Scattering1D layer
     # This layer is "fixed" and not trained.
-    scattering = Scattering1D(J=J, T=T, Q=Q, shape=input_shape)
+    scattering = Scattering1D(J=J, T=T, Q=Q)
 
     channel_outputs = []
     for i in range(N_channels):

@@ -194,7 +194,7 @@ def _run_hdbscan_with_retries(latent_vectors, config, dataset_label='Above Curve
         )
         return np.zeros(sample_count, dtype=int), None, {'reason': 'missing_package'}
 
-    default_min_cluster_size = int(config.get('hdbscan_min_cluster_size', 5))
+    default_min_cluster_size = int(config.get('hdbscan_min_cluster_size', 4))
     default_min_cluster_size = max(2, default_min_cluster_size)
     default_min_cluster_size = min(default_min_cluster_size, max(2, sample_count - 1))
 
@@ -993,6 +993,37 @@ def plot_latent_space(
         print("Latent space has zero dimensions; skipping plot.")
         return
 
+        # --- Now plotting UMAP ---
+    print("Generating UMAP plot...")
+    all_latent_vectors = np.concatenate(
+        [entry['latent'] for entry in plottable_entries], axis=0
+    )
+
+    if all_latent_vectors.shape[0] < 5:
+        print(
+            f"Not enough total samples ({all_latent_vectors.shape[0]}) for UMAP. Skipping."
+        )
+        return
+
+    reducer = umap.UMAP(
+        n_neighbors=5,
+        n_components=2,
+        random_state=42,
+        min_dist=0.0,
+    )
+    embedding = reducer.fit_transform(all_latent_vectors)
+
+    start_idx = 0
+    for entry in plottable_entries:
+        n_samples_in_entry = entry['latent'].shape[0]
+        end_idx = start_idx + n_samples_in_entry
+        entry['embedding'] = embedding[start_idx:end_idx, :]
+        start_idx = end_idx
+
+    # *** ERROR WAS HERE ***
+    # The loop 'for group in all_plot_groups:' was here,
+    # but 'all_plot_groups' isn't created until later.
+
     for entry in plottable_entries:
         if entry['latent'].shape[1] != latent_dim:
             print(
@@ -1029,13 +1060,18 @@ def plot_latent_space(
     )
 
     if above_curve_entry is not None:
-        cluster_labels, clusterer, _ = _run_hdbscan_with_retries(
-            above_curve_entry['latent'],
-            config,
-            dataset_label=above_curve_entry['label'],
-        )
-        above_curve_entry['cluster_labels'] = cluster_labels
-        above_curve_entry['clusterer'] = clusterer
+        # Check if the embedding was successfully created
+        if 'embedding' in above_curve_entry and above_curve_entry['embedding'].size > 0:
+            print("Running HDBSCAN on the 2D UMAP embedding of 'Above Curve' data...")
+            cluster_labels, clusterer, _ = _run_hdbscan_with_retries(
+                above_curve_entry['embedding'],  # <-- *** This is the fix ***
+                config,
+                dataset_label=above_curve_entry['label'],
+            )
+            above_curve_entry['cluster_labels'] = cluster_labels
+            above_curve_entry['clusterer'] = clusterer
+        else:
+            print("Skipping HDBSCAN for 'Above Curve': no UMAP embedding found.")
     else:
         print("No 'Above Curve' dataset found; assigning fallback single cluster.")
 
@@ -1155,6 +1191,20 @@ def plot_latent_space(
 
     legend_groups = groups_for_plot
 
+    # *** FIX IS TO MOVE THE LOOP HERE ***
+    # This loop populates the 'embedding' key for each group,
+    # which the UMAP plot will need.
+    for group in all_plot_groups:
+        indices = group['indices']
+        if isinstance(indices, (list, tuple)):
+            indices = np.asarray(indices)
+        group['indices'] = indices
+        if indices.size == 0:
+            group['embedding'] = np.empty((0, 2))
+        else:
+            group['embedding'] = group['entry']['embedding'][indices, :]
+
+
     base_size = 3.0
     fig, axes = plt.subplots(
         latent_dim,
@@ -1250,46 +1300,10 @@ def plot_latent_space(
     print(f'Saved latent space pair plot to: {plot_file}')
 
 
-    # --- Now plotting UMAP ---
-    print("Generating UMAP plot...")
-    all_latent_vectors = np.concatenate(
-        [entry['latent'] for entry in plottable_entries], axis=0
-    )
-
-    if all_latent_vectors.shape[0] < 5:
-        print(
-            f"Not enough total samples ({all_latent_vectors.shape[0]}) for UMAP. Skipping."
-        )
-        return
-
-    reducer = umap.UMAP(
-        n_neighbors=5,
-        n_components=2,
-        random_state=42,
-        min_dist=0.0,
-    )
-    embedding = reducer.fit_transform(all_latent_vectors)
-
-    start_idx = 0
-    for entry in plottable_entries:
-        n_samples_in_entry = entry['latent'].shape[0]
-        end_idx = start_idx + n_samples_in_entry
-        entry['embedding'] = embedding[start_idx:end_idx, :]
-        start_idx = end_idx
-
-    for group in all_plot_groups:
-        indices = group['indices']
-        if isinstance(indices, (list, tuple)):
-            indices = np.asarray(indices)
-        group['indices'] = indices
-        if indices.size == 0:
-            group['embedding'] = np.empty((0, 2))
-        else:
-            group['embedding'] = group['entry']['embedding'][indices, :]
-
     fig_umap, ax_umap = plt.subplots(figsize=(11, 9))
     used_labels = set()
     for group in groups_for_plot:
+        # This line will now work, because the loop above populated 'embedding'
         embed = group.get('embedding', np.empty((0, 2)))
         if embed.size == 0:
             continue

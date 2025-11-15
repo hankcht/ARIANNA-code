@@ -60,7 +60,16 @@ ir_init = 1
 oq_conf = QuantizerConfig('kif', 'datalane', fr=fr_init, ir=ir_init)
 
 # Optional: BetaScheduler to ramp beta during training (recommended)
-beta_scheduler = BetaScheduler(initial_beta=beta0, final_beta=1e-3, ramp_epochs=10)
+beta0 = 1e-5
+beta_final = 1e-3
+ramp_epochs = 10 # 10
+
+def linear_beta_fn(epoch):
+    if epoch >= ramp_epochs:
+        return beta_final
+    return beta0 + (beta_final - beta0) * (epoch / ramp_epochs)
+
+beta_scheduler = BetaScheduler(beta_fn=linear_beta_fn)
 
 # Create the quantized model inside the HGQ2 config scopes
 with (

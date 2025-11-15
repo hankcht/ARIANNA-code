@@ -19,6 +19,8 @@ from hgq.config.layer import LayerConfigScope
 from hgq.config.quantizer import QuantizerConfigScope, QuantizerConfig # scope allows consistent controll of quantization in all layers 
 from hgq.utils.sugar.beta_scheduler import BetaScheduler
 from hgq.utils.minmax_trace import trace_minmax
+from hgq.utils.sugar import FreeEBOPs
+ebops = FreeEBOPs()
 
 # Your project imports
 from A0_Utilities import load_sim_rcr, load_data, pT, load_config
@@ -45,7 +47,7 @@ def build_fp32_model(input_shape):
     
     return model
 
-def build_hgq_model(input_shape, beta0=1e-8, beta_final=1e-5, ramp_epochs=10):
+def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=10):
     """
     Build HGQ2 model inside HGQ2 config scopes.
 
@@ -72,9 +74,9 @@ def build_hgq_model(input_shape, beta0=1e-8, beta_final=1e-5, ramp_epochs=10):
 
     # Create the model inside the HGQ2 configuration scopes so quantizers/EBOPs are configured.
     with (
-        QuantizerConfigScope(place='all', default_q_type='kbi', overflow_mode='SAT_SYM'),
-        QuantizerConfigScope(place='datalane', default_q_type='kif', overflow_mode='WRAP'),
-        LayerConfigScope(enable_ebops=True, beta0=beta0, resource_reg=1e-8)
+        QuantizerConfigScope(q_type='kif', place='weight', overflow_mode='SAT_SYM', round_mode='RND'), # place='all', default_q_type='kbi', overflow_mode='SAT_SYM'
+        QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='WRAP', round_mode='RND'), # place='datalane', default_q_type='kif', overflow_mode='WRAP'
+        LayerConfigScope(enable_ebops=True, beta0=beta0)
     ):
         model = Sequential()
         model.add(Input(shape=input_shape)) # adding Input layer to avoid passing input_shape as an argument
@@ -84,7 +86,7 @@ def build_hgq_model(input_shape, beta0=1e-8, beta_final=1e-5, ramp_epochs=10):
         model.add(Flatten())
         model.add(QDense(1, activation='sigmoid'))
         model.compile(optimizer='Adam',
-                    loss='binary_crossentropy',
+                    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
                     metrics=['accuracy'])
         
     return model, beta_scheduler
@@ -138,12 +140,11 @@ def main():
 
     # --- Train HGQ2 Model ---
     hgq_model, beta_scheduler = build_hgq_model(input_shape)
-    callbacks = [beta_scheduler]
     hgq_history = hgq_model.fit(x, y,
                                 validation_split=0.2,
                                 epochs=config['keras_epochs'],
                                 batch_size=config['keras_batch_size'],
-                                callbacks=callbacks,
+                                callbacks=[ebops], # It is recommended to use the FreeEBOPs callback to monitor EBOPs during training
                                 verbose=config['verbose_fit'])
     hgq_acc = hgq_history.history.get('val_accuracy', hgq_history.history.get('val_acc'))[-1]
     hgq_model_path = os.path.join(config['base_model_path'], f"{timestamp}_HGQ2_model.h5")

@@ -14,37 +14,10 @@ from tensorflow.keras.optimizers import Adam
 import pandas as pd
 
 # --- HGQ2 imports (robust) ---
-# Prefer hgq2 (the new API). If not available, raise clear error telling user to install hgq2.
-try:
-    import hgq2 as hgqpack  # prefer explicit hgq2 namespace if available
-except Exception:
-    try:
-        import hgq as hgqpack
-        # If hgq (old) is present but not hgq2, warn the user because the file targets hgq2.
-        raise ImportError(
-            "This script targets HGQ2. Detected `hgq` but not `hgq2`. "
-            "Please install HGQ2 (package name `hgq2`) and ensure it is importable as `hgq2`."
-        )
-    except Exception:
-        raise ImportError(
-            "HGQ2 is required but not found. Install hgq2 (pip/conda) and ensure it's importable as `hgq2`."
-        )
-
-# Map the HGQ2 API names to local names, so code below reads naturally.
-# These attribute names match the usual structure but are retrieved from hgqpack to keep compatibility.
-try:
-    QConv1D = hgqpack.layers.QConv1D
-    QDense = hgqpack.layers.QDense
-    QuantizerConfigScope = hgqpack.config.QuantizerConfigScope
-    LayerConfigScope = hgqpack.config.LayerConfigScope
-    QuantizerConfig = hgqpack.config.QuantizerConfig
-    BetaScheduler = hgqpack.utils.sugar.beta_scheduler.BetaScheduler
-    trace_minmax = hgqpack.utils.trace_minmax.trace_minmax
-except Exception as e:
-    raise ImportError(
-        "Could not bind expected HGQ2 symbols from the hgq2 package. "
-        "Check the hgq2 package structure or update the script to match your hgq2 version."
-    ) from e
+from hgq.layers import QConv1D, QDense
+from hgq.config import QuantizerConfigScope, LayerConfigScope, QuantizerConfig
+from hgq.utils.sugar.beta_scheduler import BetaScheduler
+from hgq.utils.trace_minmax import trace_minmax
 
 # Your project imports
 from A0_Utilities import load_sim_rcr, load_data, pT, load_config

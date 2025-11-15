@@ -62,7 +62,7 @@ oq_conf = QuantizerConfig('kif', 'datalane', fr=fr_init, ir=ir_init)
 # Optional: BetaScheduler to ramp beta during training (recommended)
 beta0 = 1e-5
 beta_final = 1e-3
-ramp_epochs = 10
+ramp_epochs = 10 # 10
 
 def linear_beta_fn(epoch):
     if epoch >= ramp_epochs:

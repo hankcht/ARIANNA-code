@@ -150,40 +150,10 @@ def main():
     hgq_model_path = os.path.join(config['base_model_path'], f"{timestamp}_HGQ2_model.h5")
     hgq_model.save(hgq_model_path)
 
-    # --- EBOPs (Energy / bit operations) ---
-    # trace_minmax is an HGQ2 utility that runs through the model and reports min/max ranges and,
-    # when EBOP tracing is enabled, estimated EBOPs or a related power metric per inference.
-    # We request return_results=True to get structured output. Different hgq2 versions may return
-    # different structures (scalar, dict, etc.) so we handle them robustly below.
-    try:
-        # Request results (safer to ask for return_results and parse)
-        ebop_results = trace_minmax(hgq_model, x, batch_size=1024, verbose=2, return_results=True)
-        hgq_ebops = None
-
-        # Possible return types: scalar (float), dict containing 'ebops' or 'power' keys, or custom object.
-        if isinstance(ebop_results, (float, int, np.floating, np.integer)):
-            hgq_ebops = float(ebop_results)
-        elif isinstance(ebop_results, dict):
-            # check common keys
-            for k in ['ebops', 'EBOPs', 'power', 'estimated_ebops', 'estimated_power']:
-                if k in ebop_results:
-                    hgq_ebops = float(ebop_results[k])
-                    break
-            # If there is a nested per-layer summary, we can sum if present
-            if hgq_ebops is None:
-                # e.g. {'layer_summaries': [{'ebops': ...}, ...]}
-                if 'layer_summaries' in ebop_results and isinstance(ebop_results['layer_summaries'], (list, tuple)):
-                    try:
-                        hgq_ebops = float(sum(ls.get('ebops', 0.0) for ls in ebop_results['layer_summaries']))
-                    except Exception:
-                        hgq_ebops = float('nan')
-        else:
-            # If it's an object with attribute 'ebops' or 'power', try to extract.
-            hgq_ebops = float(getattr(ebop_results, 'ebops', getattr(ebop_results, 'power', float('nan'))))
-    except Exception as e:
-        # If trace_minmax fails or does not produce EBOPs for your version, record NaN and warn.
-        print("Warning: trace_minmax failed or returned unexpected format. EBOPs set to NaN. Error:", e)
-        hgq_ebops = float('nan')
+    
+    hgq_train_acc = hgq_history.history.get('accuracy', hgq_history.history.get('acc'))
+    hgq_val_acc = hgq_history.history.get('val_accuracy', hgq_history.history.get('val_acc'))
+    hgq_ebops = hgq_history.history.get('ebops', [float('nan')] * len(hgq_val_acc))
 
     # FP32 baseline EBOPs: if you have a way to measure FP32 EBOPs, replace this.
     baseline_ebops = float('nan')  # FP32 baseline EBOPs not computed here
@@ -222,23 +192,27 @@ def main():
     plt.savefig(os.path.join(plot_dir, 'loss', 'val_loss_comparison.png'))
     plt.close()
 
-    # EBOPs Bar
-    plt.figure(figsize=(4,4))
-    # If baseline_ebops is NaN, show 0 for baseline to keep plotting simple (but CSV will have NaN).
-    baseline_ebops_for_plot = 0 if np.isnan(baseline_ebops) else baseline_ebops
-    hgq_ebops_for_plot = 0 if np.isnan(hgq_ebops) else hgq_ebops
-    plt.bar(['Baseline', 'HGQ2'], [baseline_ebops_for_plot, hgq_ebops_for_plot])
-    plt.ylabel('EBOPs (estimated)')
-    plt.title('Power/EBOPs Comparison')
-    plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'ebops_comparison.png'))
+    
+    # EBOPs vs Epoch
+    plt.figure(figsize=(6,4))
+    plt.plot(hgq_ebops, '.')
+    plt.yscale('log')
+    plt.xlabel('Epoch')
+    plt.ylabel('EBOPs')
+    plt.title('HGQ2 EBOPs per Epoch')
+    plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'ebops_per_epoch.png'))
     plt.close()
 
     # Latency Bar
-    plt.figure(figsize=(4,4))
-    plt.bar(['Baseline', 'HGQ2'], [baseline_latency, hgq_latency])
-    plt.ylabel('Latency (s)')
-    plt.title('Latency Comparison')
-    plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'latency_comparison.png'))
+    plt.figure(figsize=(6,4))
+    plt.plot(hgq_ebops, hgq_val_acc, '.')
+    plt.xscale('log')
+    plt.xlabel('EBOPs')
+    plt.ylabel('Validation Accuracy')
+    plt.ylim(0.7, 0.765)
+    plt.xticks([3000, 10000, 30000, 100000], ['3k', '10k', '30k', '100k'])
+    plt.title('HGQ2 EBOPs vs Validation Accuracy')
+    plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'ebops_vs_val_accuracy.png'))
     plt.close()
 
     # Model Size Bar

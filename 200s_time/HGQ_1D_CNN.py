@@ -8,14 +8,15 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from tensorflow import keras
-from tensorflow.keras.layers import Conv1D, Dense, Dropout, Flatten, BatchNormalization, ReLU, GlobalAveragePooling1D
+from tensorflow.keras.layers import Input, Conv1D, Dense, Dropout, Flatten, BatchNormalization, ReLU, GlobalAveragePooling1D
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 import pandas as pd
 
-# --- HGQ2 imports (robust) ---
-from hgq.layers import QConv1D, QDense
-from hgq.config import QuantizerConfigScope, LayerConfigScope, QuantizerConfig
+# --- HGQ2 imports ---
+from hgq.layers import QDense, QConv1D
+from hgq.config.layer import LayerConfigScope
+from hgq.config.quantizer import QuantizerConfigScope, QuantizerConfig # scope allows consistent controll of quantization in all layers 
 from hgq.utils.sugar.beta_scheduler import BetaScheduler
 from hgq.utils.minmax_trace import trace_minmax
 
@@ -30,20 +31,21 @@ from refactor_train_and_run import (
 
 # --- Helper Functions ---
 def build_fp32_model(input_shape):
+    # this is an equivalent 1D model as the 2D model I originally gave Albert
     model = Sequential()
-    model.add(Conv1D(32, kernel_size=5, padding="same", activation='relu', input_shape=input_shape))
-    model.add(Conv1D(32, kernel_size=15, padding="same", activation='relu'))
-    model.add(Conv1D(32, kernel_size=31, padding="same", activation='relu'))
-    model.add(BatchNormalization())
-    model.add(ReLU())
-    model.add(Conv1D(64, kernel_size=7, padding="same", activation='relu'))
-    model.add(GlobalAveragePooling1D())
-    model.add(Dense(32, activation="relu"))
-    model.add(Dense(1, activation="sigmoid"))
-    model.compile(optimizer=Adam(), loss="binary_crossentropy", metrics=["accuracy"])
+    model.add(Input(shape=input_shape)) # adding Input layer to avoid passing input_shape as an argument
+    model.add(Conv1D(20, kernel_size=10, activation='relu'))
+    model.add(Conv1D(10, kernel_size=10, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Flatten())
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(optimizer='Adam',
+                loss='binary_crossentropy',
+                metrics=['accuracy'])
+    
     return model
 
-def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=10):
+def build_hgq_model(input_shape, beta0=1e-8, beta_final=1e-5, ramp_epochs=10):
     """
     Build HGQ2 model inside HGQ2 config scopes.
 
@@ -75,16 +77,16 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=10):
         LayerConfigScope(enable_ebops=True, beta0=beta0, resource_reg=1e-8)
     ):
         model = Sequential()
-        model.add(QConv1D(32, kernel_size=5, padding="same", activation='relu', input_shape=input_shape))
-        model.add(QConv1D(32, kernel_size=15, padding="same", activation='relu'))
-        model.add(QConv1D(32, kernel_size=31, padding="same", activation='relu'))
-        model.add(BatchNormalization())
-        model.add(ReLU())
-        model.add(QConv1D(64, kernel_size=7, padding="same", activation='relu'))
-        model.add(GlobalAveragePooling1D())
-        model.add(QDense(32, activation="relu"))
-        model.add(QDense(1, activation="sigmoid"))
-        model.compile(optimizer=Adam(), loss="binary_crossentropy", metrics=["accuracy"])
+        model.add(Input(shape=input_shape)) # adding Input layer to avoid passing input_shape as an argument
+        model.add(QConv1D(20, kernel_size=10, activation='relu'))
+        model.add(QConv1D(10, kernel_size=10, activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Flatten())
+        model.add(QDense(1, activation='sigmoid'))
+        model.compile(optimizer='Adam',
+                    loss='binary_crossentropy',
+                    metrics=['accuracy'])
+        
     return model, beta_scheduler
 
 def measure_latency(model, x, n_runs=50):
@@ -101,7 +103,7 @@ def measure_latency(model, x, n_runs=50):
 
 # --- Main Script ---
 def main():
-    config = load_config()
+    config = load_config(config_path="/dfs8/sbarwick_lab/ariannaproject/tangch3/ARIANNA-code/200s_time/config.yaml")
     amp = config['amp']
     prefix = config.get('prefix', '')
     timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
@@ -121,6 +123,7 @@ def main():
     y = y[s]
 
     input_shape = x.shape[1:]  # (length, channels)
+    print(f"Input Shape: {input_shape}. For 1D CNN, should be (256, 4)")
 
     # --- Train Baseline FP32 Model ---
     baseline_model = build_fp32_model(input_shape)
@@ -153,7 +156,7 @@ def main():
     # different structures (scalar, dict, etc.) so we handle them robustly below.
     try:
         # Request results (safer to ask for return_results and parse)
-        ebop_results = trace_minmax(hgq_model, x, batch_size=1024, verbose=1, return_results=True)
+        ebop_results = trace_minmax(hgq_model, x, batch_size=1024, verbose=2, return_results=True)
         hgq_ebops = None
 
         # Possible return types: scalar (float), dict containing 'ebops' or 'power' keys, or custom object.

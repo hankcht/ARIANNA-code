@@ -17,7 +17,7 @@ import pandas as pd
 from hgq.layers import QConv1D, QDense
 from hgq.config import QuantizerConfigScope, LayerConfigScope, QuantizerConfig
 from hgq.utils.sugar.beta_scheduler import BetaScheduler
-from hgq.utils.trace_minmax import trace_minmax
+from hgq.utils.minmax_trace import trace_minmax
 
 # Your project imports
 from A0_Utilities import load_sim_rcr, load_data, pT, load_config

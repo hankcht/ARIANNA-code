@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     # cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py"
     cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/hgq_test.py"
-    RunMultipleJobs(cmd, jobName='HGQ2_test', python_env='hgq2')
+    RunMultipleJobs(cmd, jobName='HGQ2', python_env='hgq2')
 
 
     # # Define available model types

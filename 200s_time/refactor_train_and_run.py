@@ -164,6 +164,8 @@ def save_and_plot_training_history(history, model_path, plot_path, timestamp, am
 
     os.makedirs(model_path, exist_ok=True)
     os.makedirs(plot_path, exist_ok=True)
+    os.makedirs(os.path.join(plot_path, "loss"), exist_ok=True)
+    os.makedirs(os.path.join(plot_path, "accuracy"), exist_ok=True)
 
     history_file = os.path.join(model_path, config['history_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
     with open(history_file, 'wb') as f: 

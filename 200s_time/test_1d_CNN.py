@@ -41,22 +41,16 @@ x = x.transpose(0, 2, 1)   # now shape = (n_events, 256, 4)
 # maybe reverse the transpose
 
 model = Sequential()
-
-# Multi-scale idea approximated with stacked Conv1D layers
 model.add(Conv1D(32, kernel_size=5, padding="same", activation="relu", input_shape=(256, 4)))
 model.add(Conv1D(32, kernel_size=15, padding="same", activation="relu"))
 model.add(Conv1D(32, kernel_size=31, padding="same", activation="relu"))
 model.add(BatchNormalization())
 model.add(ReLU())
 
-# Downstream feature extractor
-model.add(Conv1D(64, kernel_size=7, padding="same", activation="relu"))
+model.add(Conv1D(64, kernel_size=7, padding="same", activation="relu")) # Downstream feature extractor
 
-# Collapse across time
-model.add(GlobalAveragePooling1D())
-
-# Dense classification head
-model.add(Dense(32, activation="relu"))
+model.add(GlobalAveragePooling1D()) # Collapse across time
+model.add(Dense(32, activation="relu")) # Dense classification head
 model.add(Dense(1, activation="sigmoid"))
 
 # Compile

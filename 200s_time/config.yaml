@@ -44,7 +44,7 @@ base_plot_path: "/dfs8/sbarwick_lab/ariannaproject/tangch3/plots/"
 
 # Training
 if_1D: False # currently used in checks.py to evaluate transposed events
-prefix : "1D_CNN"
+prefix : "1D_CNN_HGQ"
 train_cut: 8000
 early_stopping_patience: 5
 keras_epochs: 100

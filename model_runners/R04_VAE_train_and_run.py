@@ -1020,15 +1020,9 @@ def plot_latent_space(
         entry['embedding'] = embedding[start_idx:end_idx, :]
         start_idx = end_idx
 
-    for group in all_plot_groups:
-        indices = group['indices']
-        if isinstance(indices, (list, tuple)):
-            indices = np.asarray(indices)
-        group['indices'] = indices
-        if indices.size == 0:
-            group['embedding'] = np.empty((0, 2))
-        else:
-            group['embedding'] = group['entry']['embedding'][indices, :]
+    # *** ERROR WAS HERE ***
+    # The loop 'for group in all_plot_groups:' was here,
+    # but 'all_plot_groups' isn't created until later.
 
     for entry in plottable_entries:
         if entry['latent'].shape[1] != latent_dim:
@@ -1197,6 +1191,20 @@ def plot_latent_space(
 
     legend_groups = groups_for_plot
 
+    # *** FIX IS TO MOVE THE LOOP HERE ***
+    # This loop populates the 'embedding' key for each group,
+    # which the UMAP plot will need.
+    for group in all_plot_groups:
+        indices = group['indices']
+        if isinstance(indices, (list, tuple)):
+            indices = np.asarray(indices)
+        group['indices'] = indices
+        if indices.size == 0:
+            group['embedding'] = np.empty((0, 2))
+        else:
+            group['embedding'] = group['entry']['embedding'][indices, :]
+
+
     base_size = 3.0
     fig, axes = plt.subplots(
         latent_dim,
@@ -1295,6 +1303,7 @@ def plot_latent_space(
     fig_umap, ax_umap = plt.subplots(figsize=(11, 9))
     used_labels = set()
     for group in groups_for_plot:
+        # This line will now work, because the loop above populated 'embedding'
         embed = group.get('embedding', np.empty((0, 2)))
         if embed.size == 0:
             continue

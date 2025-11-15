@@ -135,7 +135,7 @@ def main():
 
     # --- Train HGQ2 Model ---
     hgq_model, beta_scheduler = build_hgq_model(input_shape)
-    callbacks = [beta_scheduler.to_keras_callback()]
+    callbacks = [beta_scheduler]
     hgq_history = hgq_model.fit(x, y,
                                 validation_split=0.2,
                                 epochs=config['keras_epochs'],

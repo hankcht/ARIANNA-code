@@ -86,7 +86,7 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=10):
         model.add(Flatten())
         model.add(QDense(1, activation='sigmoid'))
         model.compile(optimizer='Adam',
-                    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+                    loss='binary_crossentropy',
                     metrics=['accuracy'])
         
     return model, beta_scheduler

@@ -10,7 +10,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     header += f"#SBATCH --job-name={jobName}         ##Name of the job.\n"
     header += "#SBATCH -A sbarwick_lab                 ##Account to charge to\n"
     header += "#SBATCH --partition=standard            ##Partition/queue name\n" 
-    header += "#SBATCH --time=0-12:00:00               ##Max runtime D-HH:MM:SS, 3 days free maximum\n"
+    header += "#SBATCH --time=0-24:00:00               ##Max runtime D-HH:MM:SS, 3 days free maximum\n"
     header += "#SBATCH --nodes=1                       ##Nodes to be used\n"
     
     header += "#SBATCH --ntasks=10                    ##Number of processes to be launched (CPUs)\n" 

@@ -252,26 +252,16 @@ def main():
     plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'ebops_vs_val_accuracy.png'))
     plt.close()
 
-    def compute_reduction_percent(baseline_val, new_val):
-        try:
-            if baseline_val is None or np.isnan(baseline_val):
-                return float('nan')
-            if baseline_val == 0:
-                return float('nan')  # undefined
-            return 100.0 * (baseline_val - new_val) / baseline_val
-        except Exception:
-            return float('nan')
-    reduction_ebops = compute_reduction_percent(baseline_ebops, hgq_ebops)
 
     # For accuracy, show absolute difference (HGQ2 - Baseline). Positive means HGQ2 higher accuracy.
-    train_accuracy_delta = hgq_train_acc[-1] - baseline_train_acc[-1]
-    val_accuracy_delta = hgq_val_acc[-1] - baseline_val_acc[-1]
+    train_accuracy_delta = baseline_train_acc[-1] - hgq_train_acc[-1]
+    val_accuracy_delta = baseline_val_acc[-1] - hgq_val_acc[-1]
 
     df = pd.DataFrame({
-        'Metric': ['Training Accuracy (delta)', 'Validation Accuracy (delta)', 'EBOPs (estimated)'],
+        'Metric': ['Training Accuracy', 'Validation Accuracy', 'EBOPs (estimated)'],
         'Baseline': [baseline_train_acc[-1], baseline_val_acc[-1], baseline_ebops],
         'HGQ2': [hgq_train_acc[-1], hgq_val_acc[-1], hgq_ebops[-1]],
-        'Reduction %': [train_accuracy_delta, val_accuracy_delta, reduction_ebops]
+        'Difference': [train_accuracy_delta, val_accuracy_delta, float('nan')]
     })
 
     summary_file = os.path.join(plot_dir, 'hgq2_results', 'summary_table.csv')

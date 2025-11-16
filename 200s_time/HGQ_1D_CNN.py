@@ -168,7 +168,29 @@ def main():
     os.makedirs(os.path.join(plot_dir, 'accuracy'), exist_ok=True)
     os.makedirs(os.path.join(plot_dir, 'hgq2_results'), exist_ok=True)
 
-    # Accuracy
+    # Train Accuracy
+    plt.figure(figsize=(6,4))
+    plt.plot(baseline_history.history.get('accuracy', baseline_history.history.get('acc')),
+             label='Baseline train_acc')
+    plt.plot(hgq_history.history.get('accuracy', hgq_history.history.get('acc')),
+             label='HGQ2 train_acc')
+    plt.xlabel('Epoch'); plt.ylabel('Training Accuracy')
+    plt.title('Training Accuracy Comparison')
+    plt.legend()
+    plt.savefig(os.path.join(plot_dir, 'accuracy', 'train_accuracy_comparison.png'))
+    plt.close()
+
+    # train Loss
+    plt.figure(figsize=(6,4))
+    plt.plot(baseline_history.history['loss'], label='Baseline train_loss')
+    plt.plot(hgq_history.history['loss'], label='HGQ2 train_loss')
+    plt.xlabel('Epoch'); plt.ylabel('Training Loss')
+    plt.title('Training Loss Comparison')
+    plt.legend()
+    plt.savefig(os.path.join(plot_dir, 'loss', 'train_loss_comparison.png'))
+    plt.close()
+
+    # Val Accuracy
     plt.figure(figsize=(6,4))
     plt.plot(baseline_history.history.get('val_accuracy', baseline_history.history.get('val_acc')), label='Baseline val_acc')
     plt.plot(hgq_history.history.get('val_accuracy', hgq_history.history.get('val_acc')), label='HGQ2 val_acc')
@@ -178,7 +200,7 @@ def main():
     plt.savefig(os.path.join(plot_dir, 'accuracy', 'val_accuracy_comparison.png'))
     plt.close()
 
-    # Loss
+    # Val Loss
     plt.figure(figsize=(6,4))
     plt.plot(baseline_history.history.get('val_loss'), label='Baseline val_loss')
     plt.plot(hgq_history.history.get('val_loss'), label='HGQ2 val_loss')
@@ -188,7 +210,6 @@ def main():
     plt.savefig(os.path.join(plot_dir, 'loss', 'val_loss_comparison.png'))
     plt.close()
 
-    
     # EBOPs vs Epoch
     plt.figure(figsize=(6,4))
     plt.plot(hgq_ebops, '.')
@@ -199,7 +220,7 @@ def main():
     plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'ebops_per_epoch.png'))
     plt.close()
 
-    # Latency Bar
+    # 
     plt.figure(figsize=(6,4))
     plt.plot(hgq_ebops, hgq_val_acc, '.')
     plt.xscale('log')

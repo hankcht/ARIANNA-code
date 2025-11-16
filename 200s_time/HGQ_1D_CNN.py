@@ -193,7 +193,7 @@ def main():
     hgq_ebops = hgq_history.history.get('ebops')
 
     # Train Accuracy
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(8,6))
     plt.plot(baseline_train_acc, label='Baseline train_acc')
     plt.plot(hgq_train_acc, label='HGQ2 train_acc')
     plt.xlabel('Epoch'); plt.ylabel('Training Accuracy')
@@ -203,7 +203,7 @@ def main():
     plt.close()
 
     # train Loss
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(8,6))
     plt.plot(baseline_train_loss, label='Baseline train_loss')
     plt.plot(hgq_train_loss, label='HGQ2 train_loss')
     plt.xlabel('Epoch'); plt.ylabel('Training Loss')
@@ -213,7 +213,7 @@ def main():
     plt.close()
 
     # Val Accuracy
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(8,6))
     plt.plot(baseline_val_acc, label='Baseline val_acc')
     plt.plot(hgq_val_acc, label='HGQ2 val_acc')
     plt.xlabel('Epoch'); plt.ylabel('Validation Accuracy')
@@ -223,7 +223,7 @@ def main():
     plt.close()
 
     # Val Loss
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(8,6))
     plt.plot(baseline_val_loss, label='Baseline val_loss')
     plt.plot(hgq_val_loss, label='HGQ2 val_loss')
     plt.xlabel('Epoch'); plt.ylabel('Validation Loss')
@@ -233,7 +233,7 @@ def main():
     plt.close()
 
     # EBOPs vs Epoch
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(8,6))
     plt.plot(hgq_ebops, '.')
     plt.yscale('log')
     plt.xlabel('Epoch')
@@ -243,7 +243,7 @@ def main():
     plt.close()
 
     # 
-    plt.figure(figsize=(6,4))
+    plt.figure(figsize=(8,6))
     plt.plot(hgq_ebops, hgq_val_acc, '.')
     plt.xscale('log')
     plt.xlabel('EBOPs')

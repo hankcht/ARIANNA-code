@@ -153,7 +153,7 @@ def main():
                                           epochs=config['keras_epochs'],
                                           batch_size=config['keras_batch_size'],
                                           verbose=config['verbose_fit'])
-    baseline_acc = baseline_history.history.get('val_accuracy', baseline_history.history.get('val_acc'))[-1]
+    
     baseline_model_path = os.path.join(config['base_model_path'], f"{timestamp}_baseline_model.h5")
     baseline_model.save(baseline_model_path)
 
@@ -169,27 +169,33 @@ def main():
                                 batch_size=config['keras_batch_size'],
                                 callbacks=[ebops, pbar, nan_terminate], # It is recommended to use the FreeEBOPs callback to monitor EBOPs during training
                                 verbose=config['verbose_fit'])
-    hgq_acc = hgq_history.history.get('val_accuracy', hgq_history.history.get('val_acc'))[-1]
+    
     hgq_model_path = os.path.join(config['base_model_path'], f"{timestamp}_HGQ2_model.h5")
     hgq_model.save(hgq_model_path)
 
     baseline_model.summary()
     hgq_model.summary()
 
+    # --- Fit results: accuracy, loss, ebop ---
+    baseline_train_acc = baseline_history.history.get('accuracy', baseline_history.history.get('acc'))
     hgq_train_acc = hgq_history.history.get('accuracy', hgq_history.history.get('acc'))
+    
+    baseline_train_loss = baseline_history.history['loss']
+    hgq_train_loss = hgq_history.history['loss']
+
+    baseline_val_acc = baseline_history.history.get('val_accuracy', baseline_history.history.get('val_acc'))
     hgq_val_acc = hgq_history.history.get('val_accuracy', hgq_history.history.get('val_acc'))
-    hgq_ebops = hgq_history.history.get('ebops')
 
-    # FP32 baseline EBOPs: if you have a way to measure FP32 EBOPs, replace this.
+    baseline_val_loss = baseline_history.history.get('val_loss')
+    hgq_val_loss = hgq_history.history.get('val_loss')
+
     baseline_ebops = float('nan')  # FP32 baseline EBOPs not computed here
-
+    hgq_ebops = hgq_history.history.get('ebops')
 
     # Train Accuracy
     plt.figure(figsize=(6,4))
-    plt.plot(baseline_history.history.get('accuracy', baseline_history.history.get('acc')),
-             label='Baseline train_acc')
-    plt.plot(hgq_history.history.get('accuracy', hgq_history.history.get('acc')),
-             label='HGQ2 train_acc')
+    plt.plot(baseline_train_acc, label='Baseline train_acc')
+    plt.plot(hgq_train_acc, label='HGQ2 train_acc')
     plt.xlabel('Epoch'); plt.ylabel('Training Accuracy')
     plt.title('Training Accuracy Comparison')
     plt.legend()
@@ -198,8 +204,8 @@ def main():
 
     # train Loss
     plt.figure(figsize=(6,4))
-    plt.plot(baseline_history.history['loss'], label='Baseline train_loss')
-    plt.plot(hgq_history.history['loss'], label='HGQ2 train_loss')
+    plt.plot(baseline_train_loss, label='Baseline train_loss')
+    plt.plot(hgq_train_loss, label='HGQ2 train_loss')
     plt.xlabel('Epoch'); plt.ylabel('Training Loss')
     plt.title('Training Loss Comparison')
     plt.legend()
@@ -208,8 +214,8 @@ def main():
 
     # Val Accuracy
     plt.figure(figsize=(6,4))
-    plt.plot(baseline_history.history.get('val_accuracy', baseline_history.history.get('val_acc')), label='Baseline val_acc')
-    plt.plot(hgq_history.history.get('val_accuracy', hgq_history.history.get('val_acc')), label='HGQ2 val_acc')
+    plt.plot(baseline_val_acc, label='Baseline val_acc')
+    plt.plot(hgq_val_acc, label='HGQ2 val_acc')
     plt.xlabel('Epoch'); plt.ylabel('Validation Accuracy')
     plt.title('Validation Accuracy Comparison')
     plt.legend()
@@ -218,8 +224,8 @@ def main():
 
     # Val Loss
     plt.figure(figsize=(6,4))
-    plt.plot(baseline_history.history.get('val_loss'), label='Baseline val_loss')
-    plt.plot(hgq_history.history.get('val_loss'), label='HGQ2 val_loss')
+    plt.plot(baseline_val_loss, label='Baseline val_loss')
+    plt.plot(hgq_val_loss, label='HGQ2 val_loss')
     plt.xlabel('Epoch'); plt.ylabel('Validation Loss')
     plt.title('Validation Loss Comparison')
     plt.legend()
@@ -246,21 +252,6 @@ def main():
     plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'ebops_vs_val_accuracy.png'))
     plt.close()
 
-    # --- Summary Table and Reduction Calculation ---
-    # Explanation of metrics (comments):
-    #  - Accuracy: validation accuracy measured after training. Higher is better.
-    #  - EBOPs: Energy-Bit-Operations (estimated) per inference — an HGQ2-traced proxy for power/compute cost.
-    #           Smaller EBOPs indicate fewer bit-ops, usually implying lower power/energy consumption on quantized hardware.
-    #  - Latency (s): measured average per-inference time (single example) in seconds.
-    #  - Model Size (MB): file size of the saved model on disk in megabytes.
-    #
-    # Reduction % logic:
-    #  For a metric M, Reduction % = 100 * (Baseline_M - HGQ2_M) / Baseline_M
-    #  - It's the percent decrease from baseline to HGQ2.
-    #  - If Baseline_M is zero or NaN (for example EBOPs not computed for FP32 baseline), the reduction is undefined -> set to NaN.
-    #  - Positive Reduction % means HGQ2 reduced the metric compared to baseline (good for EBOPs/Latency/Size).
-    #  - For Accuracy, we typically report absolute values or relative change depending on preference; here we compute accuracy delta (HGQ2 - Baseline).
-    #
     def compute_reduction_percent(baseline_val, new_val):
         try:
             if baseline_val is None or np.isnan(baseline_val):
@@ -273,13 +264,14 @@ def main():
     reduction_ebops = compute_reduction_percent(baseline_ebops, hgq_ebops)
 
     # For accuracy, show absolute difference (HGQ2 - Baseline). Positive means HGQ2 higher accuracy.
-    accuracy_delta = hgq_acc - baseline_acc
+    train_accuracy_delta = hgq_train_acc[-1] - baseline_train_acc[-1]
+    val_accuracy_delta = hgq_val_acc[-1] - baseline_val_acc[-1]
 
     df = pd.DataFrame({
-        'Metric': ['Validation Accuracy (delta)', 'EBOPs (estimated)', 'Latency (s)', 'Model Size (MB)'],
-        'Baseline': [baseline_acc, baseline_ebops],
-        'HGQ2': [hgq_acc, hgq_ebops[-1]],
-        'Reduction %': [accuracy_delta, reduction_ebops]
+        'Metric': ['Training Accuracy (delta)', 'Validation Accuracy (delta)', 'EBOPs (estimated)'],
+        'Baseline': [baseline_train_acc[-1], baseline_val_acc[-1], baseline_ebops],
+        'HGQ2': [hgq_train_acc[-1], hgq_val_acc[-1], hgq_ebops[-1]],
+        'Reduction %': [train_accuracy_delta, val_accuracy_delta, reduction_ebops]
     })
 
     summary_file = os.path.join(plot_dir, 'hgq2_results', 'summary_table.csv')

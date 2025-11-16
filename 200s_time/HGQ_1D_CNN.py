@@ -82,7 +82,7 @@ def build_hgq_model(input_shape, beta0=1e-12, beta_final=1e-3, ramp_epochs=20):
         QuantizerConfigScope(
             q_type='kif', place='datalane',
             overflow_mode='SAT_SYM', round_mode='RND',
-            i0=12, f0=6
+            i0=12, f0=6            
         ),
         LayerConfigScope(enable_ebops=True, beta0=beta0)
     ):
@@ -99,18 +99,6 @@ def build_hgq_model(input_shape, beta0=1e-12, beta_final=1e-3, ramp_epochs=20):
                     metrics=['accuracy'])
 
     return model, beta_scheduler
-
-def measure_latency(model, x, n_runs=50):
-    """
-    Measures per-inference latency (in seconds) by running model.predict on a single example
-    n_runs times and averaging. Warm-up call first to avoid cold-start effects.
-    """
-    model.predict(x[:1])  # warm-up
-    start = time.time()
-    for _ in range(n_runs):
-        model.predict(x[:1])
-    end = time.time()
-    return (end - start) / n_runs
 
 # --- Main Script ---
 def main():
@@ -173,13 +161,6 @@ def main():
     # FP32 baseline EBOPs: if you have a way to measure FP32 EBOPs, replace this.
     baseline_ebops = float('nan')  # FP32 baseline EBOPs not computed here
 
-    # --- Latency (per single inference) ---
-    baseline_latency = measure_latency(baseline_model, x)
-    hgq_latency = measure_latency(hgq_model, x)
-
-    # --- Model Sizes (MB) ---
-    baseline_size = os.path.getsize(baseline_model_path) / 1024**2
-    hgq_size = os.path.getsize(hgq_model_path) / 1024**2
 
     # --- Plots: Accuracy / Loss ---
     plot_dir = os.path.join(config['base_plot_path'], 'HGQ2', timestamp)
@@ -228,14 +209,6 @@ def main():
     plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'ebops_vs_val_accuracy.png'))
     plt.close()
 
-    # Model Size Bar
-    plt.figure(figsize=(6,4))
-    plt.bar(['Baseline', 'HGQ2'], [baseline_size, hgq_size])
-    plt.ylabel('Model Size (MB)')
-    plt.title('Model Footprint Comparison')
-    plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'model_size_comparison.png'))
-    plt.close()
-
     # --- Summary Table and Reduction Calculation ---
     # Explanation of metrics (comments):
     #  - Accuracy: validation accuracy measured after training. Higher is better.
@@ -260,9 +233,6 @@ def main():
             return 100.0 * (baseline_val - new_val) / baseline_val
         except Exception:
             return float('nan')
-
-    reduction_latency = compute_reduction_percent(baseline_latency, hgq_latency)
-    reduction_size = compute_reduction_percent(baseline_size, hgq_size)
     reduction_ebops = compute_reduction_percent(baseline_ebops, hgq_ebops)
 
     # For accuracy, show absolute difference (HGQ2 - Baseline). Positive means HGQ2 higher accuracy.
@@ -270,9 +240,9 @@ def main():
 
     df = pd.DataFrame({
         'Metric': ['Validation Accuracy (delta)', 'EBOPs (estimated)', 'Latency (s)', 'Model Size (MB)'],
-        'Baseline': [baseline_acc, baseline_ebops, baseline_latency, baseline_size],
-        'HGQ2': [hgq_acc, hgq_ebops[-1], hgq_latency, hgq_size],
-        'Reduction %': [accuracy_delta, reduction_ebops, reduction_latency, reduction_size]
+        'Baseline': [baseline_acc, baseline_ebops],
+        'HGQ2': [hgq_acc, hgq_ebops[-1]],
+        'Reduction %': [accuracy_delta, reduction_ebops]
     })
 
     summary_file = os.path.join(plot_dir, 'hgq2_results', 'summary_table.csv')

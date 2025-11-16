@@ -74,22 +74,26 @@ def build_hgq_model(input_shape, beta0=1e-12, beta_final=1e-3, ramp_epochs=20):
 
     # Create the model inside the HGQ2 configuration scopes so quantizers/EBOPs are configured.
     with (
-        QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND',
-                             b=12, f=6, i=12), # place='all', default_q_type='kbi', overflow_mode='SAT_SYM'
-        QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='SAT_SYM', round_mode='RND',
-                             b=12, f=6, i=12), # place='datalane', default_q_type='kif', overflow_mode='WRAP'
+        QuantizerConfigScope(
+            q_type='kbi', place='weight',
+            overflow_mode='SAT_SYM', round_mode='RND',
+            b0=12, i0=12
+        ),
+        QuantizerConfigScope(
+            q_type='kif', place='datalane',
+            overflow_mode='SAT_SYM', round_mode='RND',
+            i0=12, f0=6
+        ),
         LayerConfigScope(enable_ebops=True, beta0=beta0)
     ):
         model = Sequential()
-        model.add(Input(shape=input_shape)) # adding Input layer to avoid passing input_shape as an argument
+        model.add(Input(shape=input_shape))
         model.add(QConv1D(20, kernel_size=10, activation='relu'))
         model.add(QConv1D(10, kernel_size=10, activation='relu'))
         model.add(Dropout(0.5))
         model.add(Flatten())
         model.add(QDense(1, activation='sigmoid'))
-        model.compile(optimizer='Adam',
-                    loss='binary_crossentropy',
-                    metrics=['accuracy'])
+
 
     return model, beta_scheduler
 

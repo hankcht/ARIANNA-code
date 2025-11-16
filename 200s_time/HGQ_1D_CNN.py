@@ -47,7 +47,7 @@ def build_fp32_model(input_shape):
     
     return model
 
-def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=10):
+def build_hgq_model(input_shape, beta0=1e-12, beta_final=1e-3, ramp_epochs=20):
     """
     Build HGQ2 model inside HGQ2 config scopes.
 
@@ -74,8 +74,10 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=10):
 
     # Create the model inside the HGQ2 configuration scopes so quantizers/EBOPs are configured.
     with (
-        QuantizerConfigScope(q_type='kif', place='weight', overflow_mode='SAT_SYM', round_mode='RND'), # place='all', default_q_type='kbi', overflow_mode='SAT_SYM'
-        QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='WRAP', round_mode='RND'), # place='datalane', default_q_type='kif', overflow_mode='WRAP'
+        QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND',
+                             b=12, f=6, i=12), # place='all', default_q_type='kbi', overflow_mode='SAT_SYM'
+        QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='SAT_SYM', round_mode='RND',
+                             b=12, f=6, i=12), # place='datalane', default_q_type='kif', overflow_mode='WRAP'
         LayerConfigScope(enable_ebops=True, beta0=beta0)
     ):
         model = Sequential()
@@ -129,7 +131,6 @@ def main():
 
     # --- Train Baseline FP32 Model ---
     baseline_model = build_fp32_model(input_shape)
-    baseline_model.summary()
     baseline_history = baseline_model.fit(x, y,
                                           validation_split=0.2,
                                           epochs=config['keras_epochs'],
@@ -141,7 +142,6 @@ def main():
 
     # --- Train HGQ2 Model ---
     hgq_model, beta_scheduler = build_hgq_model(input_shape)
-    hgq_model.summary()
 
     nan_terminate = keras.callbacks.TerminateOnNaN()
     pbar = PBar('loss: {loss:.3f}/{val_loss:.3f} - acc: {accuracy:.3f}/{val_accuracy:.3f}')
@@ -156,7 +156,9 @@ def main():
     hgq_model_path = os.path.join(config['base_model_path'], f"{timestamp}_HGQ2_model.h5")
     hgq_model.save(hgq_model_path)
 
-    
+    baseline_model.summary()
+    hgq_model.summary()
+
     hgq_train_acc = hgq_history.history.get('accuracy', hgq_history.history.get('acc'))
     hgq_val_acc = hgq_history.history.get('val_accuracy', hgq_history.history.get('val_acc'))
     hgq_ebops = hgq_history.history.get('ebops')
@@ -220,7 +222,7 @@ def main():
     plt.close()
 
     # Model Size Bar
-    plt.figure(figsize=(4,4))
+    plt.figure(figsize=(6,4))
     plt.bar(['Baseline', 'HGQ2'], [baseline_size, hgq_size])
     plt.ylabel('Model Size (MB)')
     plt.title('Model Footprint Comparison')
@@ -262,7 +264,7 @@ def main():
     df = pd.DataFrame({
         'Metric': ['Validation Accuracy (delta)', 'EBOPs (estimated)', 'Latency (s)', 'Model Size (MB)'],
         'Baseline': [baseline_acc, baseline_ebops, baseline_latency, baseline_size],
-        'HGQ2': [hgq_acc, hgq_ebops, hgq_latency, hgq_size],
+        'HGQ2': [hgq_acc, hgq_ebops[-1], hgq_latency, hgq_size],
         'Reduction %': [accuracy_delta, reduction_ebops, reduction_latency, reduction_size]
     })
 

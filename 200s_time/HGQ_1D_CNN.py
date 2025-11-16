@@ -19,7 +19,7 @@ from hgq.config.layer import LayerConfigScope
 from hgq.config.quantizer import QuantizerConfigScope, QuantizerConfig # scope allows consistent controll of quantization in all layers 
 from hgq.utils.sugar.beta_scheduler import BetaScheduler
 from hgq.utils.minmax_trace import trace_minmax
-from hgq.utils.sugar import FreeEBOPs
+from hgq.utils.sugar import FreeEBOPs, PBar
 ebops = FreeEBOPs()
 
 # Your project imports
@@ -88,7 +88,7 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=10):
         model.compile(optimizer='Adam',
                     loss='binary_crossentropy',
                     metrics=['accuracy'])
-        
+
     return model, beta_scheduler
 
 def measure_latency(model, x, n_runs=50):
@@ -129,6 +129,7 @@ def main():
 
     # --- Train Baseline FP32 Model ---
     baseline_model = build_fp32_model(input_shape)
+    baseline_model.summary()
     baseline_history = baseline_model.fit(x, y,
                                           validation_split=0.2,
                                           epochs=config['keras_epochs'],
@@ -140,11 +141,16 @@ def main():
 
     # --- Train HGQ2 Model ---
     hgq_model, beta_scheduler = build_hgq_model(input_shape)
+    hgq_model.summary()
+
+    nan_terminate = keras.callbacks.TerminateOnNaN()
+    pbar = PBar('loss: {loss:.3f}/{val_loss:.3f} - acc: {accuracy:.3f}/{val_accuracy:.3f}')
+
     hgq_history = hgq_model.fit(x, y,
                                 validation_split=0.2,
                                 epochs=config['keras_epochs'],
                                 batch_size=config['keras_batch_size'],
-                                callbacks=[ebops], # It is recommended to use the FreeEBOPs callback to monitor EBOPs during training
+                                callbacks=[ebops, pbar, nan_terminate], # It is recommended to use the FreeEBOPs callback to monitor EBOPs during training
                                 verbose=config['verbose_fit'])
     hgq_acc = hgq_history.history.get('val_accuracy', hgq_history.history.get('val_acc'))[-1]
     hgq_model_path = os.path.join(config['base_model_path'], f"{timestamp}_HGQ2_model.h5")
@@ -153,7 +159,7 @@ def main():
     
     hgq_train_acc = hgq_history.history.get('accuracy', hgq_history.history.get('acc'))
     hgq_val_acc = hgq_history.history.get('val_accuracy', hgq_history.history.get('val_acc'))
-    hgq_ebops = hgq_history.history.get('ebops', [float('nan')] * len(hgq_val_acc))
+    hgq_ebops = hgq_history.history.get('ebops')
 
     # FP32 baseline EBOPs: if you have a way to measure FP32 EBOPs, replace this.
     baseline_ebops = float('nan')  # FP32 baseline EBOPs not computed here
@@ -209,8 +215,6 @@ def main():
     plt.xscale('log')
     plt.xlabel('EBOPs')
     plt.ylabel('Validation Accuracy')
-    plt.ylim(0.7, 0.765)
-    plt.xticks([3000, 10000, 30000, 100000], ['3k', '10k', '30k', '100k'])
     plt.title('HGQ2 EBOPs vs Validation Accuracy')
     plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'ebops_vs_val_accuracy.png'))
     plt.close()
@@ -264,6 +268,7 @@ def main():
 
     summary_file = os.path.join(plot_dir, 'hgq2_results', 'summary_table.csv')
     df.to_csv(summary_file, index=False)
+    pd.set_option('display.max_columns', None)
     print(df)
     print(f"Saved summary table to {summary_file}")
 

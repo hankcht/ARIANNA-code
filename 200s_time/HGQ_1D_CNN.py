@@ -94,6 +94,9 @@ def build_hgq_model(input_shape, beta0=1e-12, beta_final=1e-3, ramp_epochs=20):
         model.add(Flatten())
         model.add(QDense(1, activation='sigmoid'))
 
+        model.compile(optimizer='Adam',
+                    loss='binary_crossentropy',
+                    metrics=['accuracy'])
 
     return model, beta_scheduler
 

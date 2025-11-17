@@ -8,6 +8,7 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from tensorflow import keras
+print(keras.__version__)
 from tensorflow.keras.layers import Input, Conv1D, Dense, Dropout, Flatten, BatchNormalization, ReLU, GlobalAveragePooling1D
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
@@ -47,7 +48,7 @@ def build_fp32_model(input_shape):
     
     return model
 
-def build_hgq_model(input_shape, beta0=1e-12, beta_final=1e-3, ramp_epochs=20):
+def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
     """
     Build HGQ2 model inside HGQ2 config scopes.
 
@@ -73,32 +74,27 @@ def build_hgq_model(input_shape, beta0=1e-12, beta_final=1e-3, ramp_epochs=20):
     beta_scheduler = BetaScheduler(beta_fn=linear_beta_fn)
 
     # Create the model inside the HGQ2 configuration scopes so quantizers/EBOPs are configured.
-    with (
-        # QuantizerConfigScope(
-        #     q_type='kbi', place='weight',
-        #     overflow_mode='SAT_SYM', round_mode='RND',
-        #     b0=12, i0=12
-        # ),
-        # QuantizerConfigScope(
-        #     q_type='kif', place='datalane',
-        #     overflow_mode='SAT_SYM', round_mode='RND',
-        #     i0=12, f0=6            
-        # ),
-        # LayerConfigScope(enable_ebops=True, beta0=beta0)
-        QuantizerConfigScope(q_type='dummy', place='all')
-    ):
-        model = Sequential()
-        model.add(Input(shape=input_shape))
-        model.add(QConv1D(20, kernel_size=10, activation='relu'))
-        model.add(QConv1D(10, kernel_size=10, activation='relu'))
-        model.add(Dropout(0.5))
-        model.add(Flatten())
-        model.add(QDense(1, activation='sigmoid'))
+    # First, set up quantization configuration
+    # For weights, use SAT_SYM overflow mode
+    with QuantizerConfigScope(q_type='kif', place='weight', overflow_mode='SAT_SYM', round_mode='RND'):
+        # For activations, use different config
+        with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='WRAP', round_mode='RND'):
+            with LayerConfigScope(enable_ebops=True, beta0=beta0):
+                # Create model with quantized layers
+                model = keras.Sequential([
+                    keras.layers.Input(shape=input_shape),
+                    QConv1D(20, kernel_size=10, activation='relu'),
+                    QConv1D(10, kernel_size=10, activation='relu'),
+                    keras.layers.Dropout(0.5),
+                    keras.layers.Flatten(),
+                    QDense(1, activation='sigmoid')
+                ])
 
-        model.compile(optimizer='Adam',
-                    loss='binary_crossentropy',
-                    metrics=['accuracy'])
-
+    # Compile model as usual
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
+                loss='binary_crossentropy',
+                metrics=['accuracy'])
+        
     return model, beta_scheduler
 
 # --- Main Script ---

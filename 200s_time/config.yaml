@@ -48,7 +48,7 @@ prefix : "1D_CNN_HGQ"
 train_cut: 8000
 early_stopping_patience: 5
 keras_epochs: 50
-keras_batch_size: 80
+keras_batch_size: 90
 verbose_fit: 1
 model_filename_template: "{timestamp}_{amp}_{prefix}_model_2Layer.h5"
 

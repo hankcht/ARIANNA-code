@@ -39,7 +39,7 @@ def build_fp32_model(input_shape):
     model.add(Input(shape=input_shape)) # adding Input layer to avoid passing input_shape as an argument
     model.add(Conv1D(20, kernel_size=10, activation='relu'))
     model.add(Conv1D(10, kernel_size=10, activation='relu'))
-    model.add(Dropout(0.5))
+    # model.add(Dropout(0.5))
     model.add(Flatten())
     model.add(Dense(1, activation='sigmoid'))
     model.compile(optimizer='Adam',
@@ -78,7 +78,7 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
     # For weights, use SAT_SYM overflow mode
     with QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
         # For activations, use different config
-        with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='WRAP', round_mode='RND_CONV'):
+        with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
             with LayerConfigScope(enable_ebops=True, beta0=beta0):
                 # Create model with quantized layers
                 model = keras.Sequential([

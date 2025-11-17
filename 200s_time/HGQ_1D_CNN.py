@@ -99,7 +99,7 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
 
 # --- Main Script ---
 def main():
-    config = load_config(config_path="/dfs8/sbarwick_lab/ariannaproject/tangch3/ARIANNA-code/200s_time/config.yaml")
+    config = load_config(config_path="/pub/tangch3/ARIANNA/DeepLearning/code/200s_time/config.yaml")
     amp = config['amp']
     prefix = config.get('prefix', '')
     timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')

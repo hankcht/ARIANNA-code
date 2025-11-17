@@ -76,9 +76,9 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
     # Create the model inside the HGQ2 configuration scopes so quantizers/EBOPs are configured.
     # First, set up quantization configuration
     # For weights, use SAT_SYM overflow mode
-    with QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND'):
+    with QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
         # For activations, use different config
-        with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='WRAP', round_mode='RND'):
+        with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='WRAP', round_mode='RND_CONV'):
             with LayerConfigScope(enable_ebops=True, beta0=beta0):
                 # Create model with quantized layers
                 model = keras.Sequential([

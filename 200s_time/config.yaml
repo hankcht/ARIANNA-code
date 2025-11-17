@@ -49,7 +49,7 @@ train_cut: 8000
 early_stopping_patience: 5
 keras_epochs: 8
 keras_batch_size: 64
-verbose_fit: 0
+verbose_fit: 1
 model_filename_template: "{timestamp}_{amp}_{prefix}_model_2Layer.h5"
 
 # Evaluation

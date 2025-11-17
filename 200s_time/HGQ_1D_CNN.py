@@ -87,7 +87,7 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
                     QConv1D(10, kernel_size=10, activation='relu'),
                     # keras.layers.Dropout(0.5),
                     keras.layers.Flatten(),
-                    QDense(1, activation='sigmoid')
+                    keras.layers.Dense(1, activation='sigmoid')
                 ])
 
     # Compile model as usual

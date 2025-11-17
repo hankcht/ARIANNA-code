@@ -91,7 +91,7 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
                 ])
 
     # Compile model as usual
-    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.001),
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=0.00001),
                 loss='binary_crossentropy',
                 metrics=['accuracy'])
         

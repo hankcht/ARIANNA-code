@@ -148,6 +148,7 @@ def main():
 
     # --- Train Baseline FP32 Model ---
     baseline_model = build_fp32_model(input_shape)
+    print(f'------- training Baseline model -------')
     baseline_history = baseline_model.fit(x, y,
                                           validation_split=0.2,
                                           epochs=config['keras_epochs'],
@@ -162,7 +163,7 @@ def main():
 
     nan_terminate = keras.callbacks.TerminateOnNaN()
     pbar = PBar('loss: {loss:.3f}/{val_loss:.3f} - acc: {accuracy:.3f}/{val_accuracy:.3f}')
-
+    print(f'------- training HGQ2 model -------')
     hgq_history = hgq_model.fit(x, y,
                                 validation_split=0.2,
                                 epochs=config['keras_epochs'],
@@ -254,6 +255,8 @@ def main():
 
 
     # For accuracy, show absolute difference (HGQ2 - Baseline). Positive means HGQ2 higher accuracy.
+    print(f'hgq train acc: {hgq_train_acc}')
+
     train_accuracy_delta = baseline_train_acc[-1] - hgq_train_acc[-1]
     val_accuracy_delta = baseline_val_acc[-1] - hgq_val_acc[-1]
 

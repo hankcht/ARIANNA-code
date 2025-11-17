@@ -74,17 +74,18 @@ def build_hgq_model(input_shape, beta0=1e-12, beta_final=1e-3, ramp_epochs=20):
 
     # Create the model inside the HGQ2 configuration scopes so quantizers/EBOPs are configured.
     with (
-        QuantizerConfigScope(
-            q_type='kbi', place='weight',
-            overflow_mode='SAT_SYM', round_mode='RND',
-            b0=12, i0=12
-        ),
-        QuantizerConfigScope(
-            q_type='kif', place='datalane',
-            overflow_mode='SAT_SYM', round_mode='RND',
-            i0=12, f0=6            
-        ),
-        LayerConfigScope(enable_ebops=True, beta0=beta0)
+        # QuantizerConfigScope(
+        #     q_type='kbi', place='weight',
+        #     overflow_mode='SAT_SYM', round_mode='RND',
+        #     b0=12, i0=12
+        # ),
+        # QuantizerConfigScope(
+        #     q_type='kif', place='datalane',
+        #     overflow_mode='SAT_SYM', round_mode='RND',
+        #     i0=12, f0=6            
+        # ),
+        # LayerConfigScope(enable_ebops=True, beta0=beta0)
+        QuantizerConfigScope(q_type='dummy', place='all')
     ):
         model = Sequential()
         model.add(Input(shape=input_shape))
@@ -193,7 +194,7 @@ def main():
     hgq_ebops = hgq_history.history.get('ebops')
 
     # Train Accuracy
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(8,6)    )
     plt.plot(baseline_train_acc, label='Baseline train_acc')
     plt.plot(hgq_train_acc, label='HGQ2 train_acc')
     plt.xlabel('Epoch'); plt.ylabel('Training Accuracy')

@@ -76,7 +76,7 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
     # Create the model inside the HGQ2 configuration scopes so quantizers/EBOPs are configured.
     # First, set up quantization configuration
     # For weights, use SAT_SYM overflow mode
-    with QuantizerConfigScope(q_type='kif', place='weight', overflow_mode='SAT_SYM', round_mode='RND'):
+    with QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND'):
         # For activations, use different config
         with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='WRAP', round_mode='RND'):
             with LayerConfigScope(enable_ebops=True, beta0=beta0):
@@ -139,6 +139,9 @@ def main():
     # Expecting shape after stacking: (n_events, channels, length) maybe — user original code transposed to (n_events, length, channels)
     x = x[s].transpose(0, 2, 1)  # ensure (n_events, length, channels)
     y = y[s]
+
+    x = x.astype('float32') 
+    y = y.astype('float32') 
 
     input_shape = x.shape[1:]  # (length, channels)
     print(f"Input Shape: {input_shape}. For 1D CNN, should be (256, 4)")

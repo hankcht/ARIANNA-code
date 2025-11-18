@@ -21,6 +21,7 @@ from hgq.config.quantizer import QuantizerConfigScope, QuantizerConfig # scope a
 from hgq.utils.sugar.beta_scheduler import BetaScheduler
 from hgq.utils.minmax_trace import trace_minmax
 from hgq.utils.sugar import FreeEBOPs, PBar
+from hgq.regularizers import MonoL1
 ebops = FreeEBOPs()
 
 # Your project imports
@@ -73,22 +74,34 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
         return beta0 + (beta_final - beta0) * (epoch / ramp_epochs)
     beta_scheduler = BetaScheduler(beta_fn=linear_beta_fn)
 
-    # Create the model inside the HGQ2 configuration scopes so quantizers/EBOPs are configured.
-    # First, set up quantization configuration
-    # For weights, use SAT_SYM overflow mode
-    with QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
-        # For activations, use different config
-        with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
-            with LayerConfigScope(enable_ebops=True, beta0=beta0):
-                # Create model with quantized layers
-                model = keras.Sequential([
+    # Define Config Scopes 
+    scope0 = QuantizerConfigScope(place='all', k0=1, b0=3, i0=0, default_q_type='kbi', overflow_mode='sat_sym')
+    scope1 = QuantizerConfigScope(place='datalane', k0=0, default_q_type='kif', overflow_mode='wrap', f0=3, i0=3)
+    with scope0, scope1: 
+        iq_conf = QuantizerConfig(place='datalane', k0=1)
+        oq_conf = QuantizerConfig(place='datalane', k0=1, fr=MonoL1(1e-3))
+        model = keras.Sequential([
                     keras.layers.Input(shape=input_shape),
-                    QConv1D(20, kernel_size=10, activation='relu'),
-                    keras.layers.Conv1D(10, kernel_size=10, activation='relu'),
+                    QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'),
+                    QConv1D(10, kernel_size=10, beta0=beta0, activation='relu', name='conv1d_0'),
                     # keras.layers.Dropout(0.5),
                     keras.layers.Flatten(),
-                    keras.layers.Dense(1, activation='sigmoid')
+                    QDense(1, beta0=beta0, activation='sigmoid', name='dense_0', oq_conf=oq_conf)
                 ])
+
+    # with QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
+    #     # For activations, use different config
+    #     with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
+    #         with LayerConfigScope(enable_ebops=True, beta0=beta0):
+    #             # Create model with quantized layers
+    #             model = keras.Sequential([
+    #                 keras.layers.Input(shape=input_shape),
+    #                 QConv1D(20, kernel_size=10, activation='relu'),
+    #                 keras.layers.Conv1D(10, kernel_size=10, activation='relu'),
+    #                 # keras.layers.Dropout(0.5),
+    #                 keras.layers.Flatten(),
+    #                 keras.layers.Dense(1, activation='sigmoid')
+    #             ])
 
     # Compile model as usual
     model.compile(optimizer=keras.optimizers.Adam(),

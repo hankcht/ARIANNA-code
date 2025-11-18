@@ -83,7 +83,7 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
         model = keras.Sequential([
                     keras.layers.Input(shape=input_shape),
                     QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'),
-                    QConv1D(10, kernel_size=10, beta0=beta0, activation='relu', name='conv1d_0'),
+                    QConv1D(10, kernel_size=10, beta0=beta0, activation='relu', name='conv1d_1'),
                     # keras.layers.Dropout(0.5),
                     keras.layers.Flatten(),
                     QDense(1, beta0=beta0, activation='sigmoid', name='dense_0', oq_conf=oq_conf)

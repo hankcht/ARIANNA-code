@@ -49,24 +49,8 @@ def build_fp32_model(input_shape):
     
     return model
 
-def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
-    """
-    Build HGQ2 model inside HGQ2 config scopes.
+def build_hgq_model(input_shape, beta0=1e-6, beta_final=1e-4, ramp_epochs=20):
 
-    Notes about HGQ2 config scopes used here:
-    - QuantizerConfigScope(place='all', default_q_type='kbi', overflow_mode='SAT_SYM'):
-        Sets quantizer defaults for all places (weights/activations). 'kbi' is a typical
-        quantizer type in HGQ2 for kernel/weight integer-like quantization; 'SAT_SYM' sets
-        symmetric saturation overflow behavior.
-    - QuantizerConfigScope(place='datalane', default_q_type='kif', overflow_mode='WRAP'):
-        Sets quantizer defaults for data lanes; 'WRAP' overflow simulates modular arithmetic.
-    - LayerConfigScope(enable_ebops=True, beta0=beta0, resource_reg=1e-8):
-        Enables EBOP tracing (EBOPs are measured when performing trace_minmax),
-        sets initial beta for EBOP-related regularization, and a tiny resource reg to
-        influence quantizer/resource optimization.
-
-    These are HGQ2-specific constructs; adjust parameters to taste for your hardware/targets.
-    """
     # Define BetaScheduler (linear ramp)
     def linear_beta_fn(epoch):
         if epoch >= ramp_epochs:
@@ -75,7 +59,7 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
     beta_scheduler = BetaScheduler(beta_fn=linear_beta_fn)
 
     # with QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
-    #     # For activations, use different config
+    #     # For activations, use different configa
     #     with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
     #         with LayerConfigScope(enable_ebops=True, beta0=beta0):
     #             # Create model with quantized layers
@@ -93,8 +77,8 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
     scope0 = QuantizerConfigScope(place='all', k0=1, b0=3, i0=0, default_q_type='kbi', overflow_mode='sat_sym')
     scope1 = QuantizerConfigScope(place='datalane', k0=0, default_q_type='kif', overflow_mode='wrap', f0=3, i0=3)
     with scope0, scope1: 
-        iq_conf = QuantizerConfig(place='datalane', k0=1)
-        oq_conf = QuantizerConfig(place='datalane', k0=1, fr=MonoL1(1e-3))
+        iq_conf = QuantizerConfig(place='datalane', k0=1) # input quantizer
+        oq_conf = QuantizerConfig(place='datalane', k0=1, fr=MonoL1(1e-3)) # output quantizer   
         model = keras.Sequential([
                     keras.layers.Input(shape=input_shape),
                     QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'),
@@ -105,7 +89,7 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
                 ])
 
     # Compile model as usual
-    model.compile(optimizer=keras.optimizers.Adam(learning_rate=5e-3),
+    model.compile(optimizer=keras.optimizers.Adam(), #learning_rate=5e-3
                 loss='binary_crossentropy',
                 metrics=['accuracy'])
         
@@ -150,7 +134,6 @@ def main():
     y = np.vstack((np.ones((training_rcr.shape[0], 1)), np.zeros((training_backlobe.shape[0], 1))))
     s = np.arange(x.shape[0])
     np.random.shuffle(s)
-    # Expecting shape after stacking: (n_events, channels, length) maybe — user original code transposed to (n_events, length, channels)
     x = x[s].transpose(0, 2, 1)  # ensure (n_events, length, channels)
     y = y[s]
 
@@ -182,7 +165,7 @@ def main():
                                 validation_split=0.2,
                                 epochs=config['keras_epochs'],
                                 batch_size=config['keras_batch_size'],
-                                callbacks=[ebops, pbar, nan_terminate], # It is recommended to use the FreeEBOPs callback to monitor EBOPs during training
+                                callbacks=[ebops, pbar, nan_terminate, beta_scheduler], # It is recommended to use the FreeEBOPs callback to monitor EBOPs during training
                                 verbose=config['verbose_fit'])
     
     hgq_model_path = os.path.join(model_dir, f"{timestamp}_HGQ2_model.h5")
@@ -286,12 +269,6 @@ def main():
     pd.set_option('display.max_columns', None)
     print(df)
     print(f"Saved summary table to {summary_file}")
-
-    # debug
-    import tensorflow
-    x_batch = x[:80]  # first batch
-    layer_output = keras.Model(hgq_model.inputs, hgq_model.layers[0].output)(x_batch)
-    print(tensorflow.reduce_min(layer_output), tensorflow.reduce_max(layer_output))
 
 if __name__ == "__main__":
     main()

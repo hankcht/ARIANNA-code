@@ -74,6 +74,21 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
         return beta0 + (beta_final - beta0) * (epoch / ramp_epochs)
     beta_scheduler = BetaScheduler(beta_fn=linear_beta_fn)
 
+    # with QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
+    #     # For activations, use different config
+    #     with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
+    #         with LayerConfigScope(enable_ebops=True, beta0=beta0):
+    #             # Create model with quantized layers
+    #             model = keras.Sequential([
+    #                 keras.layers.Input(shape=input_shape),
+    #                 QConv1D(20, kernel_size=10, activation='relu'),
+    #                 keras.layers.Conv1D(10, kernel_size=10, activation='relu'),
+    #                 # keras.layers.Dropout(0.5),
+    #                 keras.layers.Flatten(),
+    #                 keras.layers.Dense(1, activation='sigmoid')
+    #             ])
+
+
     # Define Config Scopes 
     scope0 = QuantizerConfigScope(place='all', k0=1, b0=3, i0=0, default_q_type='kbi', overflow_mode='sat_sym')
     scope1 = QuantizerConfigScope(place='datalane', k0=0, default_q_type='kif', overflow_mode='wrap', f0=3, i0=3)
@@ -88,20 +103,6 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
                     keras.layers.Flatten(),
                     QDense(1, beta0=beta0, activation='sigmoid', name='dense_0', oq_conf=oq_conf)
                 ])
-
-    # with QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
-    #     # For activations, use different config
-    #     with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
-    #         with LayerConfigScope(enable_ebops=True, beta0=beta0):
-    #             # Create model with quantized layers
-    #             model = keras.Sequential([
-    #                 keras.layers.Input(shape=input_shape),
-    #                 QConv1D(20, kernel_size=10, activation='relu'),
-    #                 keras.layers.Conv1D(10, kernel_size=10, activation='relu'),
-    #                 # keras.layers.Dropout(0.5),
-    #                 keras.layers.Flatten(),
-    #                 keras.layers.Dense(1, activation='sigmoid')
-    #             ])
 
     # Compile model as usual
     model.compile(optimizer=keras.optimizers.Adam(),
@@ -286,5 +287,15 @@ def main():
     print(df)
     print(f"Saved summary table to {summary_file}")
 
+    # debug
+    import tensorflow
+    x_batch = x[:80]  # first batch
+    layer_output = keras.Model(hgq_model.input, hgq_model.layers[0].output)(x_batch)
+    print(tensorflow.reduce_min(layer_output), tensorflow.reduce_max(layer_output))
+
 if __name__ == "__main__":
     main()
+
+   
+    
+    

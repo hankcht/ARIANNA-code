@@ -290,7 +290,7 @@ def main():
     # debug
     import tensorflow
     x_batch = x[:80]  # first batch
-    layer_output = keras.Model(hgq_model.input, hgq_model.layers[0].output)(x_batch)
+    layer_output = keras.Model(hgq_model.inputs, hgq_model.layers[0].output)(x_batch)
     print(tensorflow.reduce_min(layer_output), tensorflow.reduce_max(layer_output))
 
 if __name__ == "__main__":

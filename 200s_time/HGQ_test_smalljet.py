@@ -132,7 +132,7 @@ history = model.fit(dataset_train, epochs=3000, batch_size=33200, validation_dat
 model.evaluate(dataset_test)
 
 
-plot_dir = ":/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/test_smalljet/"
+plot_dir = "/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/test_smalljet/"
 os.makedirs(os.path.join(plot_dir, "accuracy"), exist_ok=True)
 os.makedirs(os.path.join(plot_dir, "loss"), exist_ok=True)
 os.makedirs(os.path.join(plot_dir, "hgq2_results"), exist_ok=True)

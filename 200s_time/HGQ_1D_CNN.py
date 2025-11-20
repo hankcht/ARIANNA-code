@@ -73,8 +73,8 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
     #             ])
 
     # Define Config Scopes 
-    scope0 = QuantizerConfigScope(place='all', k0=1, b0=20, i0=10, default_q_type='kbi', overflow_mode='sat_sym')
-    scope1 = QuantizerConfigScope(place='datalane', k0=1, default_q_type='kif', overflow_mode='wrap', f0=10, i0=10)
+    scope0 = QuantizerConfigScope(place='all', k0=1, b0=20, i0=10, default_q_type='dummy', overflow_mode='sat_sym')
+    scope1 = QuantizerConfigScope(place='datalane', k0=1, default_q_type='dummy', overflow_mode='wrap', f0=10, i0=10)
     with scope0, scope1: 
         iq_conf = QuantizerConfig(place='datalane', k0=1) # input quantizer
         oq_conf = QuantizerConfig(place='datalane', k0=1, fr=MonoL1(1e-3)) # output quantizer   

@@ -85,11 +85,10 @@ if __name__ == "__main__":
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
     # RunMultipleJobs(cmd, jobName='converter')
 
-    # cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_test_smalljet.py"
-    # cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/hgq_test.py"
-    # RunMultipleJobs(cmd, jobName='HGQ2_small_jet', python_env='hgq2')
-    cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py"
-    RunMultipleJobs(cmd, jobName='HGQ2', python_env='hgq2')
+    cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_test_smalljet.py"
+    RunMultipleJobs(cmd, jobName='HGQ2_small_jet', python_env='hgq2')
+    # cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py"
+    # RunMultipleJobs(cmd, jobName='HGQ2', python_env='hgq2')
 
 
     # # Define available model types

@@ -3,7 +3,7 @@ import random
 
 # JAX runs the fastest for hgq in general based on our experience
 # If you don't have jax, or if you want to use another backend, you can change this to 'tensorflow' or 'torch'
-os.environ['KERAS_BACKEND'] = 'jax'
+# os.environ['KERAS_BACKEND'] = 'jax'
 # tested for tensorflow, jax, torch. Openvino support is not tested yet.
 # For the best performance, we recommend using jax, or tensorflow with XLA enabled.
 # Jit compilation for torch (torch dynamo) is not supported yet.

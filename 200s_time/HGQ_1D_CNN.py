@@ -49,7 +49,7 @@ def build_fp32_model(input_shape):
     
     return model
 
-def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
+def build_hgq_model(input_shape, beta0=1e-6, beta_final=1e-4, ramp_epochs=10):
 
     # Define BetaScheduler (linear ramp)
     def linear_beta_fn(epoch):
@@ -72,9 +72,10 @@ def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
     #                 keras.layers.Dense(1, activation='sigmoid')
     #             ])
 
+
     # Define Config Scopes 
-    scope0 = QuantizerConfigScope(place='all', k0=1, b0=20, i0=10, default_q_type='dummy', overflow_mode='sat_sym')
-    scope1 = QuantizerConfigScope(place='datalane', k0=1, default_q_type='dummy', overflow_mode='wrap', f0=10, i0=10)
+    scope0 = QuantizerConfigScope(place='all', k0=1, b0=3, i0=0, default_q_type='kbi', overflow_mode='sat_sym')
+    scope1 = QuantizerConfigScope(place='datalane', k0=0, default_q_type='kif', overflow_mode='wrap', f0=3, i0=3)
     with scope0, scope1: 
         iq_conf = QuantizerConfig(place='datalane', k0=1) # input quantizer
         oq_conf = QuantizerConfig(place='datalane', k0=1, fr=MonoL1(1e-3)) # output quantizer   

@@ -10,6 +10,7 @@ import random
 
 import keras
 import numpy as np
+import pandas as pd
 from matplotlib import pyplot as plt
 
 from hgq.config import QuantizerConfig, QuantizerConfigScope

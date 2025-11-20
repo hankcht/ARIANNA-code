@@ -49,7 +49,7 @@ def build_fp32_model(input_shape):
     
     return model
 
-def build_hgq_model(input_shape, beta0=1e-6, beta_final=1e-4, ramp_epochs=20):
+def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-3, ramp_epochs=20):
 
     # Define BetaScheduler (linear ramp)
     def linear_beta_fn(epoch):
@@ -71,7 +71,6 @@ def build_hgq_model(input_shape, beta0=1e-6, beta_final=1e-4, ramp_epochs=20):
     #                 keras.layers.Flatten(),
     #                 keras.layers.Dense(1, activation='sigmoid')
     #             ])
-
 
     # Define Config Scopes 
     scope0 = QuantizerConfigScope(place='all', k0=1, b0=3, i0=0, default_q_type='kbi', overflow_mode='sat_sym')

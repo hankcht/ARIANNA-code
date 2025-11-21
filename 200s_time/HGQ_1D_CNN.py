@@ -1,26 +1,30 @@
-# HGQ_1D_CNN.py
 import os
 import pickle
+import time
 from datetime import datetime
+
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
-
-# Keras / TF
 from tensorflow import keras
-from tensorflow.keras.layers import BatchNormalization, ReLU, GlobalAveragePooling1D
+print(keras.__version__)
+from tensorflow.keras.layers import Input, Conv1D, Dense, Dropout, Flatten, BatchNormalization, ReLU, GlobalAveragePooling1D
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
+import pandas as pd
 
-# HGQ2 imports
-# install with: pip install HGQ2
-from hgq.layers import QConv1D, QDense     # quantized layer replacements
-from hgq.config import QuantizerConfigScope, LayerConfigScope, QuantizerConfig
-from hgq.utils.sugar import BetaScheduler   # optional: schedule beta during training
+# --- HGQ2 imports ---
+from hgq.layers import QDense, QConv1D
+from hgq.config.layer import LayerConfigScope
+from hgq.config.quantizer import QuantizerConfigScope, QuantizerConfig # scope allows consistent controll of quantization in all layers 
+from hgq.utils.sugar.beta_scheduler import BetaScheduler
+from hgq.utils.minmax_trace import trace_minmax
+from hgq.utils.sugar import FreeEBOPs, PBar
+from hgq.regularizers import MonoL1
+ebops = FreeEBOPs()
 
-# Your project imports (unchanged)
-from NuRadioReco.utilities import units
+# Your project imports
 from A0_Utilities import load_sim_rcr, load_data, pT, load_config
 from refactor_train_and_run import (
     load_and_prep_data_for_training,
@@ -29,123 +33,246 @@ from refactor_train_and_run import (
     save_and_plot_training_history
 )
 
-# load config & data
-config = load_config()
-amp = config['amp']
-data = load_and_prep_data_for_training(config)
-training_rcr = data['sim_rcr_all']
-training_backlobe = data['data_backlobe_traces2016']
-
-x = np.vstack((training_rcr, training_backlobe))
-y = np.vstack((np.ones((training_rcr.shape[0], 1)), np.zeros((training_backlobe.shape[0], 1))))
-s = np.arange(x.shape[0])
-np.random.shuffle(s)
-x = x[s]
-y = y[s]
-
-# transpose to (n_events, length, channels) expected by Conv1D/QConv1D
-x = x.transpose(0, 2, 1)   # -> (n_events, 256, 4)
-
-# === HGQ2 configuration scope ===
-# Note: tune these settings. beta0 controls resource regularization strength.
-# resource_reg (below) is a simple name I've used here to indicate a small weighting
-# for EBOPs; the exact kwarg name may differ in your installed HGQ2 version — check the docs.
-beta0 = 1e-5            # starting tradeoff between loss and resource (increase to push more pruning)
-resource_reg = 1e-8     # small weight for EBOP/resource regularization (tune)
-
-# Example quantizer config for datalane (activations) if you want a different quantizer type
-# fr = fractional bits, ir = integer bits initial guesses (optional)
-fr_init = 4
-ir_init = 1
-oq_conf = QuantizerConfig('kif', 'datalane', fr=fr_init, ir=ir_init)
-
-# Optional: BetaScheduler to ramp beta during training (recommended)
-beta0 = 1e-5
-beta_final = 1e-3
-ramp_epochs = 10 # 10
-
-def linear_beta_fn(epoch):
-    if epoch >= ramp_epochs:
-        return beta_final
-    return beta0 + (beta_final - beta0) * (epoch / ramp_epochs)
-
-beta_scheduler = BetaScheduler(beta_fn=linear_beta_fn)
-
-# Create the quantized model inside the HGQ2 config scopes
-with (
-    QuantizerConfigScope(place='all', default_q_type='kbi', overflow_mode='SAT_SYM'),
-    QuantizerConfigScope(place='datalane', default_q_type='kif', overflow_mode='WRAP'),
-    LayerConfigScope(enable_ebops=True, beta0=beta0, resource_reg=resource_reg),
-):
-    # Build the quantized sequential model (use QConv1D / QDense)
+# --- Helper Functions ---
+def build_fp32_model(input_shape):
+    # this is an equivalent 1D model as the 2D model I originally gave Albert
     model = Sequential()
-    model.add(QConv1D(32, kernel_size=5, padding="same", activation='relu', input_shape=(256, 4)))
-    model.add(QConv1D(32, kernel_size=15, padding="same", activation='relu'))
-    model.add(QConv1D(32, kernel_size=31, padding="same", activation='relu'))
-    model.add(BatchNormalization())
-    model.add(ReLU())
+    model.add(Input(shape=input_shape)) # adding Input layer to avoid passing input_shape as an argument
+    model.add(Conv1D(20, kernel_size=10, activation='relu'))
+    model.add(Conv1D(10, kernel_size=10, activation='relu'))
+    # model.add(Dropout(0.5))
+    model.add(Flatten())
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(optimizer='Adam',
+                loss='binary_crossentropy',
+                metrics=['accuracy'])
+    
+    return model
 
-    model.add(QConv1D(64, kernel_size=7, padding="same", activation='relu'))
+def build_hgq_model(input_shape, beta0=1e-6, beta_final=1e-4, ramp_epochs=10):
 
-    model.add(GlobalAveragePooling1D())
-    model.add(QDense(32, activation="relu"))
-    # final head - QDense, but the output is still a float sigmoided probability.
-    model.add(QDense(1, activation="sigmoid"))
+    # Define BetaScheduler (linear ramp)
+    def linear_beta_fn(epoch):
+        if epoch >= ramp_epochs:
+            return beta_final
+        return beta0 + (beta_final - beta0) * (epoch / ramp_epochs)
+    beta_scheduler = BetaScheduler(beta_fn=linear_beta_fn)
 
-# Compile
-# You can attach the beta scheduler callback so HGQ's beta is changed over epochs if desired
-model.compile(
-     optimizer=Adam(),
-     loss="binary_crossentropy",
-     metrics=["accuracy"]
-)
+    # with QuantizerConfigScope(q_type='kbi', place='weight', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
+    #     # For activations, use different configa
+    #     with QuantizerConfigScope(q_type='kif', place='datalane', overflow_mode='SAT_SYM', round_mode='RND_CONV'):
+    #         with LayerConfigScope(enable_ebops=True, beta0=beta0):
+    #             # Create model with quantized layers
+    #             model = keras.Sequential([
+    #                 keras.layers.Input(shape=input_shape),
+    #                 QConv1D(20, kernel_size=10, activation='relu'),
+    #                 keras.layers.Conv1D(10, kernel_size=10, activation='relu'),
+    #                 # keras.layers.Dropout(0.5),
+    #                 keras.layers.Flatten(),
+    #                 keras.layers.Dense(1, activation='sigmoid')
+    #             ])
 
-model.summary()
 
-# Train (HGQ2 uses fake-quantization internally; training as usual)
-callbacks = []
-# attach BetaScheduler if it exists in your installed version
-try:
-    callbacks.append(beta_scheduler.to_keras_callback())
-except Exception:
-    # older/newer APIs may differ; consult hgq.utils.sugar docs if callback creation fails
-    pass
+    # Define Config Scopes 
+    scope0 = QuantizerConfigScope(place='all', k0=1, b0=3, i0=0, default_q_type='kbi', overflow_mode='sat_sym')
+    scope1 = QuantizerConfigScope(place='datalane', k0=0, default_q_type='kif', overflow_mode='wrap', f0=3, i0=3)
+    with scope0, scope1: 
+        iq_conf = QuantizerConfig(place='datalane', k0=1) # input quantizer
+        oq_conf = QuantizerConfig(place='datalane', k0=1, fr=MonoL1(1e-3)) # output quantizer   
+        model = keras.Sequential([
+                    keras.layers.Input(shape=input_shape),
+                    QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'),
+                    QConv1D(10, kernel_size=10, beta0=beta0, activation='relu', name='conv1d_1'),
+                    # keras.layers.Dropout(0.5),
+                    keras.layers.Flatten(),
+                    QDense(1, beta0=beta0, activation='sigmoid', name='dense_0', oq_conf=oq_conf)
+                ])
 
-history = model.fit(
-     x, y,
-     validation_split=0.2,
-     epochs=config['keras_epochs'],
-     batch_size=config['keras_batch_size'],
-     callbacks=callbacks
-)
+    # Compile model as usual
+    model.compile(optimizer=keras.optimizers.Adam(), #learning_rate=5e-3
+                loss='binary_crossentropy',
+                metrics=['accuracy'])
+        
+    return model, beta_scheduler
 
-timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
-print(f"Starting HGQ2 CNN training at {timestamp} for {amp} amplifier.")
+# --- Main Script ---
+def main():
+    config = load_config(config_path="/pub/tangch3/ARIANNA/DeepLearning/code/200s_time/config.yaml")
+    amp = config['amp']
+    prefix = config.get('prefix', '')
+    timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
 
-# Save original training artifacts same as your script
-sim_rcr_all = data['sim_rcr_all']
-data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
-prefix = config['prefix']
+    # setup saving paths
+    hgq2_root = "/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/"
 
-sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
-data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
+    # Timestamp folder inside HGQ2
+    run_dir = os.path.join(hgq2_root, timestamp)
+    os.makedirs(run_dir, exist_ok=True)
 
-model_save_path = os.path.join(config['base_model_path'], config['model_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
-# When saving a model wrapped with HGQ2 quantizers, use standard keras save unless the package
-# recommends a specific exporter. Confirm in docs for bit-exact exporting if you plan to deploy to FPGA.
-model.save(model_save_path)
-print(f'Model saved to: {model_save_path}')
-save_and_plot_training_history(history, config['base_model_path'], config['base_plot_path'], timestamp, amp, config)
+    # Subfolders
+    model_dir = os.path.join(run_dir, "models")
+    plot_dir = os.path.join(run_dir, "plots")
 
-prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency = \
-    evaluate_model_performance(model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)
+    os.makedirs(model_dir, exist_ok=True)
+    os.makedirs(plot_dir, exist_ok=True)
 
-plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency, backlobe_efficiency, config, timestamp)
+    # Inside plots keep your existing structure
+    os.makedirs(os.path.join(plot_dir, 'loss'), exist_ok=True)
+    os.makedirs(os.path.join(plot_dir, 'accuracy'), exist_ok=True)
+    os.makedirs(os.path.join(plot_dir, 'hgq2_results'), exist_ok=True)
 
-indices = np.where(prob_backlobe.flatten() > config['output_cut_value'])[0]
-for index in indices:
-     plot_traces_save_path = os.path.join(config['base_plot_path'], 'traces', f'{timestamp}_plot_pot_rcr_{amp}_{index}.png')
-     pT(data['data_backlobe_tracesRCR'][index], f'Backlobe Trace {index} (Output > {config["output_cut_value"]:.2f})', plot_traces_save_path)
-     print(f"Saved trace plot for Backlobe event {index} to {plot_traces_save_path}")
-     
-print("Script finished successfully.")
+
+    print(f"Starting training at {timestamp} for {amp} amplifier.")
+
+
+    # Load data
+    data = load_and_prep_data_for_training(config)
+    training_rcr = data['training_rcr']
+    training_backlobe = data['training_backlobe']
+
+    x = np.vstack((training_rcr, training_backlobe))
+    y = np.vstack((np.ones((training_rcr.shape[0], 1)), np.zeros((training_backlobe.shape[0], 1))))
+    s = np.arange(x.shape[0])
+    np.random.shuffle(s)
+    x = x[s].transpose(0, 2, 1)  # ensure (n_events, length, channels)
+    y = y[s]
+
+    x = x.astype('float32') 
+    y = y.astype('float32') 
+
+    input_shape = x.shape[1:]  # (length, channels)
+    print(f"Input Shape: {input_shape}. For 1D CNN, should be (256, 4)")
+
+    # --- Train Baseline FP32 Model ---
+    baseline_model = build_fp32_model(input_shape)
+    print(f'------- training Baseline model -------')
+    baseline_history = baseline_model.fit(x, y,
+                                          validation_split=0.2,
+                                          epochs=config['keras_epochs'],
+                                          batch_size=config['keras_batch_size'],
+                                          verbose=config['verbose_fit'])
+    
+    baseline_model_path = os.path.join(model_dir, f"{timestamp}_baseline_model.h5")
+    baseline_model.save(baseline_model_path)
+
+    # --- Train HGQ2 Model ---
+    hgq_model, beta_scheduler = build_hgq_model(input_shape)
+
+    nan_terminate = keras.callbacks.TerminateOnNaN()
+    pbar = PBar('loss: {loss:.3f}/{val_loss:.3f} - acc: {accuracy:.3f}/{val_accuracy:.3f}')
+    print(f'------- training HGQ2 model -------')
+    hgq_history = hgq_model.fit(x, y,
+                                validation_split=0.2,
+                                epochs=config['keras_epochs'],
+                                batch_size=config['keras_batch_size'],
+                                callbacks=[ebops, pbar, nan_terminate, beta_scheduler], # It is recommended to use the FreeEBOPs callback to monitor EBOPs during training
+                                verbose=config['verbose_fit'])
+    
+    hgq_model_path = os.path.join(model_dir, f"{timestamp}_HGQ2_model.h5")
+    hgq_model.save(hgq_model_path)
+
+    baseline_model.summary()
+    hgq_model.summary()
+
+    # --- Fit results: accuracy, loss, ebop ---
+    baseline_train_acc = baseline_history.history.get('accuracy', baseline_history.history.get('acc'))
+    hgq_train_acc = hgq_history.history.get('accuracy', hgq_history.history.get('acc'))
+    
+    baseline_train_loss = baseline_history.history['loss']
+    hgq_train_loss = hgq_history.history['loss']
+
+    baseline_val_acc = baseline_history.history.get('val_accuracy', baseline_history.history.get('val_acc'))
+    hgq_val_acc = hgq_history.history.get('val_accuracy', hgq_history.history.get('val_acc'))
+
+    baseline_val_loss = baseline_history.history.get('val_loss')
+    hgq_val_loss = hgq_history.history.get('val_loss')
+
+    baseline_ebops = float('nan')  # FP32 baseline EBOPs not computed here
+    hgq_ebops = hgq_history.history.get('ebops')
+
+    # Train Accuracy
+    plt.figure(figsize=(8,6)    )
+    plt.plot(baseline_train_acc, label='Baseline train_acc')
+    plt.plot(hgq_train_acc, label='HGQ2 train_acc')
+    plt.xlabel('Epoch'); plt.ylabel('Training Accuracy')
+    plt.title('Training Accuracy Comparison')
+    plt.legend()
+    plt.savefig(os.path.join(plot_dir, 'accuracy', 'train_accuracy_comparison.png'))
+    plt.close()
+
+    # train Loss
+    plt.figure(figsize=(8,6))
+    plt.plot(baseline_train_loss, label='Baseline train_loss')
+    plt.plot(hgq_train_loss, label='HGQ2 train_loss')
+    plt.xlabel('Epoch'); plt.ylabel('Training Loss')
+    plt.title('Training Loss Comparison')
+    plt.legend()
+    plt.savefig(os.path.join(plot_dir, 'loss', 'train_loss_comparison.png'))
+    plt.close()
+
+    # Val Accuracy
+    plt.figure(figsize=(8,6))
+    plt.plot(baseline_val_acc, label='Baseline val_acc')
+    plt.plot(hgq_val_acc, label='HGQ2 val_acc')
+    plt.xlabel('Epoch'); plt.ylabel('Validation Accuracy')
+    plt.title('Validation Accuracy Comparison')
+    plt.legend()
+    plt.savefig(os.path.join(plot_dir, 'accuracy', 'val_accuracy_comparison.png'))
+    plt.close()
+
+    # Val Loss
+    plt.figure(figsize=(8,6))
+    plt.plot(baseline_val_loss, label='Baseline val_loss')
+    plt.plot(hgq_val_loss, label='HGQ2 val_loss')
+    plt.xlabel('Epoch'); plt.ylabel('Validation Loss')
+    plt.title('Validation Loss Comparison')
+    plt.legend()
+    plt.savefig(os.path.join(plot_dir, 'loss', 'val_loss_comparison.png'))
+    plt.close()
+
+    # EBOPs vs Epoch
+    plt.figure(figsize=(8,6))
+    plt.plot(hgq_ebops, '.')
+    plt.yscale('log')
+    plt.xlabel('Epoch')
+    plt.ylabel('EBOPs')
+    plt.title('HGQ2 EBOPs per Epoch')
+    plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'ebops_per_epoch.png'))
+    plt.close()
+
+    # 
+    plt.figure(figsize=(8,6))
+    plt.plot(hgq_ebops, hgq_val_acc, '.')
+    plt.xscale('log')
+    plt.xlabel('EBOPs')
+    plt.ylabel('Validation Accuracy')
+    plt.title('HGQ2 EBOPs vs Validation Accuracy')
+    plt.savefig(os.path.join(plot_dir, 'hgq2_results', 'ebops_vs_val_accuracy.png'))
+    plt.close()
+
+
+    # For accuracy, show absolute difference (HGQ2 - Baseline). Positive means HGQ2 higher accuracy.
+    print(f'hgq train acc: {hgq_train_acc}')
+
+    train_accuracy_delta = baseline_train_acc[-1] - hgq_train_acc[-1]
+    val_accuracy_delta = baseline_val_acc[-1] - hgq_val_acc[-1]
+
+    df = pd.DataFrame({
+        'Metric': ['Training Accuracy', 'Validation Accuracy', 'EBOPs (estimated)'],
+        'Baseline': [baseline_train_acc[-1], baseline_val_acc[-1], baseline_ebops],
+        'HGQ2': [hgq_train_acc[-1], hgq_val_acc[-1], hgq_ebops[-1]],
+        'Difference': [train_accuracy_delta, val_accuracy_delta, float('nan')]
+    })
+
+    summary_file = os.path.join(plot_dir, 'hgq2_results', 'summary_table.csv')
+    df.to_csv(summary_file, index=False)
+    pd.set_option('display.max_columns', None)
+    print(df)
+    print(f"Saved summary table to {summary_file}")
+
+if __name__ == "__main__":
+    main()
+
+   
+    
+    

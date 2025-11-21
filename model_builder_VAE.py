@@ -7,7 +7,7 @@ from tensorflow.keras.layers import (
     Conv1D, Conv2D, BatchNormalization, ReLU, Input, 
     Conv1DTranspose, Conv2DTranspose, MaxPooling1D, UpSampling1D,
     GaussianNoise, Dropout, Concatenate,
-    Dense, Reshape, Layer, Flatten
+    Dense, Reshape, Layer, Flatten, GlobalAveragePooling1D, GlobalAveragePooling2D
 )
 from tensorflow.keras.callbacks import Callback
 import numpy as np
@@ -306,7 +306,7 @@ class CyclicalLRCallback(Callback):
 
 # --- VAE Builder Function ---
 
-def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=32, kl_weight_initial=0.0):
+def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=16, kl_weight_initial=0.0):
     """
     Builds a 1D Convolutional Variational Autoencoder.
     """
@@ -324,7 +324,8 @@ def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=3
     x = BatchNormalization()(x)
     
     # Flatten features and get probabilistic latent space
-    x = Flatten()(x)
+    # x = Flatten()(x)
+    x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)
     z = Sampling()([z_mean, z_log_var])
@@ -363,7 +364,7 @@ def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=3
     
     return vae, True
 
-def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=32, kl_weight_initial=0.0):
+def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight_initial=0.0):
     """
     Step 1: VAE with a Tighter Convolutional Bottleneck (32 filters).
     """
@@ -383,7 +384,9 @@ def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, l
     x = BatchNormalization()(x)
     
     # Flatten features and get probabilistic latent space
-    x = Flatten()(x) # Shape will be (16 * 32 = 512)
+    # x = Flatten()(x) # Shape will be (16 * 32 = 512)
+    x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
+
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)
     z = Sampling()([z_mean, z_log_var])
@@ -422,7 +425,7 @@ def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, l
     
     return vae, True
 
-def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=32, kl_weight_initial=0.0, noise_stddev=0.1):
+def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight_initial=0.0, noise_stddev=0.1):
     """
     Step 2: Denoising VAE with Tighter Bottleneck.
     Includes a GaussianNoise layer in the encoder.
@@ -445,7 +448,9 @@ def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, la
     x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     
-    x = Flatten()(x)
+    # x = Flatten()(x)
+    x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
+
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)
     z = Sampling()([z_mean, z_log_var])
@@ -479,7 +484,7 @@ def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, la
     
     return vae, True
 
-def build_vae_mae_loss_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=32, kl_weight_initial=0.0, noise_stddev=0.1):
+def build_vae_mae_loss_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=8, kl_weight_initial=0.0, noise_stddev=0.1):
     """
     Step 3: Denoising VAE Bottleneck model compiled with MAE loss.
     """
@@ -494,7 +499,9 @@ def build_vae_mae_loss_model_freq(input_shape=(129, 4), learning_rate=0.001, lat
     x = BatchNormalization()(x)
     x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    x = Flatten()(x)
+    # x = Flatten()(x)
+    x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
+
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)
     z = Sampling()([z_mean, z_log_var])
@@ -535,7 +542,7 @@ custom_weights[120:] = 0.0 # De-emphasize highest frequencies
 
 def build_vae_custom_loss_model_freq_samplewise(input_shape=(129, 4), 
                                                 learning_rate=0.001, 
-                                                latent_dim=32, 
+                                                latent_dim=8, 
                                                 kl_weight_initial=0.0, 
                                                 noise_stddev=0.1,
                                                 sample_weights=custom_weights):
@@ -595,7 +602,8 @@ def build_vae_custom_loss_model_freq_samplewise(input_shape=(129, 4),
     x = BatchNormalization()(x)
     x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    x = Flatten()(x)
+    # x = Flatten()(x)
+    x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)
     z = Sampling()([z_mean, z_log_var])
@@ -632,7 +640,7 @@ def build_vae_custom_loss_model_freq_samplewise(input_shape=(129, 4),
 
 def build_vae_model_freq_2d_input(input_shape=(129, 4), 
                                   learning_rate=0.001, 
-                                  latent_dim=32, 
+                                  latent_dim=8, 
                                   kl_weight_initial=0.0):
     """
     Builds a VAE that uses 2D Convolutions for the encoder/decoder.
@@ -663,7 +671,9 @@ def build_vae_model_freq_2d_input(input_shape=(129, 4),
     pre_flatten_dim = np.prod(pre_flatten_shape) # 16 * 2 * 64
 
     # Flatten features and get probabilistic latent space
-    x = Flatten()(x)
+    # x = Flatten()(x)
+    x = GlobalAveragePooling2D()(x)  # Alternative to Flatten
+
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)
     z = Sampling()([z_mean, z_log_var])

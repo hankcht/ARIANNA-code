@@ -2114,8 +2114,10 @@ def main():
     # We MUST keep these stats to reverse the plots later!
     sim_rcr_all, rcr_stats = normalizer.normalize(sim_rcr_all)
     data_backlobe_traces_rcr_all, bl_stats = normalizer.normalize(data_backlobe_traces_rcr_all)
-    sim_rcr_all = data_backlobe_traces_rcr_all.astype(np.float32, copy=False)
-    rcr_stats = bl_stats.astype(np.float32, copy=False)
+
+    # Copying over to RCR to skip plotting RCR in case there's an issue
+    sim_rcr_all = data_backlobe_traces_rcr_all
+    rcr_stats = bl_stats
 
     print(f"Data Normalized. Training shape: {training_backlobe.shape}")
 

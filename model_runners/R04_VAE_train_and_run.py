@@ -376,7 +376,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         epochs=config['keras_epochs'],
         batch_size=config['keras_batch_size'],
         verbose=config['verbose_fit'],
-        callbacks=[lr_scheduler, kl_cyclical_callback, early_stopper],
+        callbacks=[lr_scheduler, kl_cyclical_callback],
         # callbacks=callbacks_list,
     )
 

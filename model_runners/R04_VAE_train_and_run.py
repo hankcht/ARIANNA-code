@@ -83,8 +83,8 @@ MODEL_BUILDERS = {
     '2d_vae': build_vae_model_time_2d_input,
     '1d_vae_scattering': build_vae_model_scattering,
     '1d_vae_independent_channel_l4_freq': build_vae_independent_channel_freq4,
-    '1d_vae_independent_channel_l8_freq8': build_vae_independent_channel_freq8,
-    '1d_vae_independent_channel_l16_freq16': build_vae_independent_channel_freq16
+    '1d_vae_independent_channel_l8_freq': build_vae_independent_channel_freq8,
+    '1d_vae_independent_channel_l16_freq': build_vae_independent_channel_freq16
 }
 
 DEFAULT_VALIDATION_PKL_PATH = (
@@ -1995,8 +1995,7 @@ def main():
     amp = config['amp']
     prefix = config['prefix']
 
-    # Determine domain based on model name
-    is_freq_model = model_type.endswith('_freq') or 'freq' in model_type
+    is_freq_model = model_type.endswith('_freq')
     config['is_freq_model'] = is_freq_model
     config['domain_label'] = 'freq' if is_freq_model else 'time'
     config['domain_suffix'] = '_freq' if is_freq_model else ''
@@ -2016,57 +2015,59 @@ def main():
     output_cut_value = config['output_cut_value']
     print(f"--- Starting VAE training at {timestamp} ---")
     print(f"Model type: {model_type}, LR: {learning_rate}")
-    print(f"Domain: {'Frequency' if is_freq_model else 'Time'}")
+    print(
+        "NOTE: 'output_cut_value' from config is used as MSE threshold for reconstruction loss."
+    )
 
-    # 1. Load Data (Typically Time Domain)
     data = load_and_prep_data_for_training(config)
+
+    # Alternative loading of all station data
+
+    # file_path = '/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.1.25/'
+    # training_backlobe = []
+    # for file in os.listdir(file_path):
+    #     # load all numpy files with the substring "Traces" that don't have "_0evts" in their name
+    #     if "Traces" in file and "_0evts" not in file:
+    #         data_array = np.load(os.path.join(file_path, file))
+    #         training_backlobe.append(data_array)
+    # training_backlobe = np.concatenate(training_backlobe, axis=0)
+    # print(f"Training data shape: {training_backlobe.shape}")
+    # if is_freq_model:
+    #     training_backlobe = _compute_frequency_magnitude(
+    #         training_backlobe, config.get('frequency_sampling_rate', 2.0)
+    #     )
+    #     if config.get('use_filtering', False):
+    #         training_backlobe = _apply_frequency_edge_filter(training_backlobe)
+    #     if config.get('convert_to_db_scale', False):
+    #         training_backlobe = convert_to_db_scale(training_backlobe)
+    #     print(f"Is freq model, training data shape: {training_backlobe.shape}")
+    # training_backlobe = np.concatenate(training_backlobe, axis=0)
 
     training_backlobe = data['training_backlobe']
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
 
-    print(f"Loaded data shape (pre-processing): {training_backlobe.shape}")
+    # print("Applying channel cycling augmentation to Backlobe training data...")
+    # training_backlobe_aug = cycle_channels(training_backlobe.copy(), channel_axis=1)
 
-    # 2. Perform Frequency Conversion (If needed) BEFORE Normalization
-    if is_freq_model:
-        print("Performing Frequency Domain Transformation (FFT -> Filter -> dB)...")
-        sampling_rate = config.get('frequency_sampling_rate', 2.0)
-        use_filter = config.get('use_filtering', False)
-        use_db = config.get('convert_to_db_scale', False)
-
-        def process_to_freq(traces):
-            # 1. FFT Magnitude
-            freq = _compute_frequency_magnitude(traces, sampling_rate)
-            # 2. Edge Filter (if configured)
-            if use_filter:
-                freq = _apply_frequency_edge_filter(freq)
-            # 3. dB Scale (if configured)
-            if use_db:
-                freq = convert_to_db_scale(freq)
-            return freq
-
-        training_backlobe = process_to_freq(training_backlobe)
-        sim_rcr_all = process_to_freq(sim_rcr_all)
-        data_backlobe_traces_rcr_all = process_to_freq(data_backlobe_traces_rcr_all)
-        
-        print(f"Frequency conversion complete. New shape: {training_backlobe.shape}")
-
-    # 3. Apply Normalization (Per-Event MinMax)
+    # Appling normalization
     print("Normalizing data per-event (MinMax to [0,1])...")
     normalizer = PerEventMinMaxNormalizer()
     
-    # Normalize Training Data
+    # 1. Normalize Training Data
+    # We don't strictly need to keep 'train_stats' unless we want to plot training set reconstructions later
     training_backlobe, _ = normalizer.normalize(training_backlobe)
     
-    # Normalize Evaluation Data (Keep stats for plotting later!)
+    # 2. Normalize Evaluation Data
+    # We MUST keep these stats to reverse the plots later!
     sim_rcr_all, rcr_stats = normalizer.normalize(sim_rcr_all)
     data_backlobe_traces_rcr_all, bl_stats = normalizer.normalize(data_backlobe_traces_rcr_all)
     
-    print(f"Data Normalized. Final Training shape: {training_backlobe.shape}")
+    print(f"Data Normalized. Training shape: {training_backlobe.shape}")
 
-    # 4. Train Model
     model, history, requires_transpose = train_vae_model(
         training_backlobe, config, learning_rate, model_type
+        # training_backlobe_aug, config, learning_rate, model_type
     )
     print('------> VAE Training is Done!')
 
@@ -2123,7 +2124,6 @@ def main():
     )
 
     print("\n--- Generating Original vs. Reconstructed plots for MAIN dataset ---")
-    # Pass the normalizer and stats so we can reverse the transform for plotting
     plot_original_vs_reconstructed(
         model,
         sim_rcr_all,

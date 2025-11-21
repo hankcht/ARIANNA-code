@@ -310,11 +310,17 @@ def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=1
     """
     Builds a 1D Convolutional Variational Autoencoder.
     """
-    
+
+
     # --- Encoder ---
     encoder_inputs = Input(shape=input_shape)
+
+    # Add 20% dropout to force model to try to reconstruct missing freq spectrum
+    x = Dropout(0.2)(encoder_inputs)
+
+
     # (129, 4) -> (64, 16)
-    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(encoder_inputs)
+    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     # (64, 16) -> (32, 32)
     x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
@@ -324,8 +330,8 @@ def build_vae_model_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=1
     x = BatchNormalization()(x)
     
     # Flatten features and get probabilistic latent space
-    # x = Flatten()(x)
-    x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
+    x = Flatten()(x)
+    # x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)
     z = Sampling()([z_mean, z_log_var])
@@ -371,8 +377,13 @@ def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, l
     
     # --- Encoder ---
     encoder_inputs = Input(shape=input_shape)
+
+    # Add 20% dropout to force model to try to reconstruct missing freq spectrum
+    x = Dropout(0.2)(encoder_inputs)
+
+
     # (129, 4) -> (64, 16)
-    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(encoder_inputs)
+    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     # (64, 16) -> (32, 32)
     x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
@@ -384,8 +395,8 @@ def build_vae_bottleneck_model_freq(input_shape=(129, 4), learning_rate=0.001, l
     x = BatchNormalization()(x)
     
     # Flatten features and get probabilistic latent space
-    # x = Flatten()(x) # Shape will be (16 * 32 = 512)
-    x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
+    x = Flatten()(x) # Shape will be (16 * 32 = 512)
+    # x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
 
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)
@@ -433,13 +444,18 @@ def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, la
     
     # --- Encoder ---
     encoder_inputs = Input(shape=input_shape, name="clean_input")
-    
+
+
     # --- STEP 2 CHANGE ---
     noisy_inputs = GaussianNoise(stddev=noise_stddev)(encoder_inputs)
     # ---------------------
 
+    # Add 20% dropout to force model to try to reconstruct missing freq spectrum
+    x = Dropout(0.2)(noisy_inputs)
+
+
     # (129, 4) -> (64, 16)
-    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(noisy_inputs)
+    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     # (64, 16) -> (32, 32)
     x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
@@ -448,8 +464,8 @@ def build_vae_denoising_model_freq(input_shape=(129, 4), learning_rate=0.001, la
     x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     
-    # x = Flatten()(x)
-    x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
+    x = Flatten()(x)
+    # x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
 
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)
@@ -493,14 +509,17 @@ def build_vae_mae_loss_model_freq(input_shape=(129, 4), learning_rate=0.001, lat
     # (Identical to Step 2)
     encoder_inputs = Input(shape=input_shape, name="clean_input")
     noisy_inputs = GaussianNoise(stddev=noise_stddev)(encoder_inputs)
-    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(noisy_inputs)
+    # Add 20% dropout to force model to try to reconstruct missing freq spectrum
+    x = Dropout(0.2)(noisy_inputs)
+    
+    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    # x = Flatten()(x)
-    x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
+    x = Flatten()(x)
+    # x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
 
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)
@@ -596,14 +615,16 @@ def build_vae_custom_loss_model_freq_samplewise(input_shape=(129, 4),
     # (Identical to Step 2/3)
     encoder_inputs = Input(shape=input_shape, name="clean_input")
     noisy_inputs = GaussianNoise(stddev=noise_stddev)(encoder_inputs)
-    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(noisy_inputs)
+    # Add 20% dropout to force model to try to reconstruct missing freq spectrum
+    x = Dropout(0.2)(noisy_inputs)
+    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    # x = Flatten()(x)
-    x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
+    x = Flatten()(x)
+    # x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)
     z = Sampling()([z_mean, z_log_var])
@@ -651,8 +672,10 @@ def build_vae_model_freq_2d_input(input_shape=(129, 4),
     # --- Encoder ---
     encoder_inputs = Input(shape=input_shape)
     
+    # Add 20% dropout to force model to try to reconstruct missing freq spectrum
+    x = Dropout(0.2)(encoder_inputs)
     # Reshape (129, 4) to (129, 4, 1) to use Conv2D
-    x = Reshape((input_shape[0], input_shape[1], 1))(encoder_inputs)
+    x = Reshape((input_shape[0], input_shape[1], 1))(x)
 
     # (129, 4, 1) -> (63, 2, 16)
     x = Conv2D(16, kernel_size=(5, 3), padding="valid", activation="relu", strides=(2, 1))(x)
@@ -671,8 +694,8 @@ def build_vae_model_freq_2d_input(input_shape=(129, 4),
     pre_flatten_dim = np.prod(pre_flatten_shape) # 16 * 2 * 64
 
     # Flatten features and get probabilistic latent space
-    # x = Flatten()(x)
-    x = GlobalAveragePooling2D()(x)  # Alternative to Flatten
+    x = Flatten()(x)
+    # x = GlobalAveragePooling2D()(x)  # Alternative to Flatten
 
     z_mean = Dense(latent_dim, name="z_mean")(x)
     z_log_var = Dense(latent_dim, name="z_log_var")(x)

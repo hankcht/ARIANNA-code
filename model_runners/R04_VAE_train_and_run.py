@@ -1526,8 +1526,8 @@ def plot_validation_loss_histogram(
 
 
 def plot_special_event_reconstruction(
-    original_trace,
-    reconstructed_trace,
+    original_trace_norm,      # Renamed to indicate it's normalized input
+    reconstructed_trace_norm, # Renamed to indicate it's normalized output
     mse_value,
     timestamp,
     config,
@@ -1535,15 +1535,45 @@ def plot_special_event_reconstruction(
     learning_rate,
     dataset_name_suffix,
     event_label,
+    # NEW ARGUMENTS
+    normalizer=None,
+    stats=None 
 ):
     """Plot original vs reconstructed traces for a single special event."""
 
-    if original_trace is None or reconstructed_trace is None:
+    if original_trace_norm is None or reconstructed_trace_norm is None:
         print("No special event traces provided; skipping special reconstruction plot.")
         return
 
-    original = np.asarray(original_trace)
-    reconstructed = np.asarray(reconstructed_trace)
+    # Ensure inputs are arrays
+    original_norm = np.asarray(original_trace_norm)
+    recon_norm = np.asarray(reconstructed_trace_norm)
+
+    # --- NEW: Denormalization Logic ---
+    if normalizer is not None and stats is not None:
+        # Denormalize back to dB
+        # stats is likely (min_val, max_val) for this specific event
+        # We need to reshape stats to broadcast if they are scalars, 
+        # but usually they are extracted as (1,1) or scalars from the list.
+        
+        # The denormalize function expects stats to be the same shape used during normalization
+        # If we passed a single event's stats, we can just pass them directly.
+        
+        original_db = normalizer.denormalize(original_norm, stats)
+        recon_db = normalizer.denormalize(recon_norm, stats)
+        
+        # Convert dB to Linear Power
+        original = inverse_db_scale(original_db)
+        reconstructed = inverse_db_scale(recon_db)
+    else:
+        # Fallback if no normalizer provided
+        original = original_norm
+        reconstructed = recon_norm
+    # ----------------------------------
+
+    if original.ndim != 2 or reconstructed.ndim != 2:
+        print(f"Skipping special plot: expected 2D traces, got {original.shape}.")
+        return
 
     if original.ndim != 2 or reconstructed.ndim != 2:
         print(
@@ -1767,6 +1797,14 @@ def run_validation_checks(
             )
             quit()
 
+    # Before training on any of the validation or other sets, need to apply same normalization
+    normalizer = PerEventMinMaxNormalizer()
+    passing_traces_proc, passing_traces_stats = normalizer.normalize(passing_traces_proc)
+    raw_traces_proc, raw_traces_stats = normalizer.normalize(raw_traces_proc)
+    special_traces_proc, special_traces_stats = normalizer.normalize(special_traces_proc)
+    above_curve_traces_proc, above_curve_traces_stats = normalizer.normalize(above_curve_traces_proc)
+
+
     special_label = 'Validation Special Event'
     if special_traces_proc.shape[0] > 0:
         meta = special_metadata.get(0, {})
@@ -1794,11 +1832,22 @@ def run_validation_checks(
         raw_mse, _ = calculate_reconstruction_mse(model, prepared, config)
         print(f"Validation raw set size: {len(raw_mse)}, mean MSE: {np.mean(raw_mse):.4g}")
 
+    # Capture the specific stats for the special event
+    special_event_stats_for_plot = None 
+
     if special_traces_proc.shape[0] > 0:
         prepared = prepare_data_for_model(special_traces_proc, requires_transpose)
         special_mse, special_recon = calculate_reconstruction_mse(model, prepared, config)
+        
+        # Grab the first event (index 0)
         special_trace_for_plot = special_traces_proc[0]
         recon_first = special_recon[0]
+        
+        # Extract the stats for index 0
+        # special_traces_stats is ((N,1,1), (N,1,1)). We want (1,1) values for index 0.
+        spec_mins, spec_maxs = special_traces_stats
+        special_event_stats_for_plot = (spec_mins[0], spec_maxs[0])
+
         if requires_transpose:
             special_recon_for_plot = recon_first.transpose(1, 0)
         else:
@@ -1913,21 +1962,24 @@ def run_validation_checks(
     )
 
     if (
-        special_trace_for_plot is not None
-        and special_recon_for_plot is not None
-        and special_mse.size > 0
-    ):
-        plot_special_event_reconstruction(
-            special_trace_for_plot,
-            special_recon_for_plot,
-            float(special_mse.flatten()[0]),
-            timestamp,
-            config,
-            model_type,
-            learning_rate,
-            dataset_name_suffix="validation",
-            event_label=special_label,
-        )
+            special_trace_for_plot is not None
+            and special_recon_for_plot is not None
+            and special_mse.size > 0
+        ):
+            plot_special_event_reconstruction(
+                special_trace_for_plot,
+                special_recon_for_plot,
+                float(special_mse.flatten()[0]),
+                timestamp,
+                config,
+                model_type,
+                learning_rate,
+                dataset_name_suffix="validation",
+                event_label=special_label,
+                # PASS NEW ARGS HERE
+                normalizer=normalizer,
+                stats=special_event_stats_for_plot
+            )
     else:
         print("No special event reconstruction plot generated (missing data).")
 

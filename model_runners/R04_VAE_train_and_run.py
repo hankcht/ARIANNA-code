@@ -41,7 +41,8 @@ from model_builder_VAE import (
     build_vae_model_freq_2d_input,
     KLAnnealingCallback,
     KLCyclicalAnnealingCallback,
-    CyclicalLRCallback
+    CyclicalLRCallback,
+    build_vae_independent_channel_freq
 )
 from model_builder_VAE_time import (
     build_vae_model_time,
@@ -78,7 +79,8 @@ MODEL_BUILDERS = {
     '1d_vae_mae_loss': build_vae_mae_loss_model_time,
     '1d_vae_custom_loss': build_vae_custom_loss_model_time_samplewise,
     '2d_vae': build_vae_model_time_2d_input,
-    '1d_vae_scattering': build_vae_model_scattering
+    '1d_vae_scattering': build_vae_model_scattering,
+    '1d_vae_independent_channel_freq': build_vae_independent_channel_freq
 }
 
 DEFAULT_VALIDATION_PKL_PATH = (
@@ -334,7 +336,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
     early_stopper = EarlyStopping(
         monitor='val_loss',
         patience=config['early_stopping_patience'],
-        restore_best_weights=True,
+        restore_best_weights=False,
     )
 
     # Requires rewriting my VAE model, so commenting out for now
@@ -376,7 +378,7 @@ def train_vae_model(training_backlobe, config, learning_rate, model_type):
         epochs=config['keras_epochs'],
         batch_size=config['keras_batch_size'],
         verbose=config['verbose_fit'],
-        callbacks=[lr_scheduler, kl_cyclical_callback],
+        callbacks=[lr_scheduler, kl_cyclical_callback, early_stopper],
         # callbacks=callbacks_list,
     )
 

@@ -29,7 +29,7 @@ import hdbscan
 
 # --- Local Imports from project structure ---
 sys.path.append(str(Path(__file__).resolve().parents[1] / '200s_time'))
-from A0_Utilities import load_config
+from A0_Utilities import load_config, PerEventMinMaxNormalizer, inverse_db_scale
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model_builder_VAE import (
@@ -42,7 +42,9 @@ from model_builder_VAE import (
     KLAnnealingCallback,
     KLCyclicalAnnealingCallback,
     CyclicalLRCallback,
-    build_vae_independent_channel_freq
+    build_vae_independent_channel_freq4,
+    build_vae_independent_channel_freq8,
+    build_vae_independent_channel_freq16
 )
 from model_builder_VAE_time import (
     build_vae_model_time,
@@ -80,7 +82,9 @@ MODEL_BUILDERS = {
     '1d_vae_custom_loss': build_vae_custom_loss_model_time_samplewise,
     '2d_vae': build_vae_model_time_2d_input,
     '1d_vae_scattering': build_vae_model_scattering,
-    '1d_vae_independent_channel_freq': build_vae_independent_channel_freq
+    '1d_vae_independent_channel_freq4': build_vae_independent_channel_freq4,
+    '1d_vae_independent_channel_freq8': build_vae_independent_channel_freq8,
+    '1d_vae_independent_channel_freq16': build_vae_independent_channel_freq16
 }
 
 DEFAULT_VALIDATION_PKL_PATH = (
@@ -698,6 +702,9 @@ def plot_original_vs_reconstructed(
     model_type,
     learning_rate,
     dataset_name_suffix="main",
+    normalizer=None,
+    rcr_stats=None,
+    bl_stats=None
 ):
     """Plot original vs reconstructed traces for worst/best examples."""
 
@@ -709,42 +716,82 @@ def plot_original_vs_reconstructed(
     domain_suffix = config.get('domain_suffix', '')
     os.makedirs(plot_path, exist_ok=True)
 
+# 1. Find Indices (Same as before)
     worst_rcr_idx = np.argmax(prob_rcr)
     worst_rcr_mse = prob_rcr[worst_rcr_idx]
-    rcr_original = sim_rcr_all[worst_rcr_idx]
+    rcr_original_norm = sim_rcr_all[worst_rcr_idx] # This is [0, 1] normalized
 
     best_rcr_idx = np.argmin(prob_rcr)
     best_rcr_mse = prob_rcr[best_rcr_idx]
-    rcr_original_best = sim_rcr_all[best_rcr_idx]
+    rcr_original_best_norm = sim_rcr_all[best_rcr_idx]
 
     best_bl_idx = np.argmin(prob_backlobe)
     best_bl_mse = prob_backlobe[best_bl_idx]
-    bl_original = data_backlobe_traces_rcr_all[best_bl_idx]
+    bl_original_norm = data_backlobe_traces_rcr_all[best_bl_idx]
 
     worst_bl_idx = np.argmax(prob_backlobe)
     worst_bl_mse = prob_backlobe[worst_bl_idx]
-    bl_original_worst = data_backlobe_traces_rcr_all[worst_bl_idx]
+    bl_original_worst_norm = data_backlobe_traces_rcr_all[worst_bl_idx]
 
-    worst_rcr_prepped = rcr_original.transpose(1, 0) if requires_transpose else rcr_original
-    best_bl_prepped = bl_original.transpose(1, 0) if requires_transpose else bl_original
-    best_rcr_prepped = rcr_original_best.transpose(1, 0) if requires_transpose else rcr_original_best
-    worst_bl_prepped = bl_original_worst.transpose(1, 0) if requires_transpose else bl_original_worst
+    # 2. Extract the specific (min, max) stats for these specific events
+    # rcr_stats is (mins, maxs). We slice [idx] to get the specific values for that event.
+    worst_rcr_stats = (rcr_stats[0][worst_rcr_idx], rcr_stats[1][worst_rcr_idx])
+    best_rcr_stats  = (rcr_stats[0][best_rcr_idx],  rcr_stats[1][best_rcr_idx])
+    best_bl_stats   = (bl_stats[0][best_bl_idx],    bl_stats[1][best_bl_idx])
+    worst_bl_stats  = (bl_stats[0][worst_bl_idx],   bl_stats[1][worst_bl_idx])
 
+    # 3. Prepare inputs for model (Transpose if needed)
+    worst_rcr_prepped = rcr_original_norm.transpose(1, 0) if requires_transpose else rcr_original_norm
+    best_bl_prepped = bl_original_norm.transpose(1, 0) if requires_transpose else bl_original_norm
+    best_rcr_prepped = rcr_original_best_norm.transpose(1, 0) if requires_transpose else rcr_original_best_norm
+    worst_bl_prepped = bl_original_worst_norm.transpose(1, 0) if requires_transpose else bl_original_worst_norm
+
+    # Add batch dimension
     worst_rcr_prepped = worst_rcr_prepped[np.newaxis, ...]
     best_bl_prepped = best_bl_prepped[np.newaxis, ...]
     best_rcr_prepped = best_rcr_prepped[np.newaxis, ...]
     worst_bl_prepped = worst_bl_prepped[np.newaxis, ...]
 
-    worst_rcr_reconstructed = model.predict(worst_rcr_prepped)[0]
-    best_bl_reconstructed = model.predict(best_bl_prepped)[0]
-    best_rcr_reconstructed = model.predict(best_rcr_prepped)[0]
-    worst_bl_reconstructed = model.predict(worst_bl_prepped)[0]
+    # 4. Predict (Output is Normalized [0, 1])
+    worst_rcr_recon_norm = model.predict(worst_rcr_prepped)[0]
+    best_bl_recon_norm = model.predict(best_bl_prepped)[0]
+    best_rcr_recon_norm = model.predict(best_rcr_prepped)[0]
+    worst_bl_recon_norm = model.predict(worst_bl_prepped)[0]
 
+    # 5. Transpose back if needed (so shape is (129, 4))
     if requires_transpose:
-        worst_rcr_reconstructed = worst_rcr_reconstructed.transpose(1, 0)
-        best_bl_reconstructed = best_bl_reconstructed.transpose(1, 0)
-        best_rcr_reconstructed = best_rcr_reconstructed.transpose(1, 0)
-        worst_bl_reconstructed = worst_bl_reconstructed.transpose(1, 0)
+        worst_rcr_recon_norm = worst_rcr_recon_norm.transpose(1, 0)
+        best_bl_recon_norm = best_bl_recon_norm.transpose(1, 0)
+        best_rcr_recon_norm = best_rcr_recon_norm.transpose(1, 0)
+        worst_bl_recon_norm = worst_bl_recon_norm.transpose(1, 0)
+
+    # 6. Denormalize (Convert [0, 1] -> dB) using the specific stats
+    # We denormalize both the Input and the Output
+    rcr_original_db = normalizer.denormalize(rcr_original_norm, worst_rcr_stats)
+    worst_rcr_reconstructed_db = normalizer.denormalize(worst_rcr_recon_norm, worst_rcr_stats)
+
+    rcr_original_best_db = normalizer.denormalize(rcr_original_best_norm, best_rcr_stats)
+    best_rcr_reconstructed_db = normalizer.denormalize(best_rcr_recon_norm, best_rcr_stats)
+
+    bl_original_db = normalizer.denormalize(bl_original_norm, best_bl_stats)
+    best_bl_reconstructed_db = normalizer.denormalize(best_bl_recon_norm, best_bl_stats)
+
+    bl_original_worst_db = normalizer.denormalize(bl_original_worst_norm, worst_bl_stats)
+    worst_bl_reconstructed_db = normalizer.denormalize(worst_bl_recon_norm, worst_bl_stats)
+
+    # 7. Inverse dB Scale (Convert dB -> Linear Power)
+    # We overwrite the variables used by the plotting code below so the rest of the function works unchanged
+    rcr_original = inverse_db_scale(rcr_original_db)
+    worst_rcr_reconstructed = inverse_db_scale(worst_rcr_reconstructed_db)
+
+    rcr_original_best = inverse_db_scale(rcr_original_best_db)
+    best_rcr_reconstructed = inverse_db_scale(best_rcr_reconstructed_db)
+
+    bl_original = inverse_db_scale(bl_original_db)
+    best_bl_reconstructed = inverse_db_scale(best_bl_reconstructed_db)
+
+    bl_original_worst = inverse_db_scale(bl_original_worst_db)
+    worst_bl_reconstructed = inverse_db_scale(worst_bl_reconstructed_db)
 
     fig, axes = plt.subplots(4, 2, figsize=(15, 10), sharex=True, sharey=True)
     fig.suptitle(
@@ -2003,6 +2050,20 @@ def main():
     # print("Applying channel cycling augmentation to Backlobe training data...")
     # training_backlobe_aug = cycle_channels(training_backlobe.copy(), channel_axis=1)
 
+    # Appling normalization
+    print("Normalizing data per-event (MinMax to [0,1])...")
+    normalizer = PerEventMinMaxNormalizer()
+    
+    # 1. Normalize Training Data
+    # We don't strictly need to keep 'train_stats' unless we want to plot training set reconstructions later
+    training_backlobe, _ = normalizer.normalize(training_backlobe)
+    
+    # 2. Normalize Evaluation Data
+    # We MUST keep these stats to reverse the plots later!
+    sim_rcr_all, rcr_stats = normalizer.normalize(sim_rcr_all)
+    data_backlobe_traces_rcr_all, bl_stats = normalizer.normalize(data_backlobe_traces_rcr_all)
+    
+    print(f"Data Normalized. Training shape: {training_backlobe.shape}")
 
     model, history, requires_transpose = train_vae_model(
         training_backlobe, config, learning_rate, model_type
@@ -2075,6 +2136,9 @@ def main():
         model_type,
         learning_rate,
         dataset_name_suffix="main",
+        normalizer=normalizer,
+        rcr_stats=rcr_stats,
+        bl_stats=bl_stats,
     )
 
     print("\n--- Generating Latent Space plot for MAIN dataset ---")

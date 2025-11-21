@@ -743,9 +743,287 @@ def build_vae_model_freq_2d_input(input_shape=(129, 4),
 
 
 
-def build_vae_independent_channel_freq(input_shape=(129, 4), 
+def build_vae_independent_channel_freq4(input_shape=(129, 4), 
                                        learning_rate=0.001, 
                                        latent_dim=4, 
+                                       kl_weight_initial=0.0):
+    """
+    Builds a VAE that processes each channel INDEPENDENTLY using shared weights.
+    
+    Architecture:
+    1. Takes (129, 4) input.
+    2. Splits it into 4x (129, 1) inputs.
+    3. Passes each (129, 1) input through the SAME 'Core Encoder'.
+    4. Result is 4 independent latent vectors.
+    5. Passes each latent vector through the SAME 'Core Decoder'.
+    6. Concatenates the 4 outputs back to (129, 4).
+    
+    This forces the model to learn features common to ALL channels, 
+    without mixing channel information in the encoding phase.
+    """
+    
+    # ==========================================================================
+    # 1. Define the CORE (Single-Channel) Encoder & Decoder
+    #    These are the "building blocks" that will be reused 4 times.
+    # ==========================================================================
+    
+    # --- Core Encoder (Input: 129, 1) ---
+    core_enc_input = Input(shape=(input_shape[0], 1), name="core_enc_input")
+    
+    # Add dropout to single channel
+    x = Dropout(0.2)(core_enc_input)
+    
+    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    x = Flatten()(x)
+    
+    # Latent space for ONE channel
+    # Note: If you set latent_dim=4, the total latent space for the event will be 4x4=16
+    core_z_mean = Dense(latent_dim, name="core_z_mean")(x)
+    core_z_log_var = Dense(latent_dim, name="core_z_log_var")(x)
+    core_z = Sampling()([core_z_mean, core_z_log_var])
+    
+    core_encoder = Model(core_enc_input, [core_z_mean, core_z_log_var, core_z], name="core_encoder")
+
+    # --- Core Decoder (Input: latent_dim) ---
+    core_dec_input = Input(shape=(latent_dim,), name="core_dec_input")
+    
+    x = Dense(16 * 32, activation="relu")(core_dec_input)
+    x = Reshape((16, 32))(x)
+    
+    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    x = Conv1DTranspose(16, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # Output is (129, 1)
+    core_dec_output = Conv1DTranspose(
+        1, kernel_size=3, padding="valid", activation="linear", strides=2
+    )(x)
+    
+    core_decoder = Model(core_dec_input, core_dec_output, name="core_decoder")
+
+
+    # ==========================================================================
+    # 2. Define the MAIN (Multi-Channel) VAE
+    #    This wraps the core blocks in a loop.
+    # ==========================================================================
+
+    # --- Main Encoder ---
+    main_input = Input(shape=input_shape, name="main_input") # (129, 4)
+    
+    z_means = []
+    z_log_vars = []
+    zs = []
+    
+    # Loop through channels, slice them, and pass through Core Encoder
+    for i in range(input_shape[1]):
+        # Slice out the i-th channel: (Batch, 129, 1)
+        channel_slice = tf.keras.layers.Lambda(lambda x: x[..., i:i+1])(main_input)
+        
+        # Pass through shared core encoder
+        zm, zlv, z = core_encoder(channel_slice)
+        
+        z_means.append(zm)
+        z_log_vars.append(zlv)
+        zs.append(z)
+        
+    # Concatenate results to form the "Global" latent variables
+    # Shape becomes (Batch, 4 * latent_dim)
+    # e.g., if latent_dim=4, global latent vector is size 16.
+    global_z_mean = Concatenate(axis=-1, name="z_mean")(z_means)
+    global_z_log_var = Concatenate(axis=-1, name="z_log_var")(z_log_vars)
+    global_z = Concatenate(axis=-1, name="z")(zs)
+    
+    main_encoder_model = Model(main_input, [global_z_mean, global_z_log_var, global_z], name="encoder")
+    # main_encoder_model.summary()
+
+
+    # --- Main Decoder ---
+    # Input is the full concatenated latent vector (Batch, 4 * latent_dim)
+    main_latent_input = Input(shape=(input_shape[1] * latent_dim,), name="main_latent_input")
+    
+    reconstructions = []
+    
+    # Loop through, slice the latent vector, and pass through Core Decoder
+    for i in range(input_shape[1]):
+        # Slice out the part of the latent vector corresponding to this channel
+        # Start index: i * latent_dim
+        # End index: (i + 1) * latent_dim
+        z_slice = tf.keras.layers.Lambda(
+            lambda x: x[:, i*latent_dim : (i+1)*latent_dim]
+        )(main_latent_input)
+        
+        # Pass through shared core decoder
+        recon_slice = core_decoder(z_slice)
+        reconstructions.append(recon_slice)
+        
+    # Concatenate reconstructions back into (Batch, 129, 4)
+    global_reconstruction = Concatenate(axis=-1)(reconstructions)
+    
+    main_decoder_model = Model(main_latent_input, global_reconstruction, name="decoder")
+    # main_decoder_model.summary()
+
+
+    # --- Compile VAE ---
+    vae = VAE(main_encoder_model, main_decoder_model, kl_weight=kl_weight_initial)
+    
+    vae.compile(
+        optimizer=Adam(learning_rate=learning_rate),
+        # Standard MAE will now compute the mean over (129, 4)
+        # efficiently averaging the loss of all 4 channels.
+        loss=keras.losses.MeanAbsoluteError() 
+    )
+    
+    return vae, True
+
+def build_vae_independent_channel_freq8(input_shape=(129, 4), 
+                                       learning_rate=0.001, 
+                                       latent_dim=8, 
+                                       kl_weight_initial=0.0):
+    """
+    Builds a VAE that processes each channel INDEPENDENTLY using shared weights.
+    
+    Architecture:
+    1. Takes (129, 4) input.
+    2. Splits it into 4x (129, 1) inputs.
+    3. Passes each (129, 1) input through the SAME 'Core Encoder'.
+    4. Result is 4 independent latent vectors.
+    5. Passes each latent vector through the SAME 'Core Decoder'.
+    6. Concatenates the 4 outputs back to (129, 4).
+    
+    This forces the model to learn features common to ALL channels, 
+    without mixing channel information in the encoding phase.
+    """
+    
+    # ==========================================================================
+    # 1. Define the CORE (Single-Channel) Encoder & Decoder
+    #    These are the "building blocks" that will be reused 4 times.
+    # ==========================================================================
+    
+    # --- Core Encoder (Input: 129, 1) ---
+    core_enc_input = Input(shape=(input_shape[0], 1), name="core_enc_input")
+    
+    # Add dropout to single channel
+    x = Dropout(0.2)(core_enc_input)
+    
+    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    x = Flatten()(x)
+    
+    # Latent space for ONE channel
+    # Note: If you set latent_dim=4, the total latent space for the event will be 4x4=16
+    core_z_mean = Dense(latent_dim, name="core_z_mean")(x)
+    core_z_log_var = Dense(latent_dim, name="core_z_log_var")(x)
+    core_z = Sampling()([core_z_mean, core_z_log_var])
+    
+    core_encoder = Model(core_enc_input, [core_z_mean, core_z_log_var, core_z], name="core_encoder")
+
+    # --- Core Decoder (Input: latent_dim) ---
+    core_dec_input = Input(shape=(latent_dim,), name="core_dec_input")
+    
+    x = Dense(16 * 32, activation="relu")(core_dec_input)
+    x = Reshape((16, 32))(x)
+    
+    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    x = Conv1DTranspose(16, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # Output is (129, 1)
+    core_dec_output = Conv1DTranspose(
+        1, kernel_size=3, padding="valid", activation="linear", strides=2
+    )(x)
+    
+    core_decoder = Model(core_dec_input, core_dec_output, name="core_decoder")
+
+
+    # ==========================================================================
+    # 2. Define the MAIN (Multi-Channel) VAE
+    #    This wraps the core blocks in a loop.
+    # ==========================================================================
+
+    # --- Main Encoder ---
+    main_input = Input(shape=input_shape, name="main_input") # (129, 4)
+    
+    z_means = []
+    z_log_vars = []
+    zs = []
+    
+    # Loop through channels, slice them, and pass through Core Encoder
+    for i in range(input_shape[1]):
+        # Slice out the i-th channel: (Batch, 129, 1)
+        channel_slice = tf.keras.layers.Lambda(lambda x: x[..., i:i+1])(main_input)
+        
+        # Pass through shared core encoder
+        zm, zlv, z = core_encoder(channel_slice)
+        
+        z_means.append(zm)
+        z_log_vars.append(zlv)
+        zs.append(z)
+        
+    # Concatenate results to form the "Global" latent variables
+    # Shape becomes (Batch, 4 * latent_dim)
+    # e.g., if latent_dim=4, global latent vector is size 16.
+    global_z_mean = Concatenate(axis=-1, name="z_mean")(z_means)
+    global_z_log_var = Concatenate(axis=-1, name="z_log_var")(z_log_vars)
+    global_z = Concatenate(axis=-1, name="z")(zs)
+    
+    main_encoder_model = Model(main_input, [global_z_mean, global_z_log_var, global_z], name="encoder")
+    # main_encoder_model.summary()
+
+
+    # --- Main Decoder ---
+    # Input is the full concatenated latent vector (Batch, 4 * latent_dim)
+    main_latent_input = Input(shape=(input_shape[1] * latent_dim,), name="main_latent_input")
+    
+    reconstructions = []
+    
+    # Loop through, slice the latent vector, and pass through Core Decoder
+    for i in range(input_shape[1]):
+        # Slice out the part of the latent vector corresponding to this channel
+        # Start index: i * latent_dim
+        # End index: (i + 1) * latent_dim
+        z_slice = tf.keras.layers.Lambda(
+            lambda x: x[:, i*latent_dim : (i+1)*latent_dim]
+        )(main_latent_input)
+        
+        # Pass through shared core decoder
+        recon_slice = core_decoder(z_slice)
+        reconstructions.append(recon_slice)
+        
+    # Concatenate reconstructions back into (Batch, 129, 4)
+    global_reconstruction = Concatenate(axis=-1)(reconstructions)
+    
+    main_decoder_model = Model(main_latent_input, global_reconstruction, name="decoder")
+    # main_decoder_model.summary()
+
+
+    # --- Compile VAE ---
+    vae = VAE(main_encoder_model, main_decoder_model, kl_weight=kl_weight_initial)
+    
+    vae.compile(
+        optimizer=Adam(learning_rate=learning_rate),
+        # Standard MAE will now compute the mean over (129, 4)
+        # efficiently averaging the loss of all 4 channels.
+        loss=keras.losses.MeanAbsoluteError() 
+    )
+    
+    return vae, True
+
+def build_vae_independent_channel_freq16(input_shape=(129, 4), 
+                                       learning_rate=0.001, 
+                                       latent_dim=16, 
                                        kl_weight_initial=0.0):
     """
     Builds a VAE that processes each channel INDEPENDENTLY using shared weights.

@@ -2113,9 +2113,10 @@ def main():
     # 2. Normalize Evaluation Data
     # We MUST keep these stats to reverse the plots later!
     sim_rcr_all, rcr_stats = normalizer.normalize(sim_rcr_all)
-    sim_rcr_all = None  # Trying out not using sim rcr at all in plots
     data_backlobe_traces_rcr_all, bl_stats = normalizer.normalize(data_backlobe_traces_rcr_all)
-    
+    sim_rcr_all = data_backlobe_traces_rcr_all.astype(np.float32, copy=False)
+    rcr_stats = bl_stats.astype(np.float32, copy=False)
+
     print(f"Data Normalized. Training shape: {training_backlobe.shape}")
 
     model, history, requires_transpose = train_vae_model(

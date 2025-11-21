@@ -82,9 +82,9 @@ MODEL_BUILDERS = {
     '1d_vae_custom_loss': build_vae_custom_loss_model_time_samplewise,
     '2d_vae': build_vae_model_time_2d_input,
     '1d_vae_scattering': build_vae_model_scattering,
-    '1d_vae_independent_channel_freq4': build_vae_independent_channel_freq4,
-    '1d_vae_independent_channel_freq8': build_vae_independent_channel_freq8,
-    '1d_vae_independent_channel_freq16': build_vae_independent_channel_freq16
+    '1d_vae_independent_channel_l4_freq': build_vae_independent_channel_freq4,
+    '1d_vae_independent_channel_l8_freq8': build_vae_independent_channel_freq8,
+    '1d_vae_independent_channel_l16_freq16': build_vae_independent_channel_freq16
 }
 
 DEFAULT_VALIDATION_PKL_PATH = (

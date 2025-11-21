@@ -74,9 +74,9 @@ if __name__ == "__main__":
         # '1d_vae_custom_loss',
         # '2d_vae',
         # '1d_vae_scattering',
-        '1d_vae_independent_channel_freq4',
-        '1d_vae_independent_channel_freq8',
-        '1d_vae_independent_channel_freq16'
+        '1d_vae_independent_channel_l4_freq',
+        '1d_vae_independent_channel_l8_freq',
+        '1d_vae_independent_channel_l16_freq'
 
     ]
     

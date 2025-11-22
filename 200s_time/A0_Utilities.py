@@ -60,6 +60,53 @@ def getMaxAllChi(traces, sampling_rate, template_traces, template_sampling_rate,
 
     return max(maxCorr)
 
+class PerEventMinMaxNormalizer:
+    """
+    Normalizes each event individually to the range [0, 1].
+    Preserves inter-channel relative amplitudes by scaling all channels 
+    of a single event by the same global min/max of that event.
+    """
+    def __init__(self):
+        self.last_mins = None
+        self.last_maxs = None
+
+    def normalize(self, data):
+        """
+        Input: (N_events, Samples, Channels)
+        Output: (N_events, Samples, Channels) normalized to [0, 1]
+        Returns: normalized_data, (mins, maxs)
+        """
+        # Calculate Min and Max per event (across all samples and channels)
+        # shape: (N, 1, 1) so it broadcasts correctly
+        mins = np.min(data, axis=(1, 2), keepdims=True)
+        maxs = np.max(data, axis=(1, 2), keepdims=True)
+        
+        # Avoid division by zero for flat traces
+        range_vals = maxs - mins
+        range_vals[range_vals == 0] = 1.0
+        
+        normalized_data = (data - mins) / range_vals
+        
+        return normalized_data, (mins, maxs)
+
+    def denormalize(self, normalized_data, stats):
+        """
+        Reverses the normalization using the stored stats (mins, maxs).
+        """
+        mins, maxs = stats
+        range_vals = maxs - mins
+        # range_vals[range_vals == 0] = 1.0 # Not strictly needed for multiplication
+        
+        return (normalized_data * range_vals) + mins
+
+def inverse_db_scale(data):
+    """
+    Reverses a standard 10*log10(x) scaling.
+    Assumes input 'data' is in dB.
+    Returns power (linear scale).
+    """
+    return 10 ** (data / 10.0)
+
 def loadSingleTemplate(series):
     # Series should be 200 or 100
     # Loads the first version of a template made for an average energy/zenith

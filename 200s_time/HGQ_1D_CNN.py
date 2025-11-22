@@ -1,6 +1,7 @@
 import os
 import pickle
 import time
+import argparse
 from datetime import datetime
 
 import numpy as np
@@ -97,7 +98,15 @@ def build_hgq_model(input_shape, beta0=1e-6, beta_final=1e-4, ramp_epochs=10):
 
 # --- Main Script ---
 def main():
+    parser = argparse.ArgumentParser(description="Train baseline and HGQ2 models.")
+    parser.add_argument("--epochs", type=int, default=None,
+                        help="Number of training epochs (overrides config file)")
+    args = parser.parse_args()
+
     config = load_config(config_path="/pub/tangch3/ARIANNA/DeepLearning/code/200s_time/config.yaml")
+
+    epochs = args.epochs if args.epochs is not None else config['keras_epochs']
+
     amp = config['amp']
     prefix = config.get('prefix', '')
     timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
@@ -148,7 +157,7 @@ def main():
     print(f'------- training Baseline model -------')
     baseline_history = baseline_model.fit(x, y,
                                           validation_split=0.2,
-                                          epochs=config['keras_epochs'],
+                                          epochs=epochs,
                                           batch_size=config['keras_batch_size'],
                                           verbose=config['verbose_fit'])
     
@@ -163,7 +172,7 @@ def main():
     print(f'------- training HGQ2 model -------')
     hgq_history = hgq_model.fit(x, y,
                                 validation_split=0.2,
-                                epochs=config['keras_epochs'],
+                                epochs=epochs,
                                 batch_size=config['keras_batch_size'],
                                 callbacks=[ebops, pbar, nan_terminate, beta_scheduler], # It is recommended to use the FreeEBOPs callback to monitor EBOPs during training
                                 verbose=config['verbose_fit'])

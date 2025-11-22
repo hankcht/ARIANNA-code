@@ -87,8 +87,10 @@ if __name__ == "__main__":
 
     # cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_test_smalljet.py"
     # RunMultipleJobs(cmd, jobName='HGQ2_small_jet', python_env='hgq2')
-    cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py"
-    RunMultipleJobs(cmd, jobName='HGQ2', python_env='hgq2')
+    epochs = [30, 50, 80, 100, 500, 1000, 3000]
+    for epoch in epochs: 
+        cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch}"
+        RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}', python_env='hgq2')
 
 
     # # Define available model types

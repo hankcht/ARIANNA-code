@@ -142,6 +142,7 @@ def main():
     x = np.vstack((training_rcr, training_backlobe))
     y = np.vstack((np.ones((training_rcr.shape[0], 1)), np.zeros((training_backlobe.shape[0], 1))))
     s = np.arange(x.shape[0])
+    np.random.seed(42)
     np.random.shuffle(s)
     x = x[s].transpose(0, 2, 1)  # ensure (n_events, length, channels)
     y = y[s]
@@ -266,12 +267,44 @@ def main():
     train_accuracy_delta = baseline_train_acc[-1] - hgq_train_acc[-1]
     val_accuracy_delta = baseline_val_acc[-1] - hgq_val_acc[-1]
 
+    train_loss_delta = baseline_train_loss[-1] - hgq_train_loss[-1]
+    val_loss_delta = baseline_val_loss[-1] - hgq_val_loss[-1]
+
     df = pd.DataFrame({
-        'Metric': ['Training Accuracy', 'Validation Accuracy', 'EBOPs (estimated)'],
-        'Baseline': [baseline_train_acc[-1], baseline_val_acc[-1], baseline_ebops],
-        'HGQ2': [hgq_train_acc[-1], hgq_val_acc[-1], hgq_ebops[-1]],
-        'Difference': [train_accuracy_delta, val_accuracy_delta, float('nan')]
+        'Metric': [
+            'Training Accuracy',
+            'Validation Accuracy',
+            'Training Loss',
+            'Validation Loss',
+            'EBOPs (estimated)'
+        ],
+        'Baseline': [
+            baseline_train_acc[-1],
+            baseline_val_acc[-1],
+            baseline_train_loss[-1],
+            baseline_val_loss[-1],
+            baseline_ebops
+        ],
+        'HGQ2': [
+            hgq_train_acc[-1],
+            hgq_val_acc[-1],
+            hgq_train_loss[-1],
+            hgq_val_loss[-1],
+            hgq_ebops[-1]
+        ],
+        'Difference': [
+            train_accuracy_delta,
+            val_accuracy_delta,
+            train_loss_delta,
+            val_loss_delta,
+            float('nan')
+        ]
     })
+
+    df[['Baseline', 'HGQ2', 'Difference']] = df[['Baseline', 'HGQ2', 'Difference']].round(6)
+
+    for col in ['Baseline', 'HGQ2', 'Difference']:
+        df[col] = df[col].apply(lambda x: f"{x:.6f}" if pd.notnull(x) else x)
 
     summary_file = os.path.join(plot_dir, 'hgq2_results', 'summary_table.csv')
     df.to_csv(summary_file, index=False)

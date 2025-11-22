@@ -773,11 +773,11 @@ def build_vae_independent_channel_freq4(input_shape=(129, 4),
     # Add dropout to single channel
     x = Dropout(0.2)(core_enc_input)
     
-    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
+    x = Conv1D(32, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1D(64, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1D(128, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     
     x = Flatten()(x)
@@ -793,12 +793,12 @@ def build_vae_independent_channel_freq4(input_shape=(129, 4),
     # --- Core Decoder (Input: latent_dim) ---
     core_dec_input = Input(shape=(latent_dim,), name="core_dec_input")
     
-    x = Dense(16 * 32, activation="relu")(core_dec_input)
-    x = Reshape((16, 32))(x)
+    x = Dense(16 * 128, activation="relu")(core_dec_input)
+    x = Reshape((16, 128))(x)
     
-    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1DTranspose(64, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    x = Conv1DTranspose(16, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     
     # Output is (129, 1)
@@ -912,11 +912,11 @@ def build_vae_independent_channel_freq8(input_shape=(129, 4),
     # Add dropout to single channel
     x = Dropout(0.2)(core_enc_input)
     
-    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
+    x = Conv1D(32, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1D(64, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1D(128, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     
     x = Flatten()(x)
@@ -932,12 +932,12 @@ def build_vae_independent_channel_freq8(input_shape=(129, 4),
     # --- Core Decoder (Input: latent_dim) ---
     core_dec_input = Input(shape=(latent_dim,), name="core_dec_input")
     
-    x = Dense(16 * 32, activation="relu")(core_dec_input)
-    x = Reshape((16, 32))(x)
+    x = Dense(16 * 128, activation="relu")(core_dec_input)
+    x = Reshape((16, 128))(x)
     
-    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1DTranspose(64, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    x = Conv1DTranspose(16, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     
     # Output is (129, 1)
@@ -1051,11 +1051,11 @@ def build_vae_independent_channel_freq16(input_shape=(129, 4),
     # Add dropout to single channel
     x = Dropout(0.2)(core_enc_input)
     
-    x = Conv1D(16, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
+    x = Conv1D(32, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1D(64, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    x = Conv1D(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1D(128, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     
     x = Flatten()(x)
@@ -1071,12 +1071,12 @@ def build_vae_independent_channel_freq16(input_shape=(129, 4),
     # --- Core Decoder (Input: latent_dim) ---
     core_dec_input = Input(shape=(latent_dim,), name="core_dec_input")
     
-    x = Dense(16 * 32, activation="relu")(core_dec_input)
-    x = Reshape((16, 32))(x)
+    x = Dense(16 * 128, activation="relu")(core_dec_input)
+    x = Reshape((16, 128))(x)
     
-    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1DTranspose(64, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
-    x = Conv1DTranspose(16, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
     x = BatchNormalization()(x)
     
     # Output is (129, 1)
@@ -1156,6 +1156,71 @@ def build_vae_independent_channel_freq16(input_shape=(129, 4),
         # Standard MAE will now compute the mean over (129, 4)
         # efficiently averaging the loss of all 4 channels.
         loss=keras.losses.MeanAbsoluteError() 
+    )
+    
+    return vae, True
+
+
+def build_vae_model_doublefilter_freq(input_shape=(129, 4), learning_rate=0.001, latent_dim=16, kl_weight_initial=0.0):
+    """
+    Builds a 1D Convolutional Variational Autoencoder.
+    """
+
+
+    # --- Encoder ---
+    encoder_inputs = Input(shape=input_shape)
+
+    # Add 20% dropout to force model to try to reconstruct missing freq spectrum
+    x = Dropout(0.2)(encoder_inputs)
+
+
+    # (129, 4) -> (64, 32)
+    x = Conv1D(32, kernel_size=3, padding="valid", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    # (64, 32) -> (32, 64)
+    x = Conv1D(64, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    # (32, 64) -> (16, 128)
+    x = Conv1D(128, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    
+    # Flatten features and get probabilistic latent space
+    x = Flatten()(x)
+    # x = GlobalAveragePooling1D()(x)  # Alternative to Flatten
+    z_mean = Dense(latent_dim, name="z_mean")(x)
+    z_log_var = Dense(latent_dim, name="z_log_var")(x)
+    z = Sampling()([z_mean, z_log_var])
+    
+    encoder = Model(encoder_inputs, [z_mean, z_log_var, z], name="encoder")
+    encoder.summary()
+
+    # --- Decoder ---
+    latent_inputs = Input(shape=(latent_dim,))
+    
+    # Project back to the shape before flattening
+    x = Dense(16 * 128, activation="relu")(latent_inputs)
+    x = Reshape((16, 128))(x)
+    
+    # (16, 128) -> (32, 64)
+    x = Conv1DTranspose(64, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    # (32, 64) -> (64, 32)
+    x = Conv1DTranspose(32, kernel_size=5, padding="same", activation="relu", strides=2)(x)
+    x = BatchNormalization()(x)
+    # (64, 32) -> (129, 4)
+    decoder_outputs = Conv1DTranspose(
+        input_shape[-1], kernel_size=3, padding="valid", activation="linear", strides=2
+    )(x)
+    
+    decoder = Model(latent_inputs, decoder_outputs, name="decoder")
+    decoder.summary()
+
+    # --- VAE ---
+    vae = VAE(encoder, decoder, kl_weight=kl_weight_initial)
+    
+    vae.compile(
+        optimizer=Adam(learning_rate=learning_rate),
+        loss=keras.losses.MeanAbsoluteError() # This is the reconstruction loss
     )
     
     return vae, True

@@ -44,7 +44,8 @@ from model_builder_VAE import (
     CyclicalLRCallback,
     build_vae_independent_channel_freq4,
     build_vae_independent_channel_freq8,
-    build_vae_independent_channel_freq16
+    build_vae_independent_channel_freq16,
+    build_vae_model_doublefilter_freq
 )
 from model_builder_VAE_time import (
     build_vae_model_time,
@@ -84,7 +85,8 @@ MODEL_BUILDERS = {
     '1d_vae_scattering': build_vae_model_scattering,
     '1d_vae_independent_channel_l4_freq': build_vae_independent_channel_freq4,
     '1d_vae_independent_channel_l8_freq': build_vae_independent_channel_freq8,
-    '1d_vae_independent_channel_l16_freq': build_vae_independent_channel_freq16
+    '1d_vae_independent_channel_l16_freq': build_vae_independent_channel_freq16,
+    '1d_vae_doublefilter_freq': build_vae_model_doublefilter_freq,
 }
 
 DEFAULT_VALIDATION_PKL_PATH = (

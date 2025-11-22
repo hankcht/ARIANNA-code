@@ -76,8 +76,8 @@ if __name__ == "__main__":
         # '1d_vae_scattering',
         '1d_vae_independent_channel_l4_freq',
         '1d_vae_independent_channel_l8_freq',
-        '1d_vae_independent_channel_l16_freq'
-
+        '1d_vae_independent_channel_l16_freq',
+        '1d_vae_doublefilter_freq'
     ]
     
     # --- Parameters to sweep for Autoencoder ---

@@ -14,6 +14,14 @@ from tensorflow.keras.layers import Input, Conv1D, Dense, Dropout, Flatten, Batc
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 import pandas as pd
+import random
+import tensorflow as tf
+
+seed = 42
+
+random.seed(seed)
+np.random.seed(seed)
+tf.random.set_seed(seed)
 
 # --- HGQ2 imports ---
 from hgq.layers import QDense, QConv1D

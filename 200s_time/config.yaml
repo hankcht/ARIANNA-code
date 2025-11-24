@@ -41,6 +41,7 @@ all_station_data: "/pub/tangch3/ARIANNA/DeepLearning/refactor/station_data/all_d
 # base_plot_path: "/pub/tangch3/ARIANNA/DeepLearning/refactor/plots/"
 base_model_path: "/dfs8/sbarwick_lab/ariannaproject/tangch3/models/"
 base_plot_path: "/dfs8/sbarwick_lab/ariannaproject/tangch3/plots/"
+hgq_plot_path: "/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/"
 
 # Training
 if_1D: False # currently used in checks.py to evaluate transposed events

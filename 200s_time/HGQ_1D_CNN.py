@@ -271,13 +271,15 @@ def main():
 
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
+    sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
+    data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
 
     # Evaluate & plot network output histogram ON RCR-like TRACES!
     baseline_prob_rcr, baseline_prob_backlobe, baseline_rcr_efficiency, baseline_bl_efficiency = \
-        evaluate_model_performance(baseline_model, sim_rcr_all, data_backlobe_traces_rcr_all, config['output_cut_value'], config)
+        evaluate_model_performance(baseline_model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)
     
     hgq_prob_rcr, hgq_prob_backlobe, hgq_rcr_efficiency, hgq_bl_efficiency = \
-        evaluate_model_performance(baseline_model, sim_rcr_all, data_backlobe_traces_rcr_all, config['output_cut_value'], config)
+        evaluate_model_performance(baseline_model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)
 
     plot_network_output_histogram(baseline_prob_rcr, baseline_prob_backlobe, baseline_rcr_efficiency, baseline_bl_efficiency,
                                     config, timestamp, model_tag="baseline")

@@ -288,7 +288,6 @@ def main():
                                     config, timestamp, model_tag="hgq2")
 
     # For accuracy, show absolute difference (HGQ2 - Baseline). Positive means HGQ2 higher accuracy.
-    print(f'hgq train acc: {hgq_train_acc}')
 
     train_accuracy_delta = baseline_train_acc[-1] - hgq_train_acc[-1]
     val_accuracy_delta = baseline_val_acc[-1] - hgq_val_acc[-1]

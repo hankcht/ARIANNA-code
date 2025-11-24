@@ -117,11 +117,10 @@ def main():
     epochs = args.epochs if args.epochs is not None else config['keras_epochs']
 
     amp = config['amp']
-    prefix = config.get('prefix', '')
     timestamp = datetime.now().strftime('%m.%d.%y_%H-%M')
 
     # setup saving paths
-    hgq2_root = "/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/"
+    hgq2_root = config['base_plot_path']
 
     # Timestamp folder inside HGQ2
     run_dir = os.path.join(hgq2_root, timestamp)
@@ -270,6 +269,22 @@ def main():
     plt.close()
 
 
+    sim_rcr_all = data['sim_rcr_all']
+    data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
+
+    # Evaluate & plot network output histogram ON RCR-like TRACES!
+    baseline_prob_rcr, baseline_prob_backlobe, baseline_rcr_efficiency, baseline_bl_efficiency = \
+        evaluate_model_performance(baseline_model, sim_rcr_all, data_backlobe_traces_rcr_all, config['output_cut_value'], config)
+    
+    hgq_prob_rcr, hgq_prob_backlobe, hgq_rcr_efficiency, hgq_bl_efficiency = \
+        evaluate_model_performance(baseline_model, sim_rcr_all, data_backlobe_traces_rcr_all, config['output_cut_value'], config)
+
+    plot_network_output_histogram(baseline_prob_rcr, baseline_prob_backlobe, baseline_rcr_efficiency, baseline_bl_efficiency,
+                                    config, timestamp, model_tag="baseline")
+
+    plot_network_output_histogram(hgq_prob_rcr, hgq_prob_backlobe, hgq_rcr_efficiency, hgq_bl_efficiency, 
+                                    config, timestamp, model_tag="hgq2")
+
     # For accuracy, show absolute difference (HGQ2 - Baseline). Positive means HGQ2 higher accuracy.
     print(f'hgq train acc: {hgq_train_acc}')
 
@@ -320,6 +335,8 @@ def main():
     pd.set_option('display.max_columns', None)
     print(df)
     print(f"Saved summary table to {summary_file}")
+
+    
 
 if __name__ == "__main__":
     main()

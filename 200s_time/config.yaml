@@ -44,7 +44,7 @@ base_plot_path: "/dfs8/sbarwick_lab/ariannaproject/tangch3/plots/"
 
 # Training
 if_1D: False # currently used in checks.py to evaluate transposed events
-prefix : "1D_CNN_HGQ"
+prefix : "1D_CNN"
 train_cut: 8000
 early_stopping_patience: 5
 keras_epochs: 500
@@ -58,7 +58,7 @@ history_filename_template: "{timestamp}_{amp}_{prefix}_model_2Layer_history.pkl"
 loss_plot_filename_template: "{timestamp}_{amp}_{prefix}_loss_plot_2Layer.png"
 accuracy_plot_filename_template: "{timestamp}_{amp}_{prefix}_accuracy_plot_2Layer.png"
 tsne_plot_filename_template: "{timestamp}_{amp}_tsne_feature_space_{prefix}_2Layer.png"
-histogram_filename_template: "{timestamp}_{amp}_{prefix}_histogram.png"
+histogram_filename_template: "{timestamp}_{amp}_{prefix}_{model_tag}histogram.png"
 
 # DANN specific
 if_dann: False # currently used in checks.py to load dann model

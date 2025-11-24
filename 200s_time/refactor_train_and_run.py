@@ -232,7 +232,7 @@ def evaluate_model_performance(model, sim_rcr_all, data_backlobe_traces_rcr_all,
 
 # --- Plotting Network Output Histogram ---
 def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
-                                  backlobe_efficiency, config, timestamp):
+                                  backlobe_efficiency, config, timestamp, model_tag):
     """
     Plots the histogram of network outputs for RCR and Backlobe events.
 
@@ -281,7 +281,7 @@ def plot_network_output_histogram(prob_rcr, prob_backlobe, rcr_efficiency,
     ax.annotate('RCR', xy=(1.0, -0.1), xycoords='axes fraction', ha='right', va='center', fontsize=12, color='red')
     plt.subplots_adjust(left=0.15, right=0.85, bottom=0.15, top=0.9)
 
-    hist_file = os.path.join(plot_path, config['histogram_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix))
+    hist_file = os.path.join(plot_path, config['histogram_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix, model_tag=model_tag))
     print(f'saving {hist_file}')
     plt.savefig(hist_file)
     plt.close()

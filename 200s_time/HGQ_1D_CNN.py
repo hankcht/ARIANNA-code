@@ -58,7 +58,7 @@ def build_fp32_model(input_shape):
     
     return model
 
-def build_hgq_model(input_shape, beta0=1e-6, beta_final=1e-4, ramp_epochs=10):
+def build_hgq_model(input_shape, beta0=1e-6, beta_final=1e-4, ramp_epochs=500):
 
     # Define BetaScheduler (linear ramp)
     def linear_beta_fn(epoch):
@@ -83,11 +83,11 @@ def build_hgq_model(input_shape, beta0=1e-6, beta_final=1e-4, ramp_epochs=10):
 
 
     # Define Config Scopes 
-    scope0 = QuantizerConfigScope(place='all', k0=1, b0=3, i0=0, default_q_type='kbi', overflow_mode='SAT_SYM')
-    scope1 = QuantizerConfigScope(place='datalane', k0=1, default_q_type='kif', overflow_mode='WRAP', f0=3, i0=3)
+    scope0 = QuantizerConfigScope(place='all', b0=3, i0=0, default_q_type='kbi', overflow_mode='SAT_SYM') # k0=1,
+    scope1 = QuantizerConfigScope(place='datalane', default_q_type='kif', overflow_mode='WRAP', f0=3, i0=3)
     with scope0, scope1: 
-        iq_conf = QuantizerConfig(place='datalane', k0=1) # input quantizer
-        oq_conf = QuantizerConfig(place='datalane', k0=1, fr=MonoL1(1e-3)) # output quantizer   
+        iq_conf = QuantizerConfig(place='datalane') # input quantizer
+        oq_conf = QuantizerConfig(place='datalane', fr=MonoL1(1e-3)) # output quantizer   
         model = keras.Sequential([
                     keras.layers.Input(shape=input_shape),
                     # QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'),

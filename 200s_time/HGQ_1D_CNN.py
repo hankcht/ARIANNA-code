@@ -58,7 +58,7 @@ def build_fp32_model(input_shape):
     
     return model
 
-def build_hgq_model(input_shape, beta0=1e-6, beta_final=1e-4, ramp_epochs=500):
+def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-4, ramp_epochs=500):
 
     # Define BetaScheduler (linear ramp)
     def linear_beta_fn(epoch):
@@ -183,7 +183,7 @@ def main():
                                 validation_split=0.2,
                                 epochs=epochs,
                                 batch_size=config['keras_batch_size'],
-                                callbacks=[ebops, pbar, nan_terminate, beta_scheduler], # It is recommended to use the FreeEBOPs callback to monitor EBOPs during training
+                                callbacks=[ebops, pbar, nan_terminate], # It is recommended to use the FreeEBOPs callback to monitor EBOPs during training
                                 verbose=config['verbose_fit'])
     
     hgq_model_path = os.path.join(model_dir, f"{timestamp}_HGQ2_model.h5")

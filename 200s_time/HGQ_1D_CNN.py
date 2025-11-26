@@ -17,7 +17,7 @@ import pandas as pd
 import random
 import tensorflow as tf
 
-seed = 42
+seed = 67
 
 random.seed(seed)
 np.random.seed(seed)
@@ -58,7 +58,7 @@ def build_fp32_model(input_shape):
     
     return model
 
-def build_hgq_model(input_shape, beta0=1e-5, beta_final=1e-4, ramp_epochs=500):
+def build_hgq_model(input_shape, ramp_epochs, beta0=1e-5, beta_final=1e-4):
 
     # Define BetaScheduler (linear ramp)
     def linear_beta_fn(epoch):
@@ -174,7 +174,7 @@ def main():
     baseline_model.save(baseline_model_path)
 
     # --- Train HGQ2 Model ---
-    hgq_model, beta_scheduler = build_hgq_model(input_shape)
+    hgq_model, beta_scheduler = build_hgq_model(input_shape, ramp_epochs=epochs)
 
     nan_terminate = keras.callbacks.TerminateOnNaN()
     pbar = PBar('loss: {loss:.3f}/{val_loss:.3f} - acc: {accuracy:.3f}/{val_accuracy:.3f}')
@@ -279,7 +279,7 @@ def main():
         evaluate_model_performance(baseline_model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)
     
     hgq_prob_rcr, hgq_prob_backlobe, hgq_rcr_efficiency, hgq_bl_efficiency = \
-        evaluate_model_performance(baseline_model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)
+        evaluate_model_performance(hgq_model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)
 
     plot_network_output_histogram(baseline_prob_rcr, baseline_prob_backlobe, baseline_rcr_efficiency, baseline_bl_efficiency,
                                     config, timestamp, model_tag="baseline")

@@ -1,3 +1,5 @@
+# refactor_checks.py
+
 import os
 import re
 import time
@@ -199,71 +201,169 @@ def plot_histogram(prob_2016, prob_coincidence, prob_coincidence_rcr, amp, times
     plt.close()
 
 
-if __name__ == "__main__":
-    config = load_config()
-    amp = config['amp']
+import os
+import numpy as np
+from tensorflow import keras
 
-    model, model_timestamp, prefix = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="CNN")
+from A0_Utilities import load_config
 
+import matplotlib.pyplot as plt
+from glob import glob
+
+
+# -----------------------------------------------------------
+# Helper: generic evaluation just like refactor_checks main()
+# -----------------------------------------------------------
+def evaluate_model(model_path, amp, model_label):
+    print(f"\n==============================")
+    print(f" Evaluating model: {model_path}")
+    print(f"==============================")
+
+    # --------------------------
+    # Load the model
+    # --------------------------
+    model = keras.models.load_model(model_path)
+    print("Model loaded.")
+
+    # --------------------------
+    # Load 2016 backlobe templates
+    # ---------------------------
     template_dir = "/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/"
-    template_paths = sorted(glob(os.path.join(template_dir, "filtered_Event2016_Stn*.npy"))) # using filtered confirmed BL
+    template_paths = sorted(glob(os.path.join(template_dir, "filtered_Event2016_Stn*.npy")))
+
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
+    print(f"Loaded {len(all_2016_backlobes)} templates.")
 
-    print(f"Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
-
+    # --------------------------
+    # Load coincidence event traces
+    # --------------------------
     pkl_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl"
-    coinc_dict, all_coincidence_events, metadata = load_all_coincidence_traces(pkl_path, "Filtered_Traces") # using filtered coincidence 
+    coinc_dict, all_coincidence_events, metadata = load_all_coincidence_traces(pkl_path, "Filtered_Traces")
     print(f"Loaded {len(all_coincidence_events)} coincidence traces.")
 
-    all_2016_backlobes = np.array(all_2016_backlobes)
-    all_coincidence_events = np.array(all_coincidence_events)
-    print(all_2016_backlobes.shape)
-    print(all_coincidence_events.shape)
-
+    # --------------------------
+    # Ensure proper shape (add channel dim)
+    # --------------------------
     if all_2016_backlobes.ndim == 3:
         all_2016_backlobes = all_2016_backlobes[..., np.newaxis]
-        print(f'changed to shape {all_2016_backlobes.shape}')
     if all_coincidence_events.ndim == 3:
         all_coincidence_events = all_coincidence_events[..., np.newaxis]
-        print(f'changed to shape {all_coincidence_events.shape}')
 
-    if config['if_dann']:
-        print('DANN Evaluation')
-        prob_backlobe, _ = model.predict(all_2016_backlobes)
-        prob_coincidence, _ = model.predict(all_coincidence_events)
-    elif config['if_1D']:
-        print('1D CNN Evaluation')
-        all_2016_backlobes_transpose = all_2016_backlobes.squeeze(-1).transpose(0, 2, 1)
-        all_coincidence_events_transpose = all_coincidence_events.squeeze(-1).transpose(0, 2, 1)
-        prob_backlobe = model.predict(all_2016_backlobes_transpose)
-        prob_coincidence = model.predict(all_coincidence_events_transpose)
+    print("Transposing for 1D model…")
 
-        coinc_rcr = all_coincidence_events[1297]
-        from A0_Utilities import pT
-        pT(coinc_rcr, 'test plot coinc', '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/93_plot_coinc_rcr.png')
+    bl = all_2016_backlobes.squeeze(-1).transpose(0, 2, 1)
+    coinc = all_coincidence_events.squeeze(-1).transpose(0, 2, 1)
+    # --------------------------
+    # Predictions (2D CNN assumed)
+    # --------------------------
+    print("Running predictions…")
+    prob_backlobe = model.predict(bl).flatten()
+    prob_coincidence = model.predict(coinc).flatten()
 
-        coinc_rcr_transpose = coinc_rcr.squeeze(-1).transpose(1, 0)
-        prob_coincidence_rcr = model.predict(np.expand_dims(coinc_rcr_transpose, axis=0))
-    else:
-        print('2D CNN Evaluation')
-        prob_backlobe = model.predict(all_2016_backlobes)
-        prob_coincidence = model.predict(all_coincidence_events)
+    # For histogram annotation
+    rcr_trace = all_coincidence_events[1297].squeeze(-1).transpose(1, 0)
+    prob_coincidence_rcr = model.predict(
+        np.expand_dims(rcr_trace, axis=0)
+    ).flatten()
 
-        prob_coincidence_rcr = model.predict(np.expand_dims(all_coincidence_events[1297], axis=0))
-        print(f'coincidence RCR network output: {prob_coincidence_rcr}')
+    # --------------------------
+    # Create a histogram for this model
+    # --------------------------
+    plot_histogram(
+        prob_backlobe,
+        prob_coincidence,
+        prob_coincidence_rcr,
+        amp=amp,
+        timestamp=model_label,   # Use filename as timestamp label
+        prefix=model_label       # Forces output filename to include model name
+    )
 
-    prob_backlobe = prob_backlobe.flatten()
-    prob_coincidence = prob_coincidence.flatten()
-    prob_coincidence_rcr = prob_coincidence_rcr.flatten()
+    print(f"Finished evaluating {model_label}.\n")
 
-    plot_histogram(prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
 
-    # print(prob_backlobe)
+# -----------------------------------------------------------
+# Main driver: evaluate both models
+# -----------------------------------------------------------
+if __name__ == "__main__":
+    config = load_config()
+    amp = config["amp"]
 
-    # indices = [149, 169, 199]
-    # for idx in indices:
-    #     print(metadata[idx]["master_id"])
-    #     print(metadata[idx]["Times"])
+    # Two specific models you want to evaluate
+    model_paths = [
+        "dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/11.26.25_13-52/models/11.26.25_13-52_baseline_model.h5",
+        "dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/11.26.25_13-52/models/11.26.25_13-52_HGQ2_model.h5"
+    ]
+
+    for model_path in model_paths:
+        model_label = os.path.basename(model_path).replace(".h5", "")
+        evaluate_model(model_path, amp, model_label)
+
+
+# if __name__ == "__main__":
+#     config = load_config()
+#     amp = config['amp']
+
+#     model, model_timestamp, prefix = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="CNN")
+
+#     template_dir = "/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/"
+#     template_paths = sorted(glob(os.path.join(template_dir, "filtered_Event2016_Stn*.npy"))) # using filtered confirmed BL
+#     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)
+
+#     print(f"Loaded {len(all_2016_backlobes)} 2016 backlobe traces.")
+
+#     pkl_path = "/pub/tangch3/ARIANNA/DeepLearning/refactor/other/test_bandpass_on_coinc/filtered_coinc.pkl"
+#     coinc_dict, all_coincidence_events, metadata = load_all_coincidence_traces(pkl_path, "Filtered_Traces") # using filtered coincidence 
+#     print(f"Loaded {len(all_coincidence_events)} coincidence traces.")
+
+#     all_2016_backlobes = np.array(all_2016_backlobes)
+#     all_coincidence_events = np.array(all_coincidence_events)
+#     print(all_2016_backlobes.shape)
+#     print(all_coincidence_events.shape)
+
+#     if all_2016_backlobes.ndim == 3:
+#         all_2016_backlobes = all_2016_backlobes[..., np.newaxis]
+#         print(f'changed to shape {all_2016_backlobes.shape}')
+#     if all_coincidence_events.ndim == 3:
+#         all_coincidence_events = all_coincidence_events[..., np.newaxis]
+#         print(f'changed to shape {all_coincidence_events.shape}')
+
+#     if config['if_dann']:
+#         print('DANN Evaluation')
+#         prob_backlobe, _ = model.predict(all_2016_backlobes)
+#         prob_coincidence, _ = model.predict(all_coincidence_events)
+#     elif config['if_1D']:
+#         print('1D CNN Evaluation')
+#         all_2016_backlobes_transpose = all_2016_backlobes.squeeze(-1).transpose(0, 2, 1)
+#         all_coincidence_events_transpose = all_coincidence_events.squeeze(-1).transpose(0, 2, 1)
+#         prob_backlobe = model.predict(all_2016_backlobes_transpose)
+#         prob_coincidence = model.predict(all_coincidence_events_transpose)
+
+#         coinc_rcr = all_coincidence_events[1297]
+#         from A0_Utilities import pT
+#         pT(coinc_rcr, 'test plot coinc', '/pub/tangch3/ARIANNA/DeepLearning/refactor/other/93_plot_coinc_rcr.png')
+
+#         coinc_rcr_transpose = coinc_rcr.squeeze(-1).transpose(1, 0)
+#         prob_coincidence_rcr = model.predict(np.expand_dims(coinc_rcr_transpose, axis=0))
+#     else:
+#         print('2D CNN Evaluation')
+#         prob_backlobe = model.predict(all_2016_backlobes)
+#         prob_coincidence = model.predict(all_coincidence_events)
+
+#         prob_coincidence_rcr = model.predict(np.expand_dims(all_coincidence_events[1297], axis=0))
+#         print(f'coincidence RCR network output: {prob_coincidence_rcr}')
+
+#     prob_backlobe = prob_backlobe.flatten()
+#     prob_coincidence = prob_coincidence.flatten()
+#     prob_coincidence_rcr = prob_coincidence_rcr.flatten()
+
+#     plot_histogram(prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
+
+#     # print(prob_backlobe)
+
+#     # indices = [149, 169, 199]
+#     # for idx in indices:
+#     #     print(metadata[idx]["master_id"])
+#     #     print(metadata[idx]["Times"])
 
 
 

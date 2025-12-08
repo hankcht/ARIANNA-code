@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from glob import glob
 from datetime import datetime
 from tensorflow import keras
+print(keras.__version__)
 from A0_Utilities import load_config
 
 

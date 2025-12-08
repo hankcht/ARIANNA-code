@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from glob import glob
 from datetime import datetime
+import tensorflow
 print(tensorflow.__version__)
 from tensorflow import keras
 

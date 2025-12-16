@@ -76,21 +76,21 @@ def main(multi_run):
     else:
         cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py'
         # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'
-        RunMultipleJobs(cmd, jobName='workbench')
+        RunMultipleJobs(cmd, jobName='checks')
 
 
 if __name__ == "__main__":
-    # multi_run = True
-    # main(multi_run=multi_run)
+    multi_run = False
+    main(multi_run=multi_run)
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
     # RunMultipleJobs(cmd, jobName='converter')
 
     # cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_test_smalljet.py"
     # RunMultipleJobs(cmd, jobName='HGQ2_small_jet', python_env='hgq2')
-    epochs = [1701, 2001, 2201] # 30, 50, 80, 100, 300, 500, 850, 1000, 1200, 1500, 1800, 2000
-    for epoch in epochs: 
-        cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch}"
-        RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}', python_env='hgq2')
+    # epochs = [1701, 2001, 2201] # 30, 50, 80, 100, 300, 500, 850, 1000, 1200, 1500, 1800, 2000
+    # for epoch in epochs: 
+    #     cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch}"
+    #     RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}', python_env='hgq2')
 
 
     # # Define available model types

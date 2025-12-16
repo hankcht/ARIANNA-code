@@ -170,7 +170,7 @@ def main():
                                           batch_size=config['keras_batch_size'],
                                           verbose=config['verbose_fit'])
     
-    baseline_model_path = os.path.join(model_dir, f"{timestamp}_baseline_model.h5")
+    baseline_model_path = os.path.join(model_dir, f"{timestamp}_baseline_model.keras")
     baseline_model.save(baseline_model_path)
 
     # --- Train HGQ2 Model ---
@@ -186,7 +186,7 @@ def main():
                                 callbacks=[ebops, pbar, nan_terminate], # It is recommended to use the FreeEBOPs callback to monitor EBOPs during training
                                 verbose=config['verbose_fit'])
     
-    hgq_model_path = os.path.join(model_dir, f"{timestamp}_HGQ2_model.h5")
+    hgq_model_path = os.path.join(model_dir, f"{timestamp}_HGQ2_model.keras")
     hgq_model.save(hgq_model_path)
 
     baseline_model.summary()

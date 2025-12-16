@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     # cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_test_smalljet.py"
     # RunMultipleJobs(cmd, jobName='HGQ2_small_jet', python_env='hgq2')
-    epochs = [1395, 2700, 3000, 4000] # 30, 50, 80, 100, 300, 500, 850, 1000, 1200, 1500, 1800, 2000
+    epochs = [1703, 2003, 2203] # 30, 50, 80, 100, 300, 500, 850, 1000, 1200, 1500, 1800, 2000
     for epoch in epochs: 
         cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch}"
         RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}', python_env='hgq2')

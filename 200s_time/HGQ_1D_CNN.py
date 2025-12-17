@@ -17,7 +17,7 @@ import pandas as pd
 import random
 import tensorflow as tf
 
-seed = 1
+seed = 14
 
 random.seed(seed)
 np.random.seed(seed)

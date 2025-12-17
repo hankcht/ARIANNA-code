@@ -17,7 +17,7 @@ import pandas as pd
 import random
 import tensorflow as tf
 
-seed = 68
+seed = 1
 
 random.seed(seed)
 np.random.seed(seed)
@@ -83,7 +83,7 @@ def build_hgq_model(input_shape, ramp_epochs, beta0=1e-5, beta_final=1e-4):
 
 
     # Define Config Scopes 
-    scope0 = QuantizerConfigScope(place='weight', b0=3, i0=0, default_q_type='kbi', overflow_mode='SAT_SYM') # b0=3, k0=1,
+    scope0 = QuantizerConfigScope(place='all', b0=3, i0=0, default_q_type='kbi', overflow_mode='SAT_SYM') # b0=3, k0=1,
     scope1 = QuantizerConfigScope(place='datalane', default_q_type='kif', overflow_mode='WRAP', f0=3, i0=3)
     with scope0, scope1: 
         iq_conf = QuantizerConfig(place='datalane') # input quantizer

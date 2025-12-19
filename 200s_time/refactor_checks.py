@@ -206,7 +206,7 @@ def plot_histogram(prob_2016, prob_coincidence, prob_coincidence_rcr, amp, times
 
 
 if __name__ == "__main__":
-    config = load_config()
+    config = load_config(config_path="/pub/tangch3/ARIANNA/DeepLearning/code/200s_time/config.yaml")
     amp = config['amp']
 
     model, model_timestamp, prefix = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="CNN")

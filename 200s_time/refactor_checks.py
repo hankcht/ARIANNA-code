@@ -15,7 +15,7 @@ from tensorflow import keras
 from A0_Utilities import load_config
 
 
-def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None):
+def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None, specify_model=False):
     """
     Load the most recent model matching the prefix from the specified amp subfolder.
     
@@ -24,6 +24,7 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None):
         amp (str): amplification or timing setting (e.g., '100s', '200s').
         if_dann (bool): to load dann model as custom object.
         model_prefix (str, optional): prefix to match in model filename.
+        specify_mdeol (bool): to not load most recent but instead load choice of model 
 
     Returns:
         tuple: (loaded_model, timestamp_str)
@@ -61,6 +62,12 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None):
         custom_objects = None
         prefix = 'CNN_checks'
 
+    if specify_model:
+        # overwrite for specific run
+        model_path = '/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/12.16.25_14-53/models/'
+        print(f"Loading model: {model_path}")
+        model = keras.models.load_model(f'12.16.25_14-53_HGQ2_model.keras')
+        return model, _, _
     if best_file:
         model_path = os.path.join(base_model_path, best_file)
         print(f"Loading model: {model_path}")
@@ -209,8 +216,8 @@ if __name__ == "__main__":
     config = load_config(config_path="/pub/tangch3/ARIANNA/DeepLearning/code/200s_time/config.yaml")
     amp = config['amp']
 
-    model, model_timestamp, prefix = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="CNN")
-
+    model, model_timestamp, prefix = load_most_recent_model(config['base_model_path'], amp, if_dann=config['if_dann'], model_prefix="CNN", specify_model=True)
+    
     template_dir = "/pub/tangch3/ARIANNA/DeepLearning/refactor/confirmed_2016_templates/"
     template_paths = sorted(glob(os.path.join(template_dir, "filtered_Event2016_Stn*.npy"))) # using filtered confirmed BL
     all_2016_backlobes, dict_2016 = load_2016_backlobe_templates(template_paths, amp_type=amp)

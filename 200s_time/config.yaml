@@ -50,7 +50,7 @@ early_stopping_patience: 5
 keras_epochs: 500
 keras_batch_size: 8000 # technically this is still minibatch since training is 16000
 verbose_fit: 1
-model_filename_template: "{timestamp}_{amp}_{prefix}_model_2Layer.h5"
+model_filename_template: "{timestamp}_{amp}_{prefix}_model_2Layer.keras"
 
 # Evaluation
 output_cut_value: 0.9

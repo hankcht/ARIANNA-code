@@ -28,7 +28,7 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None):
     Returns:
         tuple: (loaded_model, timestamp_str)
     """
-    pattern = re.compile(r"(\d{2}\.\d{2}\.\d{2}_\d{2}-\d{2})_.*\.h5")
+    pattern = re.compile(r"(\d{2}\.\d{2}\.\d{2}_\d{2}-\d{2})_.*\.keras")
 
     now = time.time()
     best_file = None
@@ -36,7 +36,7 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None):
     best_timestamp = None
 
     for fname in os.listdir(base_model_path):
-        if not fname.endswith(".h5"):
+        if not fname.endswith(".keras"):
             continue
         if model_prefix and model_prefix not in fname:
             continue

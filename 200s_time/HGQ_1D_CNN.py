@@ -153,7 +153,7 @@ def main():
     x = np.vstack((training_rcr, training_backlobe))
     y = np.vstack((np.ones((training_rcr.shape[0], 1)), np.zeros((training_backlobe.shape[0], 1))))
     s = np.arange(x.shape[0])
-    np.random.seed(seed)
+    np.random.seed(42)
     np.random.shuffle(s)
     x = x[s].transpose(0, 2, 1)  # ensure (n_events, length, channels)
     # n_events = x.shape[0]

@@ -84,14 +84,14 @@ def build_hgq_model(input_shape, ramp_epochs, beta0=1e-5, beta_final=1e-4):
 
     # Define Config Scopes 
     scope0 = QuantizerConfigScope(place='all', b0=3, i0=0, default_q_type='kbi', overflow_mode='SAT_SYM') #  k0=1,
-    scope1 = QuantizerConfigScope(place='datalane', f0=3, i0=3, default_q_type='kif', overflow_mode='SAT_SYM') # 
+    scope1 = QuantizerConfigScope(place='datalane', f0=3, i0=3, default_q_type='kif', overflow_mode='WRAP') # 
     with scope0, scope1: 
         iq_conf = QuantizerConfig(place='datalane') # input quantizer
         oq_conf = QuantizerConfig(place='datalane', fr=MonoL1(1e-3)) # output quantizer   
         model = keras.Sequential([
                     keras.layers.Input(shape=input_shape),
-                    QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'),
-                    # keras.layers.Conv1D(20, kernel_size=10, activation='relu', name='conv1d_0'),
+                    # QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'),
+                    keras.layers.Conv1D(20, kernel_size=10, activation='relu', name='conv1d_0'),
                     QConv1D(10, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_1'),
                     # keras.layers.Dropout(0.5),
                     keras.layers.Flatten(),
@@ -152,14 +152,16 @@ def main():
     s = np.arange(x.shape[0])
     np.random.seed(42)
     np.random.shuffle(s)
-    x = x[s].transpose(0, 2, 1)  # ensure (n_events, length, channels)
+    #x = x[s].transpose(0, 2, 1)  # ensure (n_events, length, channels)
+    n_events = x.shape[0]
+    x = x[s].reshape(n_events, 1024, 1)
     y = y[s]
 
     x = x.astype('float32') 
     y = y.astype('float32') 
 
     input_shape = x.shape[1:]  # (length, channels)
-    print(f"Input Shape: {input_shape}. For 1D CNN, should be (256, 4)")
+    print(f"Input Shape: {input_shape}. For 1D CNN, should be (256, 4) or (1024, 1)")
 
     # --- Train Baseline FP32 Model ---
     baseline_model = build_fp32_model(input_shape)
@@ -271,8 +273,10 @@ def main():
 
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
-    sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
-    data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
+    # sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
+    # data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
+    sim_rcr_expanded = sim_rcr_all.reshape(sim_rcr_all.shape[0], 1024, 1)
+    data_backlobe_expanded = data_backlobe_traces_rcr_all.reshape(data_backlobe_traces_rcr_all.shape[0], 1024, 1)
 
     # Evaluate & plot network output histogram ON RCR-like TRACES!
     baseline_prob_rcr, baseline_prob_backlobe, baseline_rcr_efficiency, baseline_bl_efficiency = \

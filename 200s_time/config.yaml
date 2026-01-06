@@ -43,7 +43,7 @@ base_model_path: "/dfs8/sbarwick_lab/ariannaproject/tangch3/models/"
 base_plot_path: "/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/" # "/dfs8/sbarwick_lab/ariannaproject/tangch3/plots/" 
 
 # Training
-if_1D: False # currently used in checks.py to evaluate transposed events
+if_1D: True # currently used in checks.py to evaluate transposed events
 prefix : "1D_CNN"
 train_cut: 8000
 early_stopping_patience: 5

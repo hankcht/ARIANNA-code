@@ -89,7 +89,7 @@ if __name__ == "__main__":
     #     cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch}"
     #     RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}', python_env='hgq2')
     epoch = 2500
-    for seed in range(66,69):
+    for seed in range(66,70):
         cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch} --seed {seed}"
         RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}_{seed}', python_env='hgq2')
 

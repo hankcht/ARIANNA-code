@@ -80,13 +80,19 @@ def main(multi_run):
 
 
 if __name__ == "__main__":
-    multi_run = False
-    main(multi_run=multi_run)
+    # multi_run = False
+    # main(multi_run=multi_run)
 
-    epochs = [1711, 2011, 2211, 3000] # 30, 50, 80, 100, 300, 500, 850, 1000, 1200, 1500, 1800, 2000
-    for epoch in epochs: 
-        cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch}"
-        RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}', python_env='hgq2')
+    # epochs = [1711, 2011, 2211, 3000] # 30, 50, 80, 100, 300, 500, 850, 1000, 1200, 1500, 1800, 2000
+    # seeds = []
+    # for epoch in epochs: 
+    #     cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch}"
+    #     RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}', python_env='hgq2')
+    epoch = 2500
+    for seed in range(100):
+        cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch} --seed {seed}"
+        RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}_{seed}', python_env='hgq2')
+
 
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
     # RunMultipleJobs(cmd, jobName='converter')

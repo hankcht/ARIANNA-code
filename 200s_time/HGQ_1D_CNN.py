@@ -17,12 +17,6 @@ import pandas as pd
 import random
 import tensorflow as tf
 
-seed = 67
-
-random.seed(seed)
-np.random.seed(seed)
-tf.random.set_seed(seed)
-
 # --- HGQ2 imports ---
 from hgq.layers import QDense, QConv1D
 from hgq.config.layer import LayerConfigScope
@@ -90,8 +84,8 @@ def build_hgq_model(input_shape, ramp_epochs, beta0=1e-5, beta_final=1e-4):
         oq_conf = QuantizerConfig(place='datalane', fr=MonoL1(1e-3)) # output quantizer   
         model = keras.Sequential([
                     keras.layers.Input(shape=input_shape),
-                    # QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'),
-                    keras.layers.Conv1D(20, kernel_size=10, activation='relu', name='conv1d_0'),
+                    QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'),
+                    # keras.layers.Conv1D(20, kernel_size=10, activation='relu', name='conv1d_0'),
                     QConv1D(10, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_1'),
                     # keras.layers.Dropout(0.5),
                     keras.layers.Flatten(),
@@ -110,7 +104,16 @@ def main():
     parser = argparse.ArgumentParser(description="Train baseline and HGQ2 models.")
     parser.add_argument("--epochs", type=int, default=None,
                         help="Number of training epochs (overrides config file)")
+    parser.add_argument("--seed", type=int, default=67,
+                        help="Random seed for reproducibility")
     args = parser.parse_args()
+
+    seed = args.seed
+    print(f"Using random seed = {seed}")
+
+    random.seed(seed)
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
 
     config = load_config(config_path="/pub/tangch3/ARIANNA/DeepLearning/code/200s_time/config.yaml")
 
@@ -150,11 +153,11 @@ def main():
     x = np.vstack((training_rcr, training_backlobe))
     y = np.vstack((np.ones((training_rcr.shape[0], 1)), np.zeros((training_backlobe.shape[0], 1))))
     s = np.arange(x.shape[0])
-    np.random.seed(42)
+    np.random.seed(seed)
     np.random.shuffle(s)
-    #x = x[s].transpose(0, 2, 1)  # ensure (n_events, length, channels)
-    n_events = x.shape[0]
-    x = x[s].reshape(n_events, 1024, 1)
+    x = x[s].transpose(0, 2, 1)  # ensure (n_events, length, channels)
+    # n_events = x.shape[0]
+    # x = x[s].reshape(n_events, 1024, 1)
     y = y[s]
 
     x = x.astype('float32') 
@@ -273,10 +276,10 @@ def main():
 
     sim_rcr_all = data['sim_rcr_all']
     data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
-    # sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
-    # data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
-    sim_rcr_expanded = sim_rcr_all.reshape(sim_rcr_all.shape[0], 1024, 1)
-    data_backlobe_expanded = data_backlobe_traces_rcr_all.reshape(data_backlobe_traces_rcr_all.shape[0], 1024, 1)
+    sim_rcr_expanded = sim_rcr_all.transpose(0, 2, 1)
+    data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
+    # sim_rcr_expanded = sim_rcr_all.reshape(sim_rcr_all.shape[0], 1024, 1)
+    # data_backlobe_expanded = data_backlobe_traces_rcr_all.reshape(data_backlobe_traces_rcr_all.shape[0], 1024, 1)
 
     # Evaluate & plot network output histogram ON RCR-like TRACES!
     baseline_prob_rcr, baseline_prob_backlobe, baseline_rcr_efficiency, baseline_bl_efficiency = \

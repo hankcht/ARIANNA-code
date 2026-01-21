@@ -15,7 +15,16 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import matplotlib.colors
 
-import Nu_RCR_ChiCut as ChiCut
+useChiCut = True  # won't need chi calculation for forced triggers
+
+if useChiCut:
+    import Nu_RCR_ChiCut as ChiCut
+
+def passes_cut(nu, cr):
+    if useChiCut:
+        return ChiCut.passesCut(nu, cr)
+    else:
+        return False
 
 color = itertools.cycle(('black', 'blue', 'green', 'orange'))
 
@@ -83,8 +92,11 @@ for file in filesToRead:
             nu_SNR = []
             cr_SNR = []
             for channel in station.iter_channels(use_channels=parChans):
-                nu_avgCorr.append(np.abs(channel.get_parameter(chp.nu_xcorrelations)))
-                cr_avgCorr.append(np.abs(channel.get_parameter(chp.cr_xcorrelations)))
+                if channel.has_parameter(chp.nu_xcorrelations):
+                    nu_avgCorr.append(np.abs(channel.get_parameter(chp.nu_xcorrelations)))
+                    cr_avgCorr.append(np.abs(channel.get_parameter(chp.cr_xcorrelations)))
+                else:
+                    continue  # skip this channel
 
 
                 tempSNR = channel.get_parameter(chp.SNR)['peak_2_peak_amplitude']
@@ -96,27 +108,31 @@ for file in filesToRead:
                     nu_SNR.append(max(channel.get_parameter(chp.SNR)['peak_2_peak_amplitude']) / (2*noise_rms))	#SNR
                     cr_SNR.append(max(channel.get_parameter(chp.SNR)['peak_2_peak_amplitude']) / (2*noise_rms))	#SNR
 
-                if (tracesPlotted < num_traces and cr_avgCorr[-1] > 0.7) or ChiCut.passesCut(nu_avgCorr[-1], cr_avgCorr[-1]):		#Save channel traces if high xCorr to refl Cr template
-                    print(f'Printing trace {tracesPlotted} CR xCorr {cr_avgCorr[-1]}')
+                if (tracesPlotted < num_traces and cr_avgCorr[-1] > 0.7) or passes_cut(nu_avgCorr[-1], cr_avgCorr[-1]):		#Save channel traces if high xCorr to refl Cr template
+                    chi_info = f'CR Chi {cr_avgCorr[-1]:.2f} ' if useChiCut else ''
+                    chi_str = f'Chi{cr_avgCorr[-1]:.2f}_' if useChiCut else ''
+                    os.mkdir(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/', exist_ok=True)
+                    # print(f'Printing trace {tracesPlotted} CR xCorr {cr_avgCorr[-1]}')
                     plt.plot(channel.get_times(), channel.get_trace())
                     plt.xlabel('ns')
-                    plt.title(f'Stn {station_id} CR Chi {cr_avgCorr[-1]:.2f} SNR {cr_SNR[-1]:.2f} ' + station.get_station_time().fits)
-                    os.mkdir(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/', exist_ok=True)
-                    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_trace_Chi{cr_avgCorr[-1]:.2f}_SNR{cr_SNR[-1]:.2f}_{station.get_station_time().fits}.png')
+                    chi_info = f'CR Chi {cr_avgCorr[-1]:.2f} ' if useChiCut else ''
+                    plt.title(f'Stn {station_id} {chi_info}SNR {cr_SNR[-1]:.2f} ' + station.get_station_time().fits)
+                    
+                    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_trace_{chi_str}_SNR{cr_SNR[-1]:.2f}_{station.get_station_time().fits}.png')
                     plt.clf()
 
                     plt.plot(channel.get_frequencies()/units.MHz, np.abs(channel.get_frequency_spectrum()))
                     plt.xlabel('Freq (MHz)')
                     plt.xlim([0, 500])
-                    plt.title(f'Stn {station_id} CR Chi {cr_avgCorr[-1]:.2f} SNR {cr_SNR[-1]:.2f} ' + station.get_station_time().fits)
-                    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_freqs_Chi{cr_avgCorr[-1]:.2f}_SNR{cr_SNR[-1]:.2f}_{station.get_station_time().fits}.png')
+                    plt.title(f'Stn {station_id} {chi_info}SNR {cr_SNR[-1]:.2f} ' + station.get_station_time().fits)
+                    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_freqs_{chi_str}SNR{cr_SNR[-1]:.2f}_{station.get_station_time().fits}.png')
                     plt.clf()
 
                     tracesPlotted = tracesPlotted + 1
 
 
             nu_avgCorr = np.mean(np.abs(nu_avgCorr))	#xcorr can be negative, take mean of the absolute values
-            cr_avgCorr = np.mean(np.abs(cr_avgCorr))
+            cr_avgCorr = np.mean(np.abs(cr_avgCorr)) if useChiCut else 0
             nu_SNR = max(nu_SNR)
             cr_SNR = max(cr_SNR)
             if nu_avgCorr > nu_xCorr:
@@ -126,7 +142,7 @@ for file in filesToRead:
                 cr_xCorr = cr_avgCorr
                 cr_maxSNR = max(cr_maxSNR, cr_SNR)		#SNR
 
-        if ChiCut.passesCut(nu_xCorr, cr_xCorr):
+        if passes_cut(nu_xCorr, cr_xCorr):
             figint = 411
             smalint = 0
             fig, ax = plt.subplots(4, 1, sharey='col')
@@ -140,7 +156,8 @@ for file in filesToRead:
 
             plt.xlabel('ns')
             plt.legend()
-            fig.suptitle(f'Stn {station_id} R-CR Chi {cr_xCorr:.2f} Nu Chi {nu_xCorr:.2f} ' + station.get_station_time().fits)
+            chi_info = f'R-CR Chi {cr_xCorr:.2f} Nu Chi {nu_xCorr:.2f}' if useChiCut else ''
+            fig.suptitle(f'Stn {station_id} {chi_info} ' + station.get_station_time().fits)
             plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_PassedCut_{station.get_station_time().fits}.png', format='png')
 #            plt.show()
             plt.clf()
@@ -182,13 +199,17 @@ numNuHigh = nuHighChiMask.sum()
 numCrHigh = crHighChiMask.sum()
 
 
-cutMask = ChiCut.cutMask(nu_maxCorr, cr_maxCorr)
+if useChiCut:
+    cutMask = ChiCut.cutMask(nu_maxCorr, cr_maxCorr)
+else:
+    cutMask = np.zeros_like(nu_maxCorr, dtype=bool) 
 
 plt.scatter(nu_maxCorr[np.logical_not(nu_forcedMask)], cr_maxCorr[np.logical_not(nu_forcedMask)], label=f'Forced Trigs', facecolors='none', edgecolor='black')
 plt.scatter(nu_maxCorr[nu_forcedMask], cr_maxCorr[nu_forcedMask], label=f'{len(nu_maxCorr[nu_forcedMask])} Evts')
 if np.any(cutMask):
     plt.scatter(nu_maxCorr[cutMask], cr_maxCorr[cutMask], label=f'{np.sum(cutMask)} Pass')
-ChiCut.plotCut()
+if useChiCut:
+    ChiCut.plotCut()
 plt.xlim((0, 1))
 plt.ylim((0, 1))
 plt.xlabel('Nu Chi')

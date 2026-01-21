@@ -72,7 +72,7 @@ for file in filesToRead:
         #     nu_avgCorr = []
         #     cr_avgCorr = []
 
-        for channel in station.iter_channels(use_channels=parChans):
+        for channel in station.iter_channels(): # use_channels=parChans
             if channel.has_parameter(chp.nu_xcorrelations):
                 print(f'Calculating chi values')
                 nu_avgCorr.append(np.abs(channel.get_parameter(chp.nu_xcorrelations)))

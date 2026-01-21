@@ -34,6 +34,9 @@ det.update(datetime.datetime(2015, 12, 12))
 parallelChannels = det.get_parallel_channels(station_id)
 eventReader = NuRadioReco.modules.io.eventReader.eventReader()
 
+channelBandPassFilter = NuRadioReco.modules.channelBandPassFilter.channelBandPassFilter()
+channelBandPassFilter.begin()
+
 nu_maxCorr = []
 cr_maxCorr = []
 nu_forcedMask = []
@@ -45,6 +48,7 @@ tracesPlotted = 0
 for file in filesToRead:
     eventReader.begin(file)
     print(f'running file {file}')
+    
 
     for evt in eventReader.run():
         station = evt.get_station(station_id)
@@ -53,10 +57,13 @@ for file in filesToRead:
             print(f'skipping event, stationTime > endAnalysisTime')
             continue
 
+        channelBandPassFilter.run(evt, station, det, passband=[1*units.Hz, np.inf*units.MHz])	#Remove DC bias
+
         nu_xCorr = 0
         cr_xCorr = 0
 
         for parChans in parallelChannels:
+            print(f'parallel channels are: {parChans}')
             nu_avgCorr = []
             cr_avgCorr = []
 
@@ -68,7 +75,7 @@ for file in filesToRead:
                 else:
                     nu_avgCorr.append(0)
                     cr_avgCorr.append(0)
-
+                
                 # Save traces for forced triggers only (no SNR/Chi)
                 if tracesPlotted < num_traces:
                     print(f'plotting {tracesPlotted} traces')

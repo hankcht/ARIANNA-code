@@ -67,39 +67,39 @@ for file in filesToRead:
         nu_xCorr = 0
         cr_xCorr = 0
 
-        for parChans in parallelChannels:
-            print(f'parallel channels are: {parChans}')
-            nu_avgCorr = []
-            cr_avgCorr = []
+        # for parChans in parallelChannels:
+        #     print(f'parallel channels are: {parChans}')
+        #     nu_avgCorr = []
+        #     cr_avgCorr = []
 
-            for channel in station.iter_channels(use_channels=parChans):
-                if channel.has_parameter(chp.nu_xcorrelations):
-                    print(f'Calculating chi values')
-                    nu_avgCorr.append(np.abs(channel.get_parameter(chp.nu_xcorrelations)))
-                    cr_avgCorr.append(np.abs(channel.get_parameter(chp.cr_xcorrelations)))
-                else:
-                    nu_avgCorr.append(0)
-                    cr_avgCorr.append(0)
-                
-                # Save traces for forced triggers only (no SNR/Chi)
-                if tracesPlotted < num_traces:
-                    os.makedirs(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/', exist_ok=True)
-                    plt.plot(channel.get_times(), channel.get_trace())
-                    plt.xlabel('ns')
-                    plt.title(f'Stn {station_id} {station.get_station_time().fits}')
-                    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_trace_{station.get_station_time().fits}.png')
-                    print(f'saving to /pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_trace_{station.get_station_time().fits}.png')
-                    plt.clf()
+        for channel in station.iter_channels(use_channels=parChans):
+            if channel.has_parameter(chp.nu_xcorrelations):
+                print(f'Calculating chi values')
+                nu_avgCorr.append(np.abs(channel.get_parameter(chp.nu_xcorrelations)))
+                cr_avgCorr.append(np.abs(channel.get_parameter(chp.cr_xcorrelations)))
+            else:
+                nu_avgCorr.append(0)
+                cr_avgCorr.append(0)
+            
+            # Save traces for forced triggers only (no SNR/Chi)
+            if tracesPlotted < num_traces:
+                os.makedirs(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/', exist_ok=True)
+                plt.plot(channel.get_times(), channel.get_trace())
+                plt.xlabel('ns')
+                plt.title(f'Stn {station_id} {station.get_station_time().fits}')
+                plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_trace_{station.get_station_time().fits}.png')
+                print(f'saving to /pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_trace_{station.get_station_time().fits}.png')
+                plt.clf()
 
-                    plt.plot(channel.get_frequencies()/units.MHz, np.abs(channel.get_frequency_spectrum()))
-                    plt.xlabel('Freq (MHz)')
-                    plt.xlim([0, 500])
-                    plt.title(f'Stn {station_id} {station.get_station_time().fits}')
-                    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_freqs_{station.get_station_time().fits}.png')
-                    print(f'saving to /pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_freqs_{station.get_station_time().fits}.png')
-                    plt.clf()
+                plt.plot(channel.get_frequencies()/units.MHz, np.abs(channel.get_frequency_spectrum()))
+                plt.xlabel('Freq (MHz)')
+                plt.xlim([0, 500])
+                plt.title(f'Stn {station_id} {station.get_station_time().fits}')
+                plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_freqs_{station.get_station_time().fits}.png')
+                print(f'saving to /pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_freqs_{station.get_station_time().fits}.png')
+                plt.clf()
 
-                    tracesPlotted += 1
+                tracesPlotted += 1
                 
 
             nu_avgCorr = np.mean(np.abs(nu_avgCorr))

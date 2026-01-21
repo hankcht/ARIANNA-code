@@ -93,12 +93,13 @@ if __name__ == "__main__":
     #     cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch} --seed {seed}"
     #     RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}_{seed}', python_env='hgq2')
 
-    station_id = 14
+    station_ids = [14,17,19,30,13,15,18]
     num_traces = 20
-    forced_trigger_files = f'/pub/rricesmi/Arianna/ReflectiveAnalysis/StationDataAnalysis/processedNur/station_{station_id}/forced_triggers_*.nur'
-    cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/nu_sim/plotProcessedNur.py --station {station_id} --num_traces {num_traces} \
-    --list {forced_trigger_files}"
-    RunMultipleJobs(cmd, jobName=f'forced_trigger_{station_id}')    
+    for station_id in station_ids:
+        forced_trigger_files = f'/pub/rricesmi/Arianna/ReflectiveAnalysis/StationDataAnalysis/processedNur/station_{station_id}/forced_triggers_*.nur'
+        cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/nu_sim/plotProcessedNur.py --station {station_id} --num_traces {num_traces} \
+        --list {forced_trigger_files}"
+        RunMultipleJobs(cmd, jobName=f'forced_trigger_{station_id}')    
 
     # cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_converter.py'
     # RunMultipleJobs(cmd, jobName='converter')

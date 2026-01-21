@@ -50,6 +50,7 @@ for file in filesToRead:
         station = evt.get_station(station_id)
         stationTime = station.get_station_time().unix
         if stationTime > endAnalysisTime:
+            print(f'skipping event, stationTime > endAnalysisTime')
             continue
 
         nu_xCorr = 0
@@ -61,13 +62,16 @@ for file in filesToRead:
 
             for channel in station.iter_channels(use_channels=parChans):
                 if channel.has_parameter(chp.nu_xcorrelations):
+                    print(f'Calculating chi values')
                     nu_avgCorr.append(np.abs(channel.get_parameter(chp.nu_xcorrelations)))
                     cr_avgCorr.append(np.abs(channel.get_parameter(chp.cr_xcorrelations)))
                 else:
-                    continue  # skip this channel
+                    nu_avgCorr.append(0)
+                    cr_avgCorr.append(0)
 
                 # Save traces for forced triggers only (no SNR/Chi)
                 if tracesPlotted < num_traces:
+                    print(f'plotting {tracesPlotted} traces')
                     os.makedirs(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/', exist_ok=True)
                     plt.plot(channel.get_times(), channel.get_trace())
                     plt.xlabel('ns')
@@ -83,6 +87,8 @@ for file in filesToRead:
                     plt.clf()
 
                     tracesPlotted += 1
+                else:
+                    print(f'Not plotting traces')
 
             nu_avgCorr = np.mean(np.abs(nu_avgCorr))
             cr_avgCorr = np.mean(np.abs(cr_avgCorr))

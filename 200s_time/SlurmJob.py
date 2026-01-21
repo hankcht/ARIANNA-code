@@ -94,8 +94,9 @@ if __name__ == "__main__":
     #     RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}_{seed}', python_env='hgq2')
 
     station_id = 14
+    num_traces = 20
     forced_trigger_files = f'/pub/rricesmi/Arianna/ReflectiveAnalysis/StationDataAnalysis/processedNur/station_{station_id}/forced_triggers_*.nur'
-    cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/nu_sim/plotProcessedNur.py --station {station_id} --num_traces {20} \
+    cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/nu_sim/plotProcessedNur.py --station {station_id} --num_traces {num_traces} \
     --list {forced_trigger_files}"
     RunMultipleJobs(cmd, jobName=f'forced_trigger_{station_id}')    
 

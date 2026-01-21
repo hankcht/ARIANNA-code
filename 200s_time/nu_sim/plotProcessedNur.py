@@ -69,8 +69,8 @@ for file in filesToRead:
 
         # for parChans in parallelChannels:
         #     print(f'parallel channels are: {parChans}')
-        #     nu_avgCorr = []
-        #     cr_avgCorr = []
+        nu_avgCorr = []
+        cr_avgCorr = []
 
         for channel in station.iter_channels(): # use_channels=parChans
             if channel.has_parameter(chp.nu_xcorrelations):

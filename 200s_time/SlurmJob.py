@@ -86,7 +86,7 @@ if __name__ == "__main__":
     epochs = [1711, 2011, 2211, 3000] # 30, 50, 80, 100, 300, 500, 850, 1000, 1200, 1500, 1800, 2000
     seeds = []
     for epoch in epochs: 
-        cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch}"
+        cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch} --seed 68"
         RunMultipleJobs(cmd, jobName=f'HGQ2_{epoch}', python_env='hgq2')
     # epoch = 2500
     # for seed in range(66,70):

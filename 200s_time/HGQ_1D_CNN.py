@@ -328,18 +328,18 @@ def main():
     # sim_rcr_expanded = sim_rcr_all.reshape(sim_rcr_all.shape[0], 1024, 1)
     # data_backlobe_expanded = data_backlobe_traces_rcr_all.reshape(data_backlobe_traces_rcr_all.shape[0], 1024, 1)
 
-    # Evaluate & plot network output histogram ON RCR-like TRACES!
-    baseline_prob_rcr, baseline_prob_backlobe, baseline_rcr_efficiency, baseline_bl_efficiency = \
-        evaluate_model_performance(baseline_model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)
+    # # Evaluate & plot network output histogram ON RCR-like TRACES!
+    # baseline_prob_rcr, baseline_prob_backlobe, baseline_rcr_efficiency, baseline_bl_efficiency = \
+    #     evaluate_model_performance(baseline_model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)
     
-    hgq_prob_rcr, hgq_prob_backlobe, hgq_rcr_efficiency, hgq_bl_efficiency = \
-        evaluate_model_performance(hgq_model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)
+    # hgq_prob_rcr, hgq_prob_backlobe, hgq_rcr_efficiency, hgq_bl_efficiency = \
+    #     evaluate_model_performance(hgq_model, sim_rcr_expanded, data_backlobe_expanded, config['output_cut_value'], config)
 
-    plot_network_output_histogram(baseline_prob_rcr, baseline_prob_backlobe, baseline_rcr_efficiency, baseline_bl_efficiency,
-                                    config, timestamp, model_tag="baseline")
+    # plot_network_output_histogram(baseline_prob_rcr, baseline_prob_backlobe, baseline_rcr_efficiency, baseline_bl_efficiency,
+    #                                 config, timestamp, model_tag="baseline")
 
-    plot_network_output_histogram(hgq_prob_rcr, hgq_prob_backlobe, hgq_rcr_efficiency, hgq_bl_efficiency, 
-                                    config, timestamp, model_tag="hgq2")
+    # plot_network_output_histogram(hgq_prob_rcr, hgq_prob_backlobe, hgq_rcr_efficiency, hgq_bl_efficiency, 
+    #                                 config, timestamp, model_tag="hgq2")
 
     # For accuracy, show absolute difference (HGQ2 - Baseline). Positive means HGQ2 higher accuracy.
 

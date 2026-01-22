@@ -84,8 +84,8 @@ def build_hgq_model(input_shape, ramp_epochs, beta0=1e-5, beta_final=1e-4):
         oq_conf = QuantizerConfig(place='datalane', fr=MonoL1(1e-3)) # output quantizer   
         model = keras.Sequential([
                     keras.layers.Input(shape=input_shape),
-                    # QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'),
-                    keras.layers.Conv1D(20, kernel_size=10, activation='relu', name='conv1d_0'),
+                    QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'),
+                    # keras.layers.Conv1D(20, kernel_size=10, activation='relu', name='conv1d_0'),
                     QConv1D(10, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_1'),
                     # keras.layers.Dropout(0.5),
                     keras.layers.Flatten(),

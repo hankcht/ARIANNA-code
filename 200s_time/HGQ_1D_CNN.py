@@ -144,6 +144,27 @@ def main():
 
     print(f"Starting training at {timestamp} for {amp} amplifier.")
 
+    # Load thermal forced triggers (real thermal noise)
+    # --- Load fixed trace subset ---
+    subset_path = (
+        '/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/'
+        'StationDataAnalysis/plots/thermal_forced_trigger/'
+        f'station_14/trace_subset.npy' # can set other stations as well
+    )
+
+    station_events = np.load(subset_path, allow_pickle=True)
+
+    # Pick first file, first 3 events
+    fixed_events = station_events[0][:3]   # shape: (3, 4, 256)
+
+    # Sanity check
+    fixed_events = np.array(fixed_events)
+    assert fixed_events.shape == (3, 4, 256)
+
+    # Concatenate the 3 fixed events along time
+    fixed_concat = np.concatenate(fixed_events, axis=1)  
+    # shape: (4, 768)
+
 
     # Load data
     data = load_and_prep_data_for_training(config)
@@ -155,8 +176,11 @@ def main():
     s = np.arange(x.shape[0])
     np.random.seed(42)
     np.random.shuffle(s)
+    n_events = x.shape[0]
+    fixed_tiled = np.tile(fixed_concat[np.newaxis, :, :], (n_events, 1, 1))
+    x = np.concatenate([x, fixed_tiled], axis=2)
     x = x[s].transpose(0, 2, 1)  # ensure (n_events, length, channels)
-    # n_events = x.shape[0]
+    
     # x = x[s].reshape(n_events, 1024, 1)
     y = y[s]
 
@@ -164,7 +188,30 @@ def main():
     y = y.astype('float32') 
 
     input_shape = x.shape[1:]  # (length, channels)
-    print(f"Input Shape: {input_shape}. For 1D CNN, should be (256, 4) or (1024, 1)")
+    print(f"Input Shape: {input_shape}. For 1D CNN, should be (256, 4) or (1024, 4)")
+    print("Final x shape:", x.shape)
+    print("One event, ch0 length:", x[0, :, 0].shape)
+
+    # --- Sanity-check concatenation with pT ---
+    debug_plot_dir = os.path.join(plot_dir, "debug")
+    os.makedirs(debug_plot_dir, exist_ok=True)
+
+    evt_idx = 0  # first training event
+
+    # x is (n_events, 1024, 4) → convert back to (4, 1024)
+    trace_for_plot = x[evt_idx].T
+
+    print("Trace for pT shape:", trace_for_plot.shape)  # should be (4, 1024)
+
+    pT(
+        traces=trace_for_plot,
+        title="Concatenated Training Trace (256 + 3×256)",
+        saveLoc=os.path.join(debug_plot_dir, "concat_trace_check.png"),
+        sampling_rate=2,
+        show=False
+    )
+
+    print("Saved concatenation sanity-check plot")
 
     # --- Train Baseline FP32 Model ---
     baseline_model = build_fp32_model(input_shape)

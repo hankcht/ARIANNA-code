@@ -101,9 +101,9 @@ for file in filesToRead:
 event_traces = np.array(event_traces)
 file_events = np.array(file_events)
 station_events = np.array(station_events)
-print(f'size of event {event_traces.size}')
-print(f'size of file {file_events.size}')
-print(f'size of station {station_events.size}')
+print(f'size of event {event_traces.shape}')
+print(f'size of file {file_events.shape}')
+print(f'size of station {station_events.shape}')
 
 def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_channel=[]):
     # Sampling rate should be in GHz
@@ -183,13 +183,14 @@ def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_chan
 
     return
 
-events_to_plot = [0, 1, 2]   # event indices
+events_to_plot = [0, 1, 2,]   # event indices
 file_idx = 0    
 
-plot_dir = f'pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/thermal_forced_trigger/station_{station_id}'
+plot_dir = f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/thermal_forced_trigger/station_{station_id}'
 os.makedirs(plot_dir, exist_ok=True)
 
-for evt_idx in events_to_plot:
+
+for evt_idx in range(10):
     traces = station_events[file_idx][evt_idx]   # shape: (n_channels, n_samples)
 
     save_path = os.path.join(
@@ -205,4 +206,5 @@ for evt_idx in events_to_plot:
         show=False
     )
 
-    print(f'Saved {save_path}')
+np.save(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/thermal_forced_trigger/station_{station_id}/trace_subset.npy', station_events)
+    

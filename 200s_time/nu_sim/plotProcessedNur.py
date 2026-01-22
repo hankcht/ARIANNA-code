@@ -73,29 +73,31 @@ for file in filesToRead:
             trace = channel.get_trace()
             event_traces.append(trace)
             
-            # Save traces for forced triggers only (no SNR/Chi)
-            if tracesPlotted < num_traces:
-                os.makedirs(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/', exist_ok=True)
-                plt.plot(channel.get_times(), trace)
-                plt.xlabel('ns')
-                plt.title(f'Stn {station_id} {station.get_station_time().fits}')
-                plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_trace_{station.get_station_time().fits}.png')
-                print(f'saving to /pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_trace_{station.get_station_time().fits}.png')
-                plt.clf()
+            # # Save traces for forced triggers only (no SNR/Chi)
+            # if tracesPlotted < num_traces:
+            #     os.makedirs(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/', exist_ok=True)
+            #     plt.plot(channel.get_times(), trace)
+            #     plt.xlabel('ns')
+            #     plt.title(f'Stn {station_id} {station.get_station_time().fits}')
+            #     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_trace_{station.get_station_time().fits}.png')
+            #     print(f'saving to /pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_trace_{station.get_station_time().fits}.png')
+            #     plt.clf()
 
-                plt.plot(channel.get_frequencies()/units.MHz, np.abs(channel.get_frequency_spectrum()))
-                plt.xlabel('Freq (MHz)')
-                plt.xlim([0, 500])
-                plt.title(f'Stn {station_id} {station.get_station_time().fits}')
-                plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_freqs_{station.get_station_time().fits}.png')
-                print(f'saving to /pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_freqs_{station.get_station_time().fits}.png')
-                plt.clf()
+            #     plt.plot(channel.get_frequencies()/units.MHz, np.abs(channel.get_frequency_spectrum()))
+            #     plt.xlabel('Freq (MHz)')
+            #     plt.xlim([0, 500])
+            #     plt.title(f'Stn {station_id} {station.get_station_time().fits}')
+            #     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_freqs_{station.get_station_time().fits}.png')
+            #     print(f'saving to /pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/traces/station_{station_id}/station{station_id}_freqs_{station.get_station_time().fits}.png')
+            #     plt.clf()
 
-                tracesPlotted += 1
+            #     tracesPlotted += 1
 
         file_events.append(event_traces)
 
     station_events.append(file_events)
+    if len(station_events) > 20:
+        break
 event_traces = np.array(event_traces)
 file_events = np.array(file_events)
 station_events = np.array(station_events)

@@ -103,7 +103,7 @@ file_events = np.array(file_events)
 station_events = np.array(station_events)
 print(f'size of event {event_traces.size}')
 print(f'size of file {file_events.size}')
-print(f'size of station {station_events}')
+print(f'size of station {station_events.size}')
 
 def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_channel=[]):
     # Sampling rate should be in GHz
@@ -183,10 +183,26 @@ def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_chan
 
     return
 
-# # Plotting individual traces if needed 
-# plot_traces_save_path = f'/pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/forced_trigger_traces/'
-# for index in indices:
-#     plot_traces_save_path = os.path.join(config['base_plot_path'], 'traces', f'{timestamp}_plot_pot_rcr_{amp}_{index}.png')
-#     pT(data['data_backlobe_tracesRCR'][index], f'Backlobe Trace {index} (Output > {config["output_cut_value"]:.2f})', plot_traces_save_path)
-#     print(f"Saved trace plot for Backlobe event {index} to {plot_traces_save_path}")
+events_to_plot = [0, 1, 2]   # event indices
+file_idx = 0    
 
+plot_dir = f'pub/tangch3/ARIANNA/DeepLearning/true_therm_noise/StationDataAnalysis/plots/thermal_forced_trigger/station_{station_id}'
+os.makedirs(plot_dir, exist_ok=True)
+
+for evt_idx in events_to_plot:
+    traces = station_events[file_idx][evt_idx]   # shape: (n_channels, n_samples)
+
+    save_path = os.path.join(
+        plot_dir,
+        f'station{station_id}_event{evt_idx}_pT.png'
+    )
+
+    pT(
+        traces=traces,
+        title=f'Station {station_id} - Event {evt_idx}',
+        saveLoc=save_path,
+        sampling_rate=2,   # GHz (matches your assumption)
+        show=False
+    )
+
+    print(f'Saved {save_path}')

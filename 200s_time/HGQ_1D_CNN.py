@@ -205,11 +205,11 @@ def main():
 
     pT(
         traces=trace_for_plot,
-        title="Concatenated Training Trace (256 + 3×256)",
+        title="Concatenated Training Trace (256 + 3*256)",
         saveLoc=os.path.join(debug_plot_dir, "concat_trace_check.png"),
         sampling_rate=2,
         show=False
-    )
+    ) # need to rewrite this function to show all 1024 samples
 
     print("Saved concatenation sanity-check plot")
 

@@ -206,12 +206,13 @@ def main():
     pT(
         traces=trace_for_plot,
         title="Concatenated Training Trace (256 + 3*256)",
-        saveLoc=os.path.join(debug_plot_dir, "concat_trace_check.png"),
+        saveLoc=os.path.join(debug_plot_dir, f"concat_trace_check_{evt_idx}.png"),
         sampling_rate=2,
         show=False
     ) # need to rewrite this function to show all 1024 samples
 
-    print("Saved concatenation sanity-check plot")
+    print(f"full trace: {trace_for_plot}")
+    print(f'last half of trace: {trace_for_plot[-100:]}')
 
     # --- Train Baseline FP32 Model ---
     baseline_model = build_fp32_model(input_shape)

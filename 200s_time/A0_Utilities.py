@@ -447,6 +447,7 @@ def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_chan
         trace = trace.reshape(len(trace))
         t_max = trace_len / sampling_rate
         t_pad = 0.02 * t_max   # 2% padding for plotting aesthetics 
+        print(f't_max: {t_max}, t_pad: {t_pad}')
         freqtrace = np.abs(fft.time2freq(trace, sampling_rate * units.GHz))
 
         # Plot time-domain trace

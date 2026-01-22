@@ -444,7 +444,9 @@ def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_chan
     vmax = 0
 
     for chID, trace in enumerate(traces):
-        trace = trace.reshape(len(trace)) 
+        trace = trace.reshape(len(trace))
+        t_max = trace_len / sampling_rate
+        t_pad = 0.02 * t_max   # 2% padding for plotting aesthetics 
         freqtrace = np.abs(fft.time2freq(trace, sampling_rate * units.GHz))
 
         # Plot time-domain trace
@@ -469,7 +471,7 @@ def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_chan
 
     for chID, trace in enumerate(traces):
         axs[chID][0].set_ylabel(f'ch{chID}', labelpad=10, rotation=0, fontsize=10)
-        axs[chID][0].set_xlim(-3, 260 / sampling_rate)
+        axs[chID][0].set_xlim(-t_pad, t_max + t_pad)
         axs[chID][1].set_xlim(-3, 1000)
         axs[chID][0].tick_params(labelsize=10)
         axs[chID][1].tick_params(labelsize=10)
@@ -481,10 +483,6 @@ def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_chan
     axs[0][0].tick_params(labelsize=10)
     axs[0][1].tick_params(labelsize=10)
     axs[0][0].set_ylabel(f'ch{0}', labelpad=10, rotation=0, fontsize=10)
-
-    # Final x and y axis limits
-    axs[chID][0].set_xlim(-3, 260 / sampling_rate)
-    axs[chID][1].set_xlim(-3, 1000)
 
     # Add a common y-axis label for the entire figure
     fig.text(0.05, 0.5, 'Voltage [V]', ha='right', va='center', rotation='vertical', fontsize=12)

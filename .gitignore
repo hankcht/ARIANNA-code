@@ -19,5 +19,4 @@ venv
 plots/*
 .vscode/settings.json
 .venv/
-
-ml_trigger-dev/*
+external_ml_trigger/*

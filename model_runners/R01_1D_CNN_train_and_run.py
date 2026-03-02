@@ -500,7 +500,7 @@ def load_2016_backlobe_templates(file_paths, amp_type='200s'):
     return np.stack(arrays, axis=0), metadata
 
 
-def load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id=None, special_station_id=None):
+def load_new_coincidence_data(pkl_path, passing_event_ids, special_event_station_pairs=None):
     """
     Load coincidence data from the new PKL file and separate into passing and raw events.
     
@@ -510,10 +510,8 @@ def load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id=None
         Path to the PKL file containing coincidence data.
     passing_event_ids : list
         List of event IDs that pass cuts.
-    special_event_id : int, optional
-        Event ID to separate out for special analysis.
-    special_station_id : int, optional
-        Station ID to separate out for special analysis (must be combined with special_event_id).
+    special_event_station_pairs : list of tuple, optional
+        List of (event_id, station_id) pairs to treat as special.
     
     Returns
     -------
@@ -545,8 +543,8 @@ def load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id=None
     
     print(f"Loading coincidence data from {pkl_path}")
     print(f"Passing event IDs: {passing_event_ids}")
-    if special_event_id and special_station_id:
-        print(f"Special event: ID={special_event_id}, Station={special_station_id}")
+    if special_event_station_pairs:
+        print(f"Special event/station pairs: {special_event_station_pairs}")
     
     # Iterate through all events in the dictionary
     for event_id, event_data in coinc_dict.items():
@@ -569,10 +567,8 @@ def load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id=None
                         # Add each trace
                         for trace in traces:
                             # Check if this is the special event/station combination
-                            is_special = (special_event_id is not None and 
-                                         special_station_id is not None and
-                                         event_id == special_event_id and 
-                                         station_id == special_station_id)
+                            is_special = (special_event_station_pairs is not None and
+                                (event_id, station_id) in special_event_station_pairs)
                             
                             if is_special:
                                 special_traces.append(trace)
@@ -604,7 +600,7 @@ def load_new_coincidence_data(pkl_path, passing_event_ids, special_event_id=None
     print(f"Loaded {len(passing_traces)} traces from {len(passing_event_ids)} passing events")
     print(f"Loaded {len(raw_traces)} traces from raw coincidence events")
     if len(special_traces) > 0:
-        print(f"Loaded {len(special_traces)} special traces (Event {special_event_id}, Station {special_station_id})")
+        print(f"Loaded {len(special_traces)} special traces {special_event_station_pairs})")
     
     return passing_traces, raw_traces, special_traces, passing_metadata, raw_metadata, special_metadata
 

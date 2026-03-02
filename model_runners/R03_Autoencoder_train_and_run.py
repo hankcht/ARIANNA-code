@@ -81,8 +81,10 @@ DEFAULT_VALIDATION_PASSING_EVENT_IDS = [
     3047, 3432, 10195, 10231, 10273, 10284, 10444, 10449,
     10466, 10471, 10554, 11197, 11220, 11230, 11236, 11243
 ]
-DEFAULT_VALIDATION_SPECIAL_EVENT_ID = 11230
-DEFAULT_VALIDATION_SPECIAL_STATION_ID = 13
+DEFAULT_VALIDATION_SPECIAL_EVENTS = [
+    (11230, 13),
+    (11243, 30),  
+]
 
 LATENT_COLOR_MAP = {
     'Backlobe (BG)': 'blue',
@@ -841,11 +843,10 @@ def run_validation_checks(model, requires_transpose, config, timestamp, learning
         return
 
     passing_event_ids = config.get('validation_passing_event_ids', DEFAULT_VALIDATION_PASSING_EVENT_IDS)
-    special_event_id = config.get('validation_special_event_id', DEFAULT_VALIDATION_SPECIAL_EVENT_ID)
-    special_station_id = config.get('validation_special_station_id', DEFAULT_VALIDATION_SPECIAL_STATION_ID)
+    special_event_station_pairs = config.get('validation_special_events', DEFAULT_VALIDATION_SPECIAL_EVENTS)
 
     passing_traces, raw_traces, special_traces, passing_metadata, raw_metadata, special_metadata = (
-        load_new_coincidence_data(validation_pkl_path, passing_event_ids, special_event_id, special_station_id)
+        load_new_coincidence_data(validation_pkl_path, passing_event_ids, special_event_station_pairs)
     )
 
     reference_channels = sim_rcr_all.shape[1] if sim_rcr_all.ndim == 3 else 4

@@ -80,14 +80,14 @@ def main(multi_run):
 
 
 if __name__ == "__main__":
-    # multi_run = False
-    # main(multi_run=multi_run)
+    multi_run = False
+    main(multi_run=multi_run)
 
-    epochs = [1715, 2015, 2215, 3015] # xx14 is for no quantize first layer 
-    seeds = []
-    for epoch in epochs: 
-        cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch} --seed 42"
-        RunMultipleJobs(cmd, jobName=f'HGQ_{epoch}', python_env='hgq2')
+    # epochs = [1715, 2015, 2215, 3015] # xx14 is for no quantize first layer 
+    # seeds = []
+    # for epoch in epochs: 
+    #     cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch} --seed 42"
+    #     RunMultipleJobs(cmd, jobName=f'HGQ_{epoch}', python_env='hgq2')
     # epoch = 2500
     # for seed in range(66,70):
     #     cmd = f"python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/HGQ_1D_CNN.py --epochs {epoch} --seed {seed}"

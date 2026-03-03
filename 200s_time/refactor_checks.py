@@ -2,6 +2,7 @@
 
 import os
 import re
+import sys
 import time
 import pickle
 import numpy as np
@@ -13,6 +14,12 @@ print(tensorflow.__version__)
 from tensorflow import keras
 
 from A0_Utilities import load_config
+from pathlib import Path
+CURRENT_DIR = Path(__file__).resolve()   # points to code/200s_time
+PROJECT_ROOT = CURRENT_DIR.parents[1]  
+sys.path.append(str(PROJECT_ROOT))
+from model_runners.R01_1D_CNN_train_and_run import load_new_coincidence_data
+from model_runners.R03_Autoencoder_train_and_run import DEFAULT_VALIDATION_SPECIAL_EVENTS
 
 
 def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None, specify_model=False):
@@ -181,6 +188,8 @@ def plot_histogram(prob_2016, prob_coincidence, prob_coincidence_rcr, amp, times
     bins = 20
     range_vals = (0, 1)
 
+    plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid',
+             label=f'Special Events {len(prob_special)}')
     plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
              label=f'2016-Backlobes {len(prob_2016)}', density=False)
     plt.hist(prob_coincidence, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',
@@ -278,6 +287,37 @@ if __name__ == "__main__":
     #     print(metadata[idx]["master_id"])
     #     print(metadata[idx]["Times"])
 
+    # --------------------------------------------------
+    # Load DEFAULT_VALIDATION_SPECIAL_EVENTS
+    # --------------------------------------------------
 
+    validation_pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.24.25_CoincidenceDatetimes_passing_cuts_with_all_params_recalcZenAzi_calcPol.pkl"
 
+    passing_ids = []  # not needed if you only want special events
+
+    special_pairs = DEFAULT_VALIDATION_SPECIAL_EVENTS
+
+    passing_traces, raw_traces, special_traces, passing_meta, raw_meta, special_meta = \
+        load_new_coincidence_data(
+            validation_pkl_path,
+            passing_ids,
+            special_pairs
+        )
+
+    print(f"Loaded {len(special_traces)} special validation traces.")
+
+    special_traces = np.array(special_traces)
+
+    if special_traces.ndim == 3:
+        special_traces = special_traces[..., np.newaxis]
+
+    if config['if_1D']:
+        special_traces = special_traces.squeeze(-1).transpose(0, 2, 1)
+
+    prob_special = model.predict(special_traces).flatten()
+
+    print("Special Event Network Outputs:")
+    for i, val in enumerate(prob_special):
+        meta = special_meta.get(i, {})
+        print(f"Event {meta.get('event_id')} Station {meta.get('station_id')} → {val:.4f}")
 

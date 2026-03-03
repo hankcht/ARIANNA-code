@@ -83,7 +83,9 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None, spe
 
         with custom_object_scope(custom_objects):
             model = keras.models.load_model(f'{model_path}12.16.25_14-53_HGQ2_model.keras', compile=False)
-        return model, _, _
+        timestamp =  '12.16.25_14-53'
+        prefix = 'hgq'
+        return model, timestamp, prefix
     
     if best_file:
         model_path = os.path.join(base_model_path, best_file)

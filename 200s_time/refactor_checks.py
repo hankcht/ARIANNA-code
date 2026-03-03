@@ -299,8 +299,8 @@ if __name__ == "__main__":
 
     validation_pkl_path = "/dfs8/sbarwick_lab/ariannaproject/rricesmi/numpy_arrays/station_data/9.24.25_CoincidenceDatetimes_passing_cuts_with_all_params_recalcZenAzi_calcPol.pkl"
 
-    passing_ids = []  # not needed if you only want special events
-
+    passing_ids = [3047, 3432, 10195, 10231, 10273, 10284, 10444, 10449,
+    10466, 10471, 10554, 11197, 11220, 11230, 11236, 11243]  
     special_pairs = DEFAULT_VALIDATION_SPECIAL_EVENTS
 
     passing_traces, raw_traces, special_traces, passing_meta, raw_meta, special_meta = \

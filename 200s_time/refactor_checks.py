@@ -195,12 +195,14 @@ def load_all_coincidence_traces(pkl_path, trace_key):
     return coinc_dict, all_Traces, metadata
 
 
-def plot_histogram(prob_special, prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp, prefix):
+def plot_histogram(prob_passing, prob_special, prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp, prefix):
     
     plt.figure(figsize=(8, 6))
     bins = 20
     range_vals = (0, 1)
 
+    plt.hist(prob_passing, bins=20, range=range_vals,histtype='step', color='red', linestyle='solid',
+             label=f'Passed Events {len(prob_passing)}')
     plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid',
              label=f'Special Events {len(prob_special)}')
     plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
@@ -325,7 +327,15 @@ if __name__ == "__main__":
         meta = special_meta.get(i, {})
         print(f"Event {meta.get('event_id')} Station {meta.get('station_id')} → {val:.4f}")
 
-    plot_histogram(prob_special, prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
+    if passing_traces.ndim == 3:
+        passing_traces = passing_traces[..., np.newaxis]
+
+    if config['if_1D']:
+        passing_traces = passing_traces.squeeze(-1).transpose(0, 2, 1)
+
+    prob_passing = model.predict(passing_traces).flatten()
+
+    plot_histogram(prob_passing, prob_special, prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
 
     # print(prob_backlobe)
 

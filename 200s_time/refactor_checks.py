@@ -67,9 +67,9 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None, spe
 
     if specify_model:
         # overwrite for specific run
-        model_path = '/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/12.16.25_14-53/models/'
+        model_path = '/dfs6b/pub/tangch3/ARIANNA/DeepLearning/code/external_ml_trigger/data/models/fLow_0.08-fhigh_0.23-rate_0.5/hgq_config_beta7_gamma6_p1_cl/'
         print(f"Loading model: {model_path}")
-        model = keras.models.load_model(f'{model_path}12.16.25_14-53_HGQ2_model.keras')
+        model = keras.models.load_model(f'{model_path}hgq_config_beta7_gamma6_p1_cl_best.keras')
         return model, _, _
     if best_file:
         model_path = os.path.join(base_model_path, best_file)

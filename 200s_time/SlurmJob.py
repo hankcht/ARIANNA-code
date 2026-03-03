@@ -76,7 +76,7 @@ def main(multi_run):
     else:
         cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py'
         # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'
-        RunMultipleJobs(cmd, jobName='checks')
+        RunMultipleJobs(cmd, jobName='checks', python_env='hgq2') #
 
 
 if __name__ == "__main__":

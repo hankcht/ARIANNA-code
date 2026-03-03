@@ -38,10 +38,10 @@ from model_builder_autoencoder import (
     build_autoencoder_freq_bottleneck_model,
     build_autoencoder_freq_denoising_model,
     build_autoencoder_freq_mae_loss_model,
-    build_vae_model_freq,
-    build_vae_bottleneck_model_freq,
-    build_vae_denoising_model_freq,
-    build_vae_mae_loss_model_freq
+    # build_vae_model_freq,
+    # build_vae_bottleneck_model_freq,
+    # build_vae_denoising_model_freq,
+    # build_vae_mae_loss_model_freq
 )
 from data_channel_cycling import cycle_channels
 # Import original data loading functions
@@ -67,10 +67,10 @@ MODEL_BUILDERS = {
     '1d_autoencoder_bottleneck_freq': build_autoencoder_freq_bottleneck_model,
     '1d_autoencoder_denoising_freq': build_autoencoder_freq_denoising_model,
     '1d_autoencoder_mae_loss_freq': build_autoencoder_freq_mae_loss_model,
-    '1d_vae_freq': build_vae_model_freq,
-    '1d_vae_bottleneck_freq': build_vae_bottleneck_model_freq,
-    '1d_vae_denoising_freq': build_vae_denoising_model_freq,
-    '1d_vae_mae_loss_freq': build_vae_mae_loss_model_freq
+    # '1d_vae_freq': build_vae_model_freq,
+    # '1d_vae_bottleneck_freq': build_vae_bottleneck_model_freq,
+    # '1d_vae_denoising_freq': build_vae_denoising_model_freq,
+    # '1d_vae_mae_loss_freq': build_vae_mae_loss_model_freq
 }
 
 

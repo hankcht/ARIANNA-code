@@ -91,7 +91,7 @@ LATENT_COLOR_MAP = {
     'RCR (Signal)': 'red',
     'Validation Passing': 'green',
     'Validation Raw': 'purple',
-    'Validation Special Event': 'orange'
+    'Validation Special Events': 'orange'
 }
 
 LATENT_MARKER_MAP = {
@@ -99,7 +99,7 @@ LATENT_MARKER_MAP = {
     'RCR (Signal)': 'o',
     'Validation Passing': 's',
     'Validation Raw': '^',
-    'Validation Special Event': '*'
+    'Validation Special Events': '*'
 }
 
 HIST_COLOR_MAP = {
@@ -107,7 +107,7 @@ HIST_COLOR_MAP = {
     'RCR (Signal)': 'red',
     'Validation Passing': 'green',
     'Validation Raw': 'purple',
-    'Validation Special Event': 'orange'
+    'Validation Special Events': 'orange'
 }
 
 
@@ -632,7 +632,7 @@ def plot_latent_space(model, sim_rcr_all, data_backlobe_traces_rcr_all,
         marker = entry.get('marker', 'o')
         alpha = entry.get('alpha', 0.6)
         size = entry.get('size', 40)
-        if entry['label'].startswith('Validation Special Event'):
+        if entry['label'].startswith('Validation Special Events'):
             size = 120
             alpha = entry.get('alpha', 1.0)
 
@@ -797,7 +797,7 @@ def plot_special_event_reconstruction(original_trace, reconstructed_trace, mse_v
     if num_channels == 1:
         axes = np.expand_dims(axes, axis=0)
 
-    title_label = event_label or 'Validation Special Event'
+    title_label = event_label or 'Validation Special Events'
     fig.suptitle(
         f'{amp} {model_type} - {title_label}\nReconstruction MSE: {mse_value:.4g} ({domain_label}, {dataset_name_suffix})',
         fontsize=16
@@ -890,13 +890,7 @@ def run_validation_checks(model, requires_transpose, config, timestamp, learning
     raw_traces_proc = transform(raw_traces)
     special_traces_proc = transform(special_traces)
 
-    special_label = 'Validation Special Event'
-    if special_traces_proc.shape[0] > 0:
-        meta = special_metadata.get(0, {})
-        evt = meta.get('event_id')
-        stn = meta.get('station_id')
-        if evt is not None and stn is not None:
-            special_label = f'Validation Special Event (Evt {evt}, Stn {stn})'
+    special_label = 'Validation Special Events'
 
     # --- Reconstruction losses ---
     passing_mse = np.array([])
@@ -950,8 +944,8 @@ def run_validation_checks(model, requires_transpose, config, timestamp, learning
         validation_overlays.append({
             'label': special_label,
             'data': special_traces_proc,
-            'color': LATENT_COLOR_MAP.get('Validation Special Event', 'orange'),
-            'marker': LATENT_MARKER_MAP.get('Validation Special Event', '*'),
+            'color': LATENT_COLOR_MAP.get('Validation Special Events', 'orange'),
+            'marker': LATENT_MARKER_MAP.get('Validation Special Events', '*'),
             'alpha': 1.0,
             'size': 160
         })
@@ -1006,17 +1000,33 @@ def run_validation_checks(model, requires_transpose, config, timestamp, learning
 
     # --- Special event reconstruction plot ---
     if special_trace_for_plot is not None and special_recon_for_plot is not None and special_mse.size > 0:
-        plot_special_event_reconstruction(
-            special_trace_for_plot,
-            special_recon_for_plot,
-            float(special_mse.flatten()[0]),
-            timestamp,
-            config,
-            model_type,
-            learning_rate,
-            dataset_name_suffix="validation",
-            event_label=special_label
-        )
+        for i in range(len(special_mse)):
+
+            trace = special_traces_proc[i]
+            recon = special_recon[i]
+
+            if requires_transpose:
+                recon_plot = recon.transpose(1, 0)
+            else:
+                recon_plot = np.squeeze(recon, axis=-1)
+
+            meta = special_metadata.get(i, {})
+            evt = meta.get('event_id', 'unknown')
+            stn = meta.get('station_id', 'unknown')
+
+            event_label = f"Validation Special Event (Evt {evt}, Stn {stn})"
+
+            plot_special_event_reconstruction(
+                trace,
+                recon_plot,
+                float(special_mse[i]),
+                timestamp,
+                config,
+                model_type,
+                learning_rate,
+                dataset_name_suffix="validation",
+                event_label=event_label
+            )
     else:
         print("No special event reconstruction plot generated (missing data).")
 

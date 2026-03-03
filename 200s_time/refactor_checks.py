@@ -327,6 +327,8 @@ if __name__ == "__main__":
         meta = special_meta.get(i, {})
         print(f"Event {meta.get('event_id')} Station {meta.get('station_id')} → {val:.4f}")
 
+    passing_traces = np.array(passing_traces)
+
     if passing_traces.ndim == 3:
         passing_traces = passing_traces[..., np.newaxis]
 

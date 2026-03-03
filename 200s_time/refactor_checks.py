@@ -14,12 +14,8 @@ print(tensorflow.__version__)
 from tensorflow import keras
 
 from A0_Utilities import load_config
-from pathlib import Path
-CURRENT_DIR = Path(__file__).resolve()   # points to code/200s_time
-PROJECT_ROOT = CURRENT_DIR.parents[1]  
-sys.path.append(str(PROJECT_ROOT))
-from model_runners.R01_1D_CNN_train_and_run import load_new_coincidence_data
-from model_runners.R03_Autoencoder_train_and_run import DEFAULT_VALIDATION_SPECIAL_EVENTS
+from R01_1D_CNN_train_and_run import load_new_coincidence_data
+from R03_Autoencoder_train_and_run import DEFAULT_VALIDATION_SPECIAL_EVENTS
 
 
 def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None, specify_model=False):

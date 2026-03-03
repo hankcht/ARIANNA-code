@@ -67,10 +67,24 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None, spe
 
     if specify_model:
         # overwrite for specific run
-        model_path = '/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/12.16.25_14-53/models/'
-        print(f"Loading model: {model_path}")
-        model = keras.models.load_model(f'{model_path}12.16.25_14-53_HGQ2_model.keras')
+        # model_path = '/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/12.16.25_14-53/models/'
+        # print(f"Loading model: {model_path}")
+        # model = keras.models.load_model(f'{model_path}12.16.25_14-53_HGQ2_model.keras')
+        from tensorflow.keras.layers import InputLayer
+        from tensorflow.keras.utils import custom_object_scope
+        from hgq.layers import QConv2D, QDense  # wherever your Q-layers are defined
+
+        custom_objects = {
+            'InputLayer': InputLayer,
+            'QConv2D': QConv2D,
+            'QDense': QDense,
+            # add gradient_reversal_operation if DANN
+        }
+
+        with custom_object_scope(custom_objects):
+            model = keras.models.load_model(f'{model_path}12.16.25_14-53_HGQ2_model.keras', compile=False)
         return model, _, _
+    
     if best_file:
         model_path = os.path.join(base_model_path, best_file)
         print(f"Loading model: {model_path}")

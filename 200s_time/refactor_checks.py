@@ -67,7 +67,8 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None, spe
 
     if specify_model:
         # overwrite for specific run
-        model_path = '/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/12.16.25_14-53/models/'
+        timestamp =  '11.26.25_13-52'   
+        model_path = f'/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/{timestamp}/models/'
         # print(f"Loading model: {model_path}")
         # model = keras.models.load_model(f'{model_path}12.16.25_14-53_HGQ2_model.keras')
         from tensorflow.keras.layers import InputLayer
@@ -82,8 +83,8 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None, spe
         }
 
         with custom_object_scope(custom_objects):
-            model = keras.models.load_model(f'{model_path}12.16.25_14-53_HGQ2_model.keras', compile=False)
-        timestamp =  '12.16.25_14-53'
+            model = keras.models.load_model(f'{model_path}{timestamp}_HGQ2_model.keras', compile=False)
+        
         prefix = 'hgq'
         return model, timestamp, prefix
     

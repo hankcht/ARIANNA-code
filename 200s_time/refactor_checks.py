@@ -194,7 +194,7 @@ def load_all_coincidence_traces(pkl_path, trace_key):
     return coinc_dict, all_Traces, metadata
 
 
-def plot_histogram(prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp, prefix):
+def plot_histogram(prob_special, prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp, prefix):
     
     plt.figure(figsize=(8, 6))
     bins = 20
@@ -290,15 +290,6 @@ if __name__ == "__main__":
     prob_coincidence = prob_coincidence.flatten()
     prob_coincidence_rcr = prob_coincidence_rcr.flatten()
 
-    plot_histogram(prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
-
-    # print(prob_backlobe)
-
-    # indices = [149, 169, 199]
-    # for idx in indices:
-    #     print(metadata[idx]["master_id"])
-    #     print(metadata[idx]["Times"])
-
     # --------------------------------------------------
     # Load DEFAULT_VALIDATION_SPECIAL_EVENTS
     # --------------------------------------------------
@@ -332,4 +323,15 @@ if __name__ == "__main__":
     for i, val in enumerate(prob_special):
         meta = special_meta.get(i, {})
         print(f"Event {meta.get('event_id')} Station {meta.get('station_id')} → {val:.4f}")
+
+    plot_histogram(prob_special, prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
+
+    # print(prob_backlobe)
+
+    # indices = [149, 169, 199]
+    # for idx in indices:
+    #     print(metadata[idx]["master_id"])
+    #     print(metadata[idx]["Times"])
+
+
 

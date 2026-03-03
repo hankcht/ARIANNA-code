@@ -83,7 +83,7 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None, spe
         }
 
         with custom_object_scope(custom_objects):
-            model = keras.models.load_model(f'{model_path}{timestamp}_HGQ2_model.keras', compile=False)
+            model = keras.models.load_model(f'{model_path}{timestamp}_HGQ2_model.h5', compile=False)
         
         prefix = 'hgq'
         return model, timestamp, prefix

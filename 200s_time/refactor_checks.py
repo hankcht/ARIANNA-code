@@ -404,10 +404,13 @@ if __name__ == "__main__":
                 'zen':        float(events['zen'][i]),
             }
     events = load_rcr_events('/pub/tangch3/ARIANNA/DeepLearning/HRAStationDataAnalysis/ErrorAnalysis/output/3.9.26/rcr_passing_events.npz')
+    passing_rcr = []
     for evt in iterate_rcr_events('/pub/tangch3/ARIANNA/DeepLearning/HRAStationDataAnalysis/ErrorAnalysis/output/3.9.26/rcr_passing_events.npz'):
         print(evt['station_id'], evt['snr'], evt['traces'].shape)
-
-    passing_rcr = events.transpose(0, 2, 1)
+        passing_rcr.append(evt['traces'])
+    passing_rcr = np.array(passing_rcr)
+    print(passing_rcr.shape)
+    passing_rcr = passing_rcr.transpose(0, 2, 1)
     prob_passing_rcr = model.predict(passing_rcr).flatten()
     print(prob_passing_rcr)
 

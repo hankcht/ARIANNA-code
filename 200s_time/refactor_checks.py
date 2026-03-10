@@ -409,8 +409,15 @@ if __name__ == "__main__":
         print(evt['station_id'], evt['snr'], evt['traces'].shape)
         passing_rcr.append(evt['traces'])
     passing_rcr = np.array(passing_rcr)
+    
     print(passing_rcr.shape)
     passing_rcr = passing_rcr.transpose(0, 2, 1)
     prob_passing_rcr = model.predict(passing_rcr).flatten()
     print(np.round(prob_passing_rcr, decimals=2))
+
+    passing_rcr = passing_rcr.transpose(0, 2, 1) # revert back
+    for i in [1, 4, 5]:
+        pT(passing_rcr[i], f'plot passing rcr {i}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/passing_rcr_{i}_netout{prob_passing_rcr[i]:.2f}.png')
+
+
 

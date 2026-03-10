@@ -74,9 +74,9 @@ def main(multi_run):
             # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'
             RunMultipleJobs(cmd, jobName='BLcurve')
     else:
-        cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/S03b_saveRCRPassingEvents.py' # refactor_checks.py
+        cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py' # 
         # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'
-        RunMultipleJobs(cmd, jobName='RCRPass', python_env='hgq2') # checks
+        RunMultipleJobs(cmd, jobName='checks', python_env='hgq2') # checks
 
 
 if __name__ == "__main__":

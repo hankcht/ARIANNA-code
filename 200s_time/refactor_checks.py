@@ -347,5 +347,67 @@ if __name__ == "__main__":
     #     print(metadata[idx]["master_id"])
     #     print(metadata[idx]["Times"])
 
+    def load_rcr_events(filepath):
+        """
+        Load the saved RCR-passing events dictionary from an .npz file.
 
+        Returns a dict with keys:
+            'station_ids'  : int array (N,) — station ID per event
+            'event_ids'    : int array (N,) — event ID per event
+            'times'        : float array (N,) — Unix timestamp per event
+            'traces'       : float array (N, 4, 256) — waveform traces (4 channels, 256 samples)
+            'snr'          : float array (N,) — signal-to-noise ratio
+            'chi_rcr'      : float array (N,) — RCR chi value
+            'chi_2016'     : float array (N,) — 2016 (backlobe) chi value
+            'chi_bad'      : float array (N,) — bad-template chi value
+            'azi'          : float array (N,) — reconstructed azimuth (rad)
+            'zen'          : float array (N,) — reconstructed zenith (rad)
+        """
+        data = np.load(filepath, allow_pickle=False)
+        return {key: data[key] for key in data.files}
+
+
+    def iterate_rcr_events(filepath):
+        """
+        Generator that yields one event at a time as a dict.
+
+        Each yielded dict contains:
+            'station_id' : int
+            'event_id'   : int
+            'time'       : float (Unix timestamp)
+            'traces'     : ndarray (4, 256)
+            'snr'        : float
+            'chi_rcr'    : float
+            'chi_2016'   : float
+            'chi_bad'    : float
+            'azi'        : float
+            'zen'        : float
+
+        Example:
+            for evt in iterate_rcr_events('rcr_passing_events.npz'):
+                print(f"Station {evt['station_id']}, SNR={evt['snr']:.1f}")
+                traces = evt['traces']  # shape (4, 256)
+        """
+        events = load_rcr_events(filepath)
+        n = len(events['station_ids'])
+        for i in range(n):
+            yield {
+                'station_id': int(events['station_ids'][i]),
+                'event_id':   int(events['event_ids'][i]),
+                'time':       float(events['times'][i]),
+                'traces':     events['traces'][i],
+                'snr':        float(events['snr'][i]),
+                'chi_rcr':    float(events['chi_rcr'][i]),
+                'chi_2016':   float(events['chi_2016'][i]),
+                'chi_bad':    float(events['chi_bad'][i]),
+                'azi':        float(events['azi'][i]),
+                'zen':        float(events['zen'][i]),
+            }
+    events = load_rcr_events('/pub/tangch3/ARIANNA/DeepLearning/HRAStationDataAnalysis/ErrorAnalysis/output/3.9.26/rcr_passing_events.npz')
+    for evt in iterate_rcr_events('/pub/tangch3/ARIANNA/DeepLearning/HRAStationDataAnalysis/ErrorAnalysis/output/3.9.26/rcr_passing_events.npz'):
+        print(evt['station_id'], evt['snr'], evt['traces'].shape)
+
+    passing_rcr = events.transpose(0, 2, 1)
+    prob_passing_rcr = model.predict(passing_rcr).flatten()
+    print(prob_passing_rcr)
 

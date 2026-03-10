@@ -37,7 +37,7 @@ def getTimeEventMasks(times_raw, event_ids):
 
 
     zerotime_mask = times_raw != 0
-    min_datetime_threshold = datetime.datetime(2013, 1, 1).timestamp()
+    min_datetime_threshold = datetime(2013, 1, 1).timestamp()
     pretime_mask = times_raw >= min_datetime_threshold
     initial_mask = zerotime_mask & pretime_mask
 

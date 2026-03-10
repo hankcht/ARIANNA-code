@@ -412,5 +412,5 @@ if __name__ == "__main__":
     print(passing_rcr.shape)
     passing_rcr = passing_rcr.transpose(0, 2, 1)
     prob_passing_rcr = model.predict(passing_rcr).flatten()
-    print(prob_passing_rcr)
+    print(np.round(prob_passing_rcr, decimals=2))
 

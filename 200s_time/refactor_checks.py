@@ -343,6 +343,11 @@ if __name__ == "__main__":
     data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
     print(len(data_backlobe_expanded))
 
+    data_backlobe_traces_2016_all = data['data_backlobe_traces2016']
+    data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)
+    print(len(data_backlobe_expanded))
+
+
     # plot_histogram(prob_passing, prob_special, prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
 
     

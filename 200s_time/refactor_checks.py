@@ -198,22 +198,37 @@ def load_all_coincidence_traces(pkl_path, trace_key):
 def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp, prefix):
     
     plt.figure(figsize=(8, 6))
-    bins = 50
+    bins = 20
     range_vals = (0, 1)   
     
-    plt.hist(prob_passing, bins=20, range=range_vals,histtype='step', color='Black', linestyle='solid', #weights=np.ones_like(prob_passing)/len(prob_passing),
+    edges = np.linspace(range_vals[0], range_vals[1], bins + 1)
+    counts_pass, _ = np.histogram(prob_passing, bins=edges)
+    norm_pass = counts_pass / counts_pass[1] if counts_pass[1] != 0 else counts_pass
+
+    counts_back, _ = np.histogram(prob_backlobe, bins=edges)
+    norm_back = counts_back / counts_back[1] if counts_back[1] != 0 else counts_back
+
+    centers = 0.5 * (edges[:-1] + edges[1:])
+
+    plt.step(centers, norm_pass, where='mid', color='black',
              label=f'Passed BL Events {len(prob_passing)}')
+
+    plt.step(centers, norm_back, where='mid', color='blue',
+             label=f'Backlobe Event {len(prob_backlobe)}')
+
+    # plt.hist(prob_passing, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid', #weights=np.ones_like(prob_passing)/len(prob_passing),
+    #          label=f'Passed BL Events {len(prob_passing)}')
     # plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid', weights=np.ones_like(prob_special)/len(prob_special),
     #          label=f'Special Events {len(prob_special)}')
-    plt.hist(prob_backlobe, bins=20, range=range_vals,histtype='step', color='blue', linestyle='solid', #weights=np.ones_like(prob_backlobe)/len(prob_backlobe),
-             label=f'Backlobe Event {len(prob_backlobe)}')
+    # plt.hist(prob_backlobe, bins=bins, range=range_vals,histtype='step', color='blue', linestyle='solid', weights=np.ones_like(prob_backlobe)/len(prob_backlobe),
+    #          label=f'Backlobe Event {len(prob_backlobe)}')
     # plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
     #          label=f'2016-Backlobes {len(prob_2016)}', density=False)
     # plt.hist(prob_coincidence, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',
     #          label=f'Coincidence-Events {len(prob_coincidence)}', density=False)
 
     plt.xlabel('Network Output', fontsize=18)
-    plt.ylabel('Number of Events', fontsize=18)
+    plt.ylabel('Normalized Counts', fontsize=18)
     plt.yscale('log')
 
     # hist_values_2016, _ = np.histogram(prob_2016, bins=20, range=(0, 1))
@@ -225,7 +240,7 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     #          fontsize=12, verticalalignment='top', transform=plt.gca().transAxes,
     #          bbox=dict(facecolor='white', alpha=0.7, edgecolor='gray'))
     plt.title(f'Passed Events Network Output', fontsize=14)
-    plt.legend(loc='upper left', fontsize=12)
+    # plt.legend(loc='upper left', fontsize=12)
 
     config = load_config()
     filename = config['histogram_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix)

@@ -345,9 +345,9 @@ if __name__ == "__main__":
     data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
     print(len(data_backlobe_expanded))
 
-    data_backlobe_traces_2016_all = data['data_backlobe_traces2016']
-    data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)
-    print(len(data_backlobe_expanded))
+    # data_backlobe_traces_2016_all = data['data_backlobe_traces2016']
+    # data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)
+    # print(len(data_backlobe_expanded))
 
     prob_backlobe = model.predict(data_backlobe_expanded)
     prob_backlobe = prob_backlobe.flatten()

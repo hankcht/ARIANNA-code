@@ -205,23 +205,23 @@ def plot_histogram(prob_passing, prob_special, prob_2016, prob_coincidence, prob
              label=f'Passed Events {len(prob_passing)}')
     plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid',
              label=f'Special Events {len(prob_special)}')
-    plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
-             label=f'2016-Backlobes {len(prob_2016)}', density=False)
-    plt.hist(prob_coincidence, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',
-             label=f'Coincidence-Events {len(prob_coincidence)}', density=False)
+    # plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
+    #          label=f'2016-Backlobes {len(prob_2016)}', density=False)
+    # plt.hist(prob_coincidence, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',
+    #          label=f'Coincidence-Events {len(prob_coincidence)}', density=False)
 
     plt.xlabel('Network Output', fontsize=18)
     plt.ylabel('Number of Events', fontsize=18)
     plt.yscale('log')
 
-    hist_values_2016, _ = np.histogram(prob_2016, bins=20, range=(0, 1))
-    hist_values_coincidence, _ = np.histogram(prob_coincidence, bins=20, range=(0, 1))
-    max_overall_hist = max(np.max(hist_values_2016), np.max(hist_values_coincidence))
-    plt.ylim(7*1e-1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
+    # hist_values_2016, _ = np.histogram(prob_2016, bins=20, range=(0, 1))
+    # hist_values_coincidence, _ = np.histogram(prob_coincidence, bins=20, range=(0, 1))
+    # max_overall_hist = max(np.max(hist_values_2016), np.max(hist_values_coincidence))
+    # plt.ylim(7*1e-1, max(10 ** (np.ceil(np.log10(max_overall_hist * 1.1))), 10))
 
-    plt.text(0.00, 0.85, f'Coincidence RCR network Output is: {prob_coincidence_rcr.item():.2f}',
-             fontsize=12, verticalalignment='top', transform=plt.gca().transAxes,
-             bbox=dict(facecolor='white', alpha=0.7, edgecolor='gray'))
+    # plt.text(0.00, 0.85, f'Coincidence RCR network Output is: {prob_coincidence_rcr.item():.2f}',
+    #          fontsize=12, verticalalignment='top', transform=plt.gca().transAxes,
+    #          bbox=dict(facecolor='white', alpha=0.7, edgecolor='gray'))
     plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=14)
     plt.legend(loc='upper left', fontsize=12)
 
@@ -347,77 +347,77 @@ if __name__ == "__main__":
     #     print(metadata[idx]["master_id"])
     #     print(metadata[idx]["Times"])
 
-    def load_rcr_events(filepath):
-        """
-        Load the saved RCR-passing events dictionary from an .npz file.
+    # def load_rcr_events(filepath):
+    #     """
+    #     Load the saved RCR-passing events dictionary from an .npz file.
 
-        Returns a dict with keys:
-            'station_ids'  : int array (N,) — station ID per event
-            'event_ids'    : int array (N,) — event ID per event
-            'times'        : float array (N,) — Unix timestamp per event
-            'traces'       : float array (N, 4, 256) — waveform traces (4 channels, 256 samples)
-            'snr'          : float array (N,) — signal-to-noise ratio
-            'chi_rcr'      : float array (N,) — RCR chi value
-            'chi_2016'     : float array (N,) — 2016 (backlobe) chi value
-            'chi_bad'      : float array (N,) — bad-template chi value
-            'azi'          : float array (N,) — reconstructed azimuth (rad)
-            'zen'          : float array (N,) — reconstructed zenith (rad)
-        """
-        data = np.load(filepath, allow_pickle=False)
-        return {key: data[key] for key in data.files}
+    #     Returns a dict with keys:
+    #         'station_ids'  : int array (N,) — station ID per event
+    #         'event_ids'    : int array (N,) — event ID per event
+    #         'times'        : float array (N,) — Unix timestamp per event
+    #         'traces'       : float array (N, 4, 256) — waveform traces (4 channels, 256 samples)
+    #         'snr'          : float array (N,) — signal-to-noise ratio
+    #         'chi_rcr'      : float array (N,) — RCR chi value
+    #         'chi_2016'     : float array (N,) — 2016 (backlobe) chi value
+    #         'chi_bad'      : float array (N,) — bad-template chi value
+    #         'azi'          : float array (N,) — reconstructed azimuth (rad)
+    #         'zen'          : float array (N,) — reconstructed zenith (rad)
+    #     """
+    #     data = np.load(filepath, allow_pickle=False)
+    #     return {key: data[key] for key in data.files}
 
 
-    def iterate_rcr_events(filepath):
-        """
-        Generator that yields one event at a time as a dict.
+    # def iterate_rcr_events(filepath):
+    #     """
+    #     Generator that yields one event at a time as a dict.
 
-        Each yielded dict contains:
-            'station_id' : int
-            'event_id'   : int
-            'time'       : float (Unix timestamp)
-            'traces'     : ndarray (4, 256)
-            'snr'        : float
-            'chi_rcr'    : float
-            'chi_2016'   : float
-            'chi_bad'    : float
-            'azi'        : float
-            'zen'        : float
+    #     Each yielded dict contains:
+    #         'station_id' : int
+    #         'event_id'   : int
+    #         'time'       : float (Unix timestamp)
+    #         'traces'     : ndarray (4, 256)
+    #         'snr'        : float
+    #         'chi_rcr'    : float
+    #         'chi_2016'   : float
+    #         'chi_bad'    : float
+    #         'azi'        : float
+    #         'zen'        : float
 
-        Example:
-            for evt in iterate_rcr_events('rcr_passing_events.npz'):
-                print(f"Station {evt['station_id']}, SNR={evt['snr']:.1f}")
-                traces = evt['traces']  # shape (4, 256)
-        """
-        events = load_rcr_events(filepath)
-        n = len(events['station_ids'])
-        for i in range(n):
-            yield {
-                'station_id': int(events['station_ids'][i]),
-                'event_id':   int(events['event_ids'][i]),
-                'time':       float(events['times'][i]),
-                'traces':     events['traces'][i],
-                'snr':        float(events['snr'][i]),
-                'chi_rcr':    float(events['chi_rcr'][i]),
-                'chi_2016':   float(events['chi_2016'][i]),
-                'chi_bad':    float(events['chi_bad'][i]),
-                'azi':        float(events['azi'][i]),
-                'zen':        float(events['zen'][i]),
-            }
-    events = load_rcr_events('/pub/tangch3/ARIANNA/DeepLearning/HRAStationDataAnalysis/ErrorAnalysis/output/3.9.26/rcr_passing_events.npz')
-    passing_rcr = []
-    for evt in iterate_rcr_events('/pub/tangch3/ARIANNA/DeepLearning/HRAStationDataAnalysis/ErrorAnalysis/output/3.9.26/rcr_passing_events.npz'):
-        print(evt['station_id'], evt['snr'], evt['traces'].shape)
-        passing_rcr.append(evt['traces'])
-    passing_rcr = np.array(passing_rcr)
+    #     Example:
+    #         for evt in iterate_rcr_events('rcr_passing_events.npz'):
+    #             print(f"Station {evt['station_id']}, SNR={evt['snr']:.1f}")
+    #             traces = evt['traces']  # shape (4, 256)
+    #     """
+    #     events = load_rcr_events(filepath)
+    #     n = len(events['station_ids'])
+    #     for i in range(n):
+    #         yield {
+    #             'station_id': int(events['station_ids'][i]),
+    #             'event_id':   int(events['event_ids'][i]),
+    #             'time':       float(events['times'][i]),
+    #             'traces':     events['traces'][i],
+    #             'snr':        float(events['snr'][i]),
+    #             'chi_rcr':    float(events['chi_rcr'][i]),
+    #             'chi_2016':   float(events['chi_2016'][i]),
+    #             'chi_bad':    float(events['chi_bad'][i]),
+    #             'azi':        float(events['azi'][i]),
+    #             'zen':        float(events['zen'][i]),
+    #         }
+    # events = load_rcr_events('/pub/tangch3/ARIANNA/DeepLearning/HRAStationDataAnalysis/ErrorAnalysis/output/3.9.26/rcr_passing_events.npz')
+    # passing_rcr = []
+    # for evt in iterate_rcr_events('/pub/tangch3/ARIANNA/DeepLearning/HRAStationDataAnalysis/ErrorAnalysis/output/3.9.26/rcr_passing_events.npz'):
+    #     print(evt['station_id'], evt['snr'], evt['traces'].shape)
+    #     passing_rcr.append(evt['traces'])
+    # passing_rcr = np.array(passing_rcr)
     
-    print(passing_rcr.shape)
-    passing_rcr = passing_rcr.transpose(0, 2, 1)
-    prob_passing_rcr = model.predict(passing_rcr).flatten()
-    print(np.round(prob_passing_rcr, decimals=2))
+    # print(passing_rcr.shape)
+    # passing_rcr = passing_rcr.transpose(0, 2, 1)
+    # prob_passing_rcr = model.predict(passing_rcr).flatten()
+    # print(np.round(prob_passing_rcr, decimals=2))
 
-    passing_rcr = passing_rcr.transpose(0, 2, 1) # revert back
-    for i in range(9):
-        pT(passing_rcr[i], f'plot passing rcr {i}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/passing_rcr_{i}_netout{prob_passing_rcr[i]:.2f}.png')
+    # passing_rcr = passing_rcr.transpose(0, 2, 1) # revert back
+    # for i in range(9):
+    #     pT(passing_rcr[i], f'plot passing rcr {i}', f'/pub/tangch3/ARIANNA/DeepLearning/refactor/other/passing_rcr_{i}_netout{prob_passing_rcr[i]:.2f}.png')
 
 
 

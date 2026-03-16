@@ -204,7 +204,7 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     hist_vals, bin_edges = np.histogram(prob_backlobe, bins=bins, range=range_vals)
     second_bin_val = hist_vals[1]
 
-    plt.hist(prob_passing, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid', #weights=np.ones_like(prob_passing)/len(prob_passing),
+    plt.hist(prob_passing, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid', weights=np.ones_like(prob_passing)/len(prob_passing),
              label=f'Passed BL Events {len(prob_passing)}')
     plt.hist(prob_backlobe, bins=bins, range=range_vals,histtype='step', color='blue', linestyle='solid', weights=np.ones_like(prob_backlobe) / len(prob_backlobe) / second_bin_val,
              label=f'Backlobe Event {len(prob_backlobe)}')

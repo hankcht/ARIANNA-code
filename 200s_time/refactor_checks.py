@@ -208,15 +208,16 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     counts_back, _ = np.histogram(prob_backlobe, bins=edges)
     norm_back = counts_back / counts_back[1] if counts_back[1] != 0 else counts_back
 
-    norm_pass_ext = np.r_[norm_pass[0], norm_pass]  # prepend first bin value
-    norm_back_ext = np.r_[norm_back[0], norm_back]
+    norm_pass_ext = np.r_[norm_pass[0], norm_pass, 0]  # prepend first bin value
+    norm_back_ext = np.r_[norm_back[0], norm_back, 0]
+    edges_ext = np.r_[edges[0], edges, edges[-1]]
 
     centers = 0.5 * (edges[:-1] + edges[1:])
 
-    plt.step(edges, norm_pass_ext, where='pre', color='black',
+    plt.step(edges_ext, norm_pass_ext, where='pre', color='black',
              label=f'Passed BL Events {len(prob_passing)}')
 
-    plt.step(edges, norm_back_ext, where='pre', color='blue',
+    plt.step(edges_ext, norm_back_ext, where='pre', color='blue',
              label=f'Backlobe Event {len(prob_backlobe)}')
 
     # plt.hist(prob_passing, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid', #weights=np.ones_like(prob_passing)/len(prob_passing),

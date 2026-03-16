@@ -198,15 +198,15 @@ def load_all_coincidence_traces(pkl_path, trace_key):
 def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp, prefix):
     
     plt.figure(figsize=(8, 6))
-    bins = 20
+    bins = 50
     range_vals = (0, 1)   
     
     plt.hist(prob_passing, bins=20, range=range_vals,histtype='step', color='Black', linestyle='solid', #weights=np.ones_like(prob_passing)/len(prob_passing),
              label=f'Passed BL Events {len(prob_passing)}')
     # plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid', weights=np.ones_like(prob_special)/len(prob_special),
     #          label=f'Special Events {len(prob_special)}')
-    # plt.hist(prob_backlobe, bins=20, range=range_vals,histtype='step', color='blue', linestyle='solid', weights=np.ones_like(prob_backlobe)/len(prob_backlobe),
-    #          label=f'Backlobe Event {len(prob_backlobe)}')
+    plt.hist(prob_backlobe, bins=20, range=range_vals,histtype='step', color='blue', linestyle='solid', #weights=np.ones_like(prob_backlobe)/len(prob_backlobe),
+             label=f'Backlobe Event {len(prob_backlobe)}')
     # plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
     #          label=f'2016-Backlobes {len(prob_2016)}', density=False)
     # plt.hist(prob_coincidence, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',

@@ -201,7 +201,7 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     bins = 20
     range_vals = (0, 1)   
     
-    plt.hist(prob_passing, bins=20, range=range_vals,histtype='step', color='red', linestyle='solid', #weights=np.ones_like(prob_passing)/len(prob_passing),
+    plt.hist(prob_passing, bins=20, range=range_vals,histtype='step', color='Black', linestyle='solid', #weights=np.ones_like(prob_passing)/len(prob_passing),
              label=f'Passed Events {len(prob_passing)}')
     # plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid', weights=np.ones_like(prob_special)/len(prob_special),
     #          label=f'Special Events {len(prob_special)}')
@@ -214,7 +214,7 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
 
     plt.xlabel('Network Output', fontsize=18)
     plt.ylabel('Number of Events', fontsize=18)
-    # plt.yscale('log')
+    plt.yscale('log')
 
     # hist_values_2016, _ = np.histogram(prob_2016, bins=20, range=(0, 1))
     # hist_values_coincidence, _ = np.histogram(prob_coincidence, bins=20, range=(0, 1))
@@ -224,7 +224,7 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     # plt.text(0.00, 0.85, f'Coincidence RCR network Output is: {prob_coincidence_rcr.item():.2f}',
     #          fontsize=12, verticalalignment='top', transform=plt.gca().transAxes,
     #          bbox=dict(facecolor='white', alpha=0.7, edgecolor='gray'))
-    plt.title(f'{amp}-time 2016 BL and Coincidence Events Network Output', fontsize=14)
+    plt.title(f'{amp}-time Coincidence Events Network Output', fontsize=14)
     plt.legend(loc='upper left', fontsize=12)
 
     config = load_config()

@@ -67,7 +67,7 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None, spe
 
     if specify_model:
         # overwrite for specific run
-        timestamp =  '12.16.25_14-53' 
+        timestamp =  '11.26.25_13-52' 
         model_path = f'/dfs8/sbarwick_lab/ariannaproject/tangch3/HGQ2/{timestamp}/models/'
         # print(f"Loading model: {model_path}")
         # model = keras.models.load_model(f'{model_path}12.16.25_14-53_HGQ2_model.keras')
@@ -83,7 +83,7 @@ def load_most_recent_model(base_model_path, amp, if_dann, model_prefix=None, spe
         }
 
         with custom_object_scope(custom_objects):
-            model = keras.models.load_model(f'{model_path}{timestamp}_HGQ2_model.keras', compile=False)
+            model = keras.models.load_model(f'{model_path}{timestamp}_HGQ2_model.h5', compile=False)
         
         prefix = 'hgq'
         return model, timestamp, prefix
@@ -202,7 +202,7 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     range_vals = (0, 1)   
     
     plt.hist(prob_passing, bins=20, range=range_vals,histtype='step', color='Black', linestyle='solid', #weights=np.ones_like(prob_passing)/len(prob_passing),
-             label=f'Passed Events {len(prob_passing)}')
+             label=f'Passed BL Events {len(prob_passing)}')
     # plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid', weights=np.ones_like(prob_special)/len(prob_special),
     #          label=f'Special Events {len(prob_special)}')
     # plt.hist(prob_backlobe, bins=20, range=range_vals,histtype='step', color='blue', linestyle='solid', weights=np.ones_like(prob_backlobe)/len(prob_backlobe),
@@ -224,7 +224,7 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     # plt.text(0.00, 0.85, f'Coincidence RCR network Output is: {prob_coincidence_rcr.item():.2f}',
     #          fontsize=12, verticalalignment='top', transform=plt.gca().transAxes,
     #          bbox=dict(facecolor='white', alpha=0.7, edgecolor='gray'))
-    plt.title(f'{amp}-time Coincidence Events Network Output', fontsize=14)
+    plt.title(f'Passed Events Network Output', fontsize=14)
     plt.legend(loc='upper left', fontsize=12)
 
     config = load_config()

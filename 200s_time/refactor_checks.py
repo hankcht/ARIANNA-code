@@ -214,7 +214,7 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
 
     plt.xlabel('Network Output', fontsize=18)
     plt.ylabel('Number of Events', fontsize=18)
-    plt.yscale('log')
+    # plt.yscale('log')
 
     # hist_values_2016, _ = np.histogram(prob_2016, bins=20, range=(0, 1))
     # hist_values_coincidence, _ = np.histogram(prob_coincidence, bins=20, range=(0, 1))

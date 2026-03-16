@@ -201,11 +201,11 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     bins = 20
     range_vals = (0, 1)   
 
-    plt.hist(prob_passing, bins=20, range=range_vals,histtype='step', color='red', linestyle='solid',
+    plt.hist(prob_passing, bins=20, range=range_vals,histtype='step', color='red', linestyle='solid', density=True,
              label=f'Passed Events {len(prob_passing)}')
-    plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid',
+    plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid', density=True,
              label=f'Special Events {len(prob_special)}')
-    plt.hist(prob_backlobe, bins=20, range=range_vals,histtype='step', color='blue', linestyle='solid',
+    plt.hist(prob_backlobe, bins=20, range=range_vals,histtype='step', color='blue', linestyle='solid', density=True,
              label=f'Backlobe Event {len(prob_backlobe)}')
     # plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
     #          label=f'2016-Backlobes {len(prob_2016)}', density=False)

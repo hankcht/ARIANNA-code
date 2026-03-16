@@ -195,7 +195,7 @@ def load_all_coincidence_traces(pkl_path, trace_key):
     return coinc_dict, all_Traces, metadata
 
 
-def plot_histogram(prob_passing, prob_special, prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp, prefix):
+def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp, prefix):
     
     plt.figure(figsize=(8, 6))
     bins = 20
@@ -205,6 +205,8 @@ def plot_histogram(prob_passing, prob_special, prob_2016, prob_coincidence, prob
              label=f'Passed Events {len(prob_passing)}')
     plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid',
              label=f'Special Events {len(prob_special)}')
+    plt.hist(prob_backlobe, bins=20, range=range_vals,histtype='step', color='blue', linestyle='solid',
+             label=f'Backlobe Event {len(prob_backlobe)}')
     # plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
     #          label=f'2016-Backlobes {len(prob_2016)}', density=False)
     # plt.hist(prob_coincidence, bins=bins, range=range_vals, histtype='step', color='black', linestyle='solid',
@@ -272,7 +274,7 @@ if __name__ == "__main__":
         print('1D CNN Evaluation')
         all_2016_backlobes_transpose = all_2016_backlobes.squeeze(-1).transpose(0, 2, 1)
         all_coincidence_events_transpose = all_coincidence_events.squeeze(-1).transpose(0, 2, 1)
-        prob_backlobe = model.predict(all_2016_backlobes_transpose)
+        prob_2016 = model.predict(all_2016_backlobes_transpose)
         prob_coincidence = model.predict(all_coincidence_events_transpose)
 
         coinc_rcr = all_coincidence_events[1297]
@@ -283,13 +285,13 @@ if __name__ == "__main__":
         prob_coincidence_rcr = model.predict(np.expand_dims(coinc_rcr_transpose, axis=0))
     else:
         print('2D CNN Evaluation')
-        prob_backlobe = model.predict(all_2016_backlobes)
+        prob_2016 = model.predict(all_2016_backlobes)
         prob_coincidence = model.predict(all_coincidence_events)
 
         prob_coincidence_rcr = model.predict(np.expand_dims(all_coincidence_events[1297], axis=0))
         print(f'coincidence RCR network output: {prob_coincidence_rcr}')
 
-    prob_backlobe = prob_backlobe.flatten()
+    prob_2016 = prob_2016.flatten()
     prob_coincidence = prob_coincidence.flatten()
     prob_coincidence_rcr = prob_coincidence_rcr.flatten()
 
@@ -347,8 +349,9 @@ if __name__ == "__main__":
     data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)
     print(len(data_backlobe_expanded))
 
-
-    # plot_histogram(prob_passing, prob_special, prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
+    prob_backlobe = model.predict(data_backlobe_expanded)
+    prob_backlobe = prob_backlobe.flatten()
+    plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
 
     
 

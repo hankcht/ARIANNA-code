@@ -210,10 +210,10 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
 
     centers = 0.5 * (edges[:-1] + edges[1:])
 
-    plt.step(centers, norm_pass, where='mid', color='black',
+    plt.step(edges[:-1], norm_pass, where='post', color='black',
              label=f'Passed BL Events {len(prob_passing)}')
 
-    plt.step(centers, norm_back, where='mid', color='blue',
+    plt.step(edges[:-1], norm_back, where='post', color='blue',
              label=f'Backlobe Event {len(prob_backlobe)}')
 
     # plt.hist(prob_passing, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid', #weights=np.ones_like(prob_passing)/len(prob_passing),

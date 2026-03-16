@@ -199,7 +199,7 @@ def plot_histogram(prob_passing, prob_special, prob_2016, prob_coincidence, prob
     
     plt.figure(figsize=(8, 6))
     bins = 20
-    range_vals = (0, 1)
+    range_vals = (0, 1)   
 
     plt.hist(prob_passing, bins=20, range=range_vals,histtype='step', color='red', linestyle='solid',
              label=f'Passed Events {len(prob_passing)}')
@@ -337,8 +337,15 @@ if __name__ == "__main__":
         passing_traces = passing_traces.squeeze(-1).transpose(0, 2, 1)
 
     prob_passing = model.predict(passing_traces).flatten()
+    from refactor_train_and_run import load_and_prep_data_for_training
+    data = load_and_prep_data_for_training(config)
+    data_backlobe_traces_rcr_all = data['data_backlobe_tracesRCR']
+    data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
+    print(len(data_backlobe_expanded))
 
-    plot_histogram(prob_passing, prob_special, prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
+    # plot_histogram(prob_passing, prob_special, prob_backlobe, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
+
+    
 
     # print(prob_backlobe)
 

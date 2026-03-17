@@ -201,12 +201,17 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     bins = 20
     range_vals = (0, 1)   
     
-    hist_vals, bin_edges = np.histogram(prob_backlobe, bins=bins, range=range_vals)
-    second_bin_val = hist_vals[1]
+    hist_pass, bin_edges = np.histogram(prob_passing, bins=bins, range=range_vals)
+    hist_back, _ = np.histogram(prob_backlobe, bins=bins, range=range_vals)
+
+    third_pass = hist_pass[2]
+    third_back = hist_back[2]
+
+    scale_factor = third_pass / third_back if third_back > 0 else 1
 
     plt.hist(prob_passing, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid', # weights=np.ones_like(prob_passing)/len(prob_passing),
              label=f'Passed BL Events {len(prob_passing)}')
-    plt.hist(prob_backlobe, bins=bins, range=range_vals,histtype='step', color='blue', linestyle='solid', weights=np.ones_like(prob_backlobe)  / 4,
+    plt.hist(prob_backlobe, bins=bins, range=range_vals,histtype='step', color='blue', linestyle='solid', weights=np.ones_like(prob_backlobe) * scale_factor,
              label=f'Backlobe Event {len(prob_backlobe)}')
     # plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid', weights=np.ones_like(prob_special)/len(prob_special),
     #          label=f'Special Events {len(prob_special)}')

@@ -212,7 +212,7 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     plt.hist(prob_passing, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid', # weights=np.ones_like(prob_passing)/len(prob_passing),
              label=f'Backlobe Coincidence')
     plt.hist(prob_backlobe, bins=bins, range=range_vals,histtype='step', color='blue', linestyle='solid', weights=np.ones_like(prob_backlobe) * scale_factor,
-             label=f'Backlobe-like Data')
+             label=f'Scaled Backlobe-like Data')
     # plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid', weights=np.ones_like(prob_special)/len(prob_special),
     #          label=f'Special Events {len(prob_special)}')
     # plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
@@ -221,7 +221,7 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     #          label=f'Coincidence-Events {len(prob_coincidence)}', density=False)
 
     plt.xlabel('Network Output', fontsize=18)
-    plt.ylabel('Normalized Counts', fontsize=18)
+    plt.ylabel('Counts', fontsize=18)
     plt.yscale('log')
 
     # hist_values_2016, _ = np.histogram(prob_2016, bins=20, range=(0, 1))

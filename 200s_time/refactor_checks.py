@@ -210,9 +210,9 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     scale_factor = third_pass / third_back if third_back > 0 else 1
 
     plt.hist(prob_passing, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid', # weights=np.ones_like(prob_passing)/len(prob_passing),
-             label=f'Passed BL Events {len(prob_passing)}')
+             label=f'Backlobe Coincidence {len(prob_passing)}')
     plt.hist(prob_backlobe, bins=bins, range=range_vals,histtype='step', color='blue', linestyle='solid', weights=np.ones_like(prob_backlobe) * scale_factor,
-             label=f'Backlobe Event {len(prob_backlobe)}')
+             label=f'Backlobe-like Data {len(prob_backlobe)}')
     # plt.hist(prob_special, bins=20, range=range_vals,histtype='step', color='green', linestyle='solid', weights=np.ones_like(prob_special)/len(prob_special),
     #          label=f'Special Events {len(prob_special)}')
     # plt.hist(prob_2016, bins=bins, range=range_vals, histtype='step', color='orange', linestyle='solid',
@@ -233,7 +233,7 @@ def plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_co
     #          fontsize=12, verticalalignment='top', transform=plt.gca().transAxes,
     #          bbox=dict(facecolor='white', alpha=0.7, edgecolor='gray'))
     plt.title(f'Passed Events Network Output', fontsize=14)
-    # plt.legend(loc='upper left', fontsize=12)
+    plt.legend(loc='upper right', fontsize=12)
 
     config = load_config()
     filename = config['histogram_filename_template'].format(timestamp=timestamp, amp=amp, prefix=prefix)

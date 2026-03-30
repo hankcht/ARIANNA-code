@@ -353,6 +353,59 @@ if __name__ == "__main__":
     data_backlobe_expanded = data_backlobe_traces_rcr_all.transpose(0, 2, 1)
     print(len(data_backlobe_expanded))
 
+    def load_combined_backlobe_data(combined_pkl_path):
+        """
+        Load the combined backlobe data saved by refactor_converter.py.
+        
+        This function loads a pickle file containing backlobe data from all stations
+        that has been processed through chi and bin cuts.
+        
+        Args:
+            combined_pkl_path (str): Path to the combined pickle file containing all stations' data.
+                                    Default location from refactor_converter.py:
+                                    '/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/5000evt_10.17.25/above_curve_combined.pkl'
+                                    '/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/toy_data_11.6.25/toy_data_combined.pkl'
+        
+        Returns:
+            tuple: (snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR)
+                All as numpy arrays containing data from all stations combined.
+        """
+        print(f"Loading combined backlobe data from: {combined_pkl_path}")
+        
+        with open(combined_pkl_path, 'rb') as f:
+            combined_data = pickle.load(f)
+        
+        # Extract all arrays from the combined dictionary
+        snr2016 = combined_data['snr2016']
+        snrRCR = combined_data['snrRCR']
+        chi2016 = combined_data['chi2016']
+        chiRCR = combined_data['chiRCR']
+        traces2016 = combined_data['traces2016']
+        tracesRCR = combined_data['tracesRCR']
+        unix2016 = combined_data['unix2016']
+        unixRCR = combined_data['unixRCR']
+        
+        print(f"Loaded combined data:")
+        print(f"  SNR2016: {len(snr2016)} events")
+        print(f"  SNRRCR: {len(snrRCR)} events")
+        print(f"  Chi2016: {len(chi2016)} events")
+        print(f"  ChiRCR: {len(chiRCR)} events")
+        print(f"  Traces2016 shape: {traces2016.shape}")
+        print(f"  TracesRCR shape: {tracesRCR.shape}")
+        print(f"  Unix2016: {len(unix2016)} events")
+        print(f"  UnixRCR: {len(unixRCR)} events")
+        
+        return snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR
+
+    combined_pkl_path = f'/dfs8/sbarwick_lab/ariannaproject/tangch3/station_data/above_curve_data/5000evt_10.17.25/above_curve_combined.pkl'    
+    snr2016, snrRCR, chi2016, chiRCR, traces2016, tracesRCR, unix2016, unixRCR = load_combined_backlobe_data(combined_pkl_path)
+
+    # Convert to numpy arrays (they should already be arrays from the pickle, but ensure consistency)
+    backlobe_traces_2016 = np.array(traces2016)
+    backlobe_traces_rcr = np.array(tracesRCR)
+
+    print(f'testing 10.17.25 events, 2016: {len(backlobe_traces_2016)}, rcr: {len(backlobe_traces_rcr)}')
+
     # data_backlobe_traces_2016_all = data['data_backlobe_traces2016']
     # data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)
     # print(len(data_backlobe_expanded))

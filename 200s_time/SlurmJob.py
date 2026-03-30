@@ -32,7 +32,7 @@ def RunMultipleJobs(commandtorun, jobName='Batchjob', runDirectory='/pub/tangch3
     header += "module purge\n"
     if python_env == 'hgq2':
         header += "module load python/3.10.2\n"
-        # header += "source /pub/tangch3/ARIANNA/DeepLearning/code/hgq2_env/bin/activate\n"
+        header += "source /pub/tangch3/ARIANNA/DeepLearning/code/hgq2_env/bin/activate\n"
     else:
         header += "module load python/3.8.0\n"
 
@@ -74,7 +74,7 @@ def main(multi_run):
             # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'
             RunMultipleJobs(cmd, jobName='BLcurve')
     else:
-        cmd = '/pub/tangch3/ARIANNA/DeepLearning/code/hgq2_env/bin/python3.10 /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py' # 
+        cmd = 'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/refactor_checks.py' # 
         # cmd = f'python /pub/tangch3/ARIANNA/DeepLearning/code/200s_time/A2_RealRunCNN.py confirmed_BL'
         RunMultipleJobs(cmd, jobName='checks', python_env='hgq2') # checks
 

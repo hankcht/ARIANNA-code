@@ -420,7 +420,7 @@ if __name__ == "__main__":
     prob_all = model.predict(backlobe_traces_2016_expanded)
     prob_all = prob_all.flatten()
     
-    plot_histogram(prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp=model_timestamp, prefix=prefix)
+    plot_histogram(prob_all, prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp=amp, timestamp=model_timestamp, prefix=prefix)
 
     
 

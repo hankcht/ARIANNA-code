@@ -210,7 +210,7 @@ def plot_histogram(prob_all, prob_passing, prob_special, prob_backlobe, prob_201
     scale_factor = third_pass / third_back if third_back > 0 else 1
 
     plt.hist(prob_all, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid',
-             label=f'{len(prob_all)} All backlobe-like data (10.17.25 Cut)')
+             label=f'{len(prob_all)} All rcr-like data (10.17.25 Cut)')
     # Uncomment to get original plot, currently overwrites
     # plt.hist(prob_passing, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid', # weights=np.ones_like(prob_passing)/len(prob_passing),
     #          label=f'Backlobe Coincidence')
@@ -416,7 +416,7 @@ if __name__ == "__main__":
     prob_backlobe = model.predict(data_backlobe_expanded)
     prob_backlobe = prob_backlobe.flatten()
 
-    backlobe_traces_2016_expanded = backlobe_traces_2016.transpose(0, 2, 1) # all station events cut on 10.17.25, total of 7587
+    backlobe_traces_2016_expanded = backlobe_traces_rcr.transpose(0, 2, 1) # all station events cut on 10.17.25, total of 7587
     prob_all = model.predict(backlobe_traces_2016_expanded)
     prob_all = prob_all.flatten()
     

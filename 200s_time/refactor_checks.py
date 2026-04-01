@@ -210,7 +210,7 @@ def plot_histogram(prob_all, prob_passing, prob_special, prob_backlobe, prob_201
     scale_factor = third_pass / third_back if third_back > 0 else 1
 
     plt.hist(prob_all, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid',
-             label=f'All backlobe-like data (10.17.25 Cut)')
+             label=f'{len(prob_all)} All backlobe-like data (10.17.25 Cut)')
     # Uncomment to get original plot, currently overwrites
     # plt.hist(prob_passing, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid', # weights=np.ones_like(prob_passing)/len(prob_passing),
     #          label=f'Backlobe Coincidence')

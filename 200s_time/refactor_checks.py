@@ -408,21 +408,24 @@ if __name__ == "__main__":
     backlobe_traces_rcr = np.array(tracesRCR)
 
     print(f'testing 10.17.25 events, 2016: {len(backlobe_traces_2016)}, rcr: {len(backlobe_traces_rcr)}')
+    print(f'unix times, 2016: {len(unix2016)}, rcr: {len(unixRCR)}')
+    print(unix2016[1:5])
+    print(unixRCR[1:5])
 
     # data_backlobe_traces_2016_all = data['data_backlobe_traces2016']
     # data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)
     # print(len(data_backlobe_expanded))
 
-    prob_backlobe = model.predict(data_backlobe_expanded)
-    prob_backlobe = prob_backlobe.flatten()
+    # prob_backlobe = model.predict(data_backlobe_expanded)
+    # prob_backlobe = prob_backlobe.flatten()
 
-    backlobe_traces_2016_expanded = backlobe_traces_rcr.transpose(0, 2, 1) # all station events cut on 10.17.25, total of 7587
-    prob_all = model.predict(backlobe_traces_2016_expanded)
-    prob_all = prob_all.flatten()
+    # backlobe_traces_2016_expanded = backlobe_traces_rcr.transpose(0, 2, 1) # all station events cut on 10.17.25, total of 7587
+    # prob_all = model.predict(backlobe_traces_2016_expanded)
+    # prob_all = prob_all.flatten()
     
-    plot_histogram(prob_all, prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp=amp, timestamp=model_timestamp, prefix=prefix)
+    # plot_histogram(prob_all, prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp=amp, timestamp=model_timestamp, prefix=prefix)
 
-    
+    ############################
 
     # print(prob_backlobe)
 

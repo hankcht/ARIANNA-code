@@ -409,8 +409,40 @@ if __name__ == "__main__":
 
     print(f'testing 10.17.25 events, 2016: {len(backlobe_traces_2016)}, rcr: {len(backlobe_traces_rcr)}')
     print(f'unix times, 2016: {len(unix2016)}, rcr: {len(unixRCR)}')
-    print(unix2016[1:5])
-    print(unixRCR[1:5])
+    DAY = 86400  # seconds in 24 hours
+
+    def find_close_times(unix_times, label):
+        # Keep original indices
+        indexed = list(enumerate(unix_times))
+        
+        # Sort by timestamp
+        indexed.sort(key=lambda x: x[1])
+        
+        count = 0
+        pairs = []
+
+        left = 0
+        for right in range(len(indexed)):
+            # Move left pointer while difference > 24h
+            while indexed[right][1] - indexed[left][1] > DAY:
+                left += 1
+            
+            # All elements between left and right are within 24h of right
+            for i in range(left, right):
+                idx1, t1 = indexed[i]
+                idx2, t2 = indexed[right]
+                pairs.append((idx1, idx2))
+                count += 1
+
+        print(f"{label}: {count} pairs within 24 hours")
+        
+        for p in pairs:
+            print(p)
+
+        return pairs, count
+
+    pairs2016, count2016 = find_close_times(unix2016, "2016")
+    pairsRCR, countRCR = find_close_times(unixRCR, "RCR")
 
     # data_backlobe_traces_2016_all = data['data_backlobe_traces2016']
     # data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)

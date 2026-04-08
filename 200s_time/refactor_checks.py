@@ -409,40 +409,36 @@ if __name__ == "__main__":
 
     print(f'testing 10.17.25 events, 2016: {len(backlobe_traces_2016)}, rcr: {len(backlobe_traces_rcr)}')
     print(f'unix times, 2016: {len(unix2016)}, rcr: {len(unixRCR)}')
-    DAY = 86400  # seconds in 24 hours
+    
+    DAY = 86400  # seconds
 
-    def find_close_times(unix_times, label):
-        # Keep original indices
+    def find_close_indices(unix_times, label):
         indexed = list(enumerate(unix_times))
-        
-        # Sort by timestamp
         indexed.sort(key=lambda x: x[1])
-        
-        count = 0
+
+        close_indices = set()
         pairs = []
 
         left = 0
         for right in range(len(indexed)):
-            # Move left pointer while difference > 24h
             while indexed[right][1] - indexed[left][1] > DAY:
                 left += 1
             
-            # All elements between left and right are within 24h of right
             for i in range(left, right):
-                idx1, t1 = indexed[i]
-                idx2, t2 = indexed[right]
+                idx1, _ = indexed[i]
+                idx2, _ = indexed[right]
+                
                 pairs.append((idx1, idx2))
-                count += 1
+                close_indices.add(idx1)
+                close_indices.add(idx2)
 
-        print(f"{label}: {count} pairs within 24 hours")
-        
-        for p in pairs:
-            print(p)
+        print(f"{label}: {len(pairs)} pairs")
+        print(f"{label}: {len(close_indices)} indices involved in close events")
 
-        return pairs, count
+        return close_indices, pairs
 
-    pairs2016, count2016 = find_close_times(unix2016, "2016")
-    pairsRCR, countRCR = find_close_times(unixRCR, "RCR")
+    close2016, pairs2016 = find_close_indices(unix2016, "2016") # 2016: 698029 pairs within 24 hours
+    closeRCR, pairsRCR = find_close_indices(unixRCR, "RCR")
 
     # data_backlobe_traces_2016_all = data['data_backlobe_traces2016']
     # data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)

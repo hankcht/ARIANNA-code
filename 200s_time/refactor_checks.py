@@ -425,20 +425,23 @@ if __name__ == "__main__":
                 left += 1
             
             for i in range(left, right):
-                idx1, _ = indexed[i]
-                idx2, _ = indexed[right]
+                idx1, t1 = indexed[i]
+                idx2, t2 = indexed[right]
                 
-                pairs.append((idx1, idx2))
+                # store both index AND timestamp
+                pairs.append((idx1, t1, idx2, t2))
+                
                 close_indices.add(idx1)
                 close_indices.add(idx2)
 
         print(f"{label}: {len(pairs)} pairs")
-        print(f"{label}: {len(close_indices)} indices involved in close events")
+        print(f"{label}: {len(close_indices)} indices involved")
 
         return close_indices, pairs
 
     close2016, pairs2016 = find_close_indices(unix2016, "2016") # 2016: 698029 pairs within 24 hours
     closeRCR, pairsRCR = find_close_indices(unixRCR, "RCR")
+    print(pairs2016[1:5])
 
     # data_backlobe_traces_2016_all = data['data_backlobe_traces2016']
     # data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)

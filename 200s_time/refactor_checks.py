@@ -453,7 +453,7 @@ if __name__ == "__main__":
     for d in unique_days
     ])
     # ---- Find low-activity days (< 20 events) ----
-    low_days = unique_days[counts < 20]
+    low_days = unique_days[counts < 10]
     low_indices = np.where(np.isin(days, low_days))[0]
 
     print(f"Number of low-activity days (<20 events): {len(low_days)}")

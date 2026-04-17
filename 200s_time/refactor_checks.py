@@ -415,8 +415,8 @@ if __name__ == "__main__":
     dt2016 = [datetime.fromtimestamp(t, tz=timezone.utc) for t in unix2016]
     dtRCR  = [datetime.fromtimestamp(t, tz=timezone.utc) for t in unixRCR]
 
-    y2016 = np.random.normal(0, 0.05, len(dt2016))
-    yRCR  = np.random.normal(1, 0.05, len(dtRCR))
+    y2016 = np.random.normal(0, 0.1, len(dt2016))
+    yRCR  = np.random.normal(1, 0.1, len(dtRCR))
 
     plt.figure(figsize=(10, 4))
 
@@ -439,10 +439,10 @@ if __name__ == "__main__":
     print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
 
-    count = np.sum(snrRCR > 25)
-    print(f'number of snr > 25 for RCR {count}')
-    count = np.sum(snr2016 > 25)
-    print(f'number of snr > 25 for 2016 {count}')
+    count = np.sum(snrRCR > 20)
+    print(f'number of snr > 20 for RCR {count}')
+    count = np.sum(snr2016 > 20)
+    print(f'number of snr > 20 for 2016 {count}')
 
     DAY = 86400  # seconds
 

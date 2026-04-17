@@ -412,8 +412,8 @@ if __name__ == "__main__":
     print(f'unix times, 2016: {len(unix2016)}, rcr: {len(unixRCR)}')
     from datetime import timezone
 
-    dt2016 = [datetime.fromtimestamp(t, tz=timezone.utc) for t in unix2016]
-    dtRCR  = [datetime.fromtimestamp(t, tz=timezone.utc) for t in unixRCR]
+    dt2016 = np.array([datetime.fromtimestamp(t, tz=timezone.utc) for t in unix2016])
+    dtRCR  = np.array([datetime.fromtimestamp(t, tz=timezone.utc) for t in unixRCR])
 
     y2016 = np.random.normal(0, 0.1, len(dt2016))
     yRCR  = np.random.normal(1, 0.1, len(dtRCR))
@@ -445,6 +445,26 @@ if __name__ == "__main__":
     print(f'number of snr > 20 for 2016 {count}')
 
     DAY = 86400  # seconds
+    days = np.array([int(dt.timestamp() // DAY) for dt in dtRCR])
+    unique_days, counts = np.unique(days, return_counts=True)
+    # ---- Find low-activity days (< 20 events) ----
+    low_days = unique_days[counts < 20]
+    low_indices = np.where(np.isin(days, low_days))[0]
+
+    print(f"Number of low-activity days (<20 events): {len(low_days)}")
+    print(f"Number of events in those days: {len(low_indices)}")
+
+    plt.figure(figsize=(10, 4))
+
+    plt.bar(unique_days, counts, width=0.8, alpha=0.7)
+
+    plt.xlabel("Day (since epoch)")
+    plt.ylabel("Events per day")
+    plt.title("RCR Daily Event Rate")
+
+    plt.tight_layout()
+    print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
+    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
 
     def find_close_indices(unix_times, label):
         indexed = list(enumerate(unix_times))

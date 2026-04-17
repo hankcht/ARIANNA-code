@@ -415,8 +415,8 @@ if __name__ == "__main__":
     dt2016 = [datetime.fromtimestamp(t, tz=timezone.utc) for t in unix2016]
     dtRCR  = [datetime.fromtimestamp(t, tz=timezone.utc) for t in unixRCR]
 
-    y2016 = np.random.normal(0, 0.02, len(dt2016))
-    yRCR  = np.random.normal(1, 0.02, len(dtRCR))
+    y2016 = np.random.normal(0, 0.05, len(dt2016))
+    yRCR  = np.random.normal(1, 0.05, len(dtRCR))
 
     plt.figure(figsize=(10, 4))
 

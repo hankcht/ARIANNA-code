@@ -439,6 +439,11 @@ if __name__ == "__main__":
     print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
 
+    count = np.sum(snrRCR > 25)
+    print(f'number of snr > 25 for RCR {count}')
+    count = np.sum(snr2016 > 25)
+    print(f'number of snr > 25 for 2016 {count}')
+
     DAY = 86400  # seconds
 
     # def find_close_indices(unix_times, label):

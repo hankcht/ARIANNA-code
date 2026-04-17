@@ -411,18 +411,30 @@ if __name__ == "__main__":
     
     print(f'unix times, 2016: {len(unix2016)}, rcr: {len(unixRCR)}')
     
-    import seaborn as sns
-    import pandas as pd
-
     dt2016 = [datetime.datetime.utcfromtimestamp(t) for t in unix2016]
     dtRCR  = [datetime.datetime.utcfromtimestamp(t) for t in unixRCR]
-    df = pd.DataFrame({
-        'time': dt2016 + dtRCR,
-        'group': ['2016'] * len(dt2016) + ['RCR'] * len(dtRCR)
-    })
 
-    sns.stripplot(data=df, x='time', y='group', jitter=True, alpha=0.5)
+    y2016 = np.random.normal(0, 0.02, len(dt2016))
+    yRCR  = np.random.normal(1, 0.02, len(dtRCR))
+
+    plt.figure(figsize=(10, 4))
+
+    plt.scatter(dt2016, y2016, s=10, alpha=0.6)
+    plt.scatter(dtRCR,  yRCR,  s=10, alpha=0.6)
+
+    import matplotlib.dates as mdates
+
+    ax = plt.gca()
+    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+
     plt.xticks(rotation=45)
+    plt.yticks([0, 1], ['2016', 'RCR'])
+    plt.xlabel('Time')
+    plt.title('Strip Chart of Unix Times')
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
     print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
 

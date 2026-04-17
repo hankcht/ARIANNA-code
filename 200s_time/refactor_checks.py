@@ -480,7 +480,7 @@ if __name__ == "__main__":
 
     tracesRCR_not_close = tracesRCR[mask]
     for i, trace in enumerate(tracesRCR_not_close):
-        pT(i, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/tracesRCR_not_close{i}.png')
+        pT(trace, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/tracesRCR_not_close{i}.png')
         if i > 5:
             break
 

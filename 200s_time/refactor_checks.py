@@ -476,7 +476,7 @@ if __name__ == "__main__":
     close2016, pairs2016 = find_close_indices(unix2016, "2016") # 2016: 698029 pairs within 24 hours
     closeRCR, pairsRCR = find_close_indices(unixRCR, "RCR")
     mask = np.ones(len(unixRCR), dtype=bool)
-    mask[closeRCR] = False
+    mask[list(closeRCR)] = False
 
     tracesRCR_not_close = tracesRCR[mask]
     for i, trace in enumerate(tracesRCR_not_close):

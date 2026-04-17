@@ -501,10 +501,10 @@ if __name__ == "__main__":
     mask[list(closeRCR)] = False
 
     tracesRCR_not_close = tracesRCR[mask]
-    for i, trace in enumerate(tracesRCR_not_close):
-        pT(trace, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/tracesRCR_not_close{i}.png')
-        if i > 5:
-            break
+    # for i, trace in enumerate(tracesRCR_not_close):
+    #     pT(trace, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/tracesRCR_not_close{i}.png')
+    #     if i > 5:
+    #         break
 
     data_backlobe_traces_2016_all = data['data_backlobe_traces2016']
     data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)
@@ -522,6 +522,11 @@ if __name__ == "__main__":
     
     plot_histogram(prob_all, prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp=amp, timestamp=model_timestamp, prefix=prefix)
 
+    backlobe_traces_rcr = backlobe_traces_rcr[prob_all > 0.9]
+    for i, trace in enumerate(backlobe_traces_rcr):
+        pT(trace, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/tracesRCR_event{i}.png')
+        if i > 5:
+            break
     ############################
 
     # print(prob_backlobe)

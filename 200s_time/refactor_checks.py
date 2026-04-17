@@ -447,6 +447,10 @@ if __name__ == "__main__":
     DAY = 86400  # seconds
     days = np.array([int(dt.timestamp() // DAY) for dt in dtRCR])
     unique_days, counts = np.unique(days, return_counts=True)
+    day_datetimes = np.array([
+    datetime.fromtimestamp(d * 86400, tz=timezone.utc)
+    for d in unique_days
+    ])
     # ---- Find low-activity days (< 20 events) ----
     low_days = unique_days[counts < 20]
     low_indices = np.where(np.isin(days, low_days))[0]
@@ -454,14 +458,12 @@ if __name__ == "__main__":
     print(f"Number of low-activity days (<20 events): {len(low_days)}")
     print(f"Number of events in those days: {len(low_indices)}")
 
-    plt.figure(figsize=(10, 4))
+    plt.figure(figsize=(12, 4))
 
-    plt.bar(unique_days, counts, width=0.8, alpha=0.7)
+    plt.bar(day_datetimes, counts, width=0.8, alpha=0.7)
 
-    plt.xlabel("Day (since epoch)")
+    plt.xlabel("Date")
     plt.ylabel("Events per day")
-    plt.title("RCR Daily Event Rate")
-
     plt.tight_layout()
     print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
@@ -512,7 +514,7 @@ if __name__ == "__main__":
     prob_backlobe = prob_backlobe.flatten()
 
     indices_less_25 = np.where(snrRCR < 25)[0]
-    backlobe_traces_rcr = backlobe_traces_rcr[indices_less_25]
+    backlobe_traces_rcr = backlobe_traces_rcr[low_indices]
     print(f'SNR > 25 removed rcr has size {len(backlobe_traces_rcr)}')
     backlobe_traces_2016_expanded = backlobe_traces_rcr.transpose(0, 2, 1) # all station events cut on 10.17.25, total of 7587
     prob_all = model.predict(backlobe_traces_2016_expanded)

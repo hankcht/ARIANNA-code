@@ -410,9 +410,10 @@ if __name__ == "__main__":
     print(f'testing 10.17.25 events, 2016: {len(backlobe_traces_2016)}, rcr: {len(backlobe_traces_rcr)}')
     
     print(f'unix times, 2016: {len(unix2016)}, rcr: {len(unixRCR)}')
-    
-    dt2016 = [datetime.datetime.utcfromtimestamp(t) for t in unix2016]
-    dtRCR  = [datetime.datetime.utcfromtimestamp(t) for t in unixRCR]
+    from datetime import timezone
+
+    dt2016 = [datetime.fromtimestamp(t, tz=timezone.utc) for t in unix2016]
+    dtRCR  = [datetime.fromtimestamp(t, tz=timezone.utc) for t in unixRCR]
 
     y2016 = np.random.normal(0, 0.02, len(dt2016))
     yRCR  = np.random.normal(1, 0.02, len(dtRCR))

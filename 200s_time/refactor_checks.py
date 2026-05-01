@@ -478,10 +478,11 @@ if __name__ == "__main__":
     print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
 
-    
-    # indices_less_25 = np.where(snrRCR < 25)[0]
+    # SNR Cut
+    snr2016 = snr2016[low_indices]
+    indices_less_25 = np.where(snrRCR < 20)[0]
     # backlobe_traces_rcr = backlobe_traces_rcr[low_indices]
-    backlobe_traces_2016 = backlobe_traces_2016[low_indices]
+    backlobe_traces_2016 = backlobe_traces_2016[indices_less_25]
     # assert len(backlobe_traces_rcr) == event_count
     # print(f'SNR > 25 removed rcr has size {len(backlobe_traces_rcr)}')
     backlobe_traces_2016_expanded = backlobe_traces_2016.transpose(0, 2, 1) # all station events cut on 10.17.25, total of 7587

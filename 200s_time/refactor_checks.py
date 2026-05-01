@@ -195,7 +195,7 @@ def load_all_coincidence_traces(pkl_path, trace_key):
     return coinc_dict, all_Traces, metadata
 
 
-def plot_histogram(prob_all, prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp, timestamp, prefix):
+def plot_histogram(prob_all, amp, timestamp, prefix):
     
     plt.figure(figsize=(8, 6))
     bins = 20

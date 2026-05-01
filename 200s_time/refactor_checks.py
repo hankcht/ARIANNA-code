@@ -452,22 +452,20 @@ if __name__ == "__main__":
     datetime.fromtimestamp(d * 86400, tz=timezone.utc)
     for d in unique_days
     ])
+    # ---- Find low-activity days (< 20 events) ----
     rows = []
-
-    for counts_per_day_limit in range(1, 20):
+    for counts_per_day_limit in range(1,20,1):
+        print(f'using limit {counts_per_day_limit} days')
         low_days = unique_days[counts <= counts_per_day_limit]
-        mask = np.isin(days, low_days)
+        low_indices = np.where(np.isin(days, low_days))[0]
 
-        rows.append({
-            "threshold": counts_per_day_limit,
-            "low_day_count": len(low_days),
-            "event_count": int(mask.sum())
-        })
+        # print(f"Number of low-activity days (<20 events): {len(low_days)}")
+        # print(f"Number of events in those days: {len(low_indices)}")
+        rows.append((counts_per_day_limit, len(low_days), len(low_indices)))
 
-    # Print table
-    print(f"{'threshold':>10} {'low_days':>10} {'events':>10}")
-    for r in rows:
-        print(f"{r['threshold']:>10} {r['low_day_count']:>10} {r['event_count']:>10}")
+    print(f"\n{'threshold':>10} {'low_days':>10} {'events':>10}")
+    for counts_per_day_limit, low_day_count, event_count in rows:
+        print(f"{counts_per_day_limit:>10} {low_day_count:>10} {event_count:>10}")
 
     plt.figure(figsize=(12, 4))
 

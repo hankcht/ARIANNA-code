@@ -445,9 +445,9 @@ if __name__ == "__main__":
     print(f'number of snr > 20 for 2016 {count}')
 
     DAY = 86400  # seconds
-    days = np.array([int(dt.timestamp() // DAY) for dt in dtRCR])
+    days = np.array([int(dt.timestamp() // DAY) for dt in dt2016])
     unique_days, counts = np.unique(days, return_counts=True)
-    print(f'Number of total days where we got data is {len(unique_days)}')
+    print(f'Number of total days where we got data is {len(unique_days)}, with {len(days)} events')
     day_datetimes = np.array([
     datetime.fromtimestamp(d * 86400, tz=timezone.utc)
     for d in unique_days

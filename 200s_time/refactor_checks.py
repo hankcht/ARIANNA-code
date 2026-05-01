@@ -452,14 +452,22 @@ if __name__ == "__main__":
     datetime.fromtimestamp(d * 86400, tz=timezone.utc)
     for d in unique_days
     ])
-    # ---- Find low-activity days (< 20 events) ----
-    for counts_per_day_limit in range(1,20,1):
-        print(f'using limit {counts_per_day_limit} days')
+    import pandas as pd
+
+    rows = []
+
+    for counts_per_day_limit in range(1, 20):
         low_days = unique_days[counts <= counts_per_day_limit]
         low_indices = np.where(np.isin(days, low_days))[0]
 
-        print(f"Number of low-activity days (<20 events): {len(low_days)}")
-        print(f"Number of events in those days: {len(low_indices)}")
+        rows.append({
+            "threshold": counts_per_day_limit,
+            "low_day_count": len(low_days),
+            "event_count": len(low_indices),
+        })
+
+    df = pd.DataFrame(rows)
+    print(df)
 
     plt.figure(figsize=(12, 4))
 

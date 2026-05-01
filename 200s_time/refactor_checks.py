@@ -491,11 +491,11 @@ if __name__ == "__main__":
     prob_all = prob_all.flatten()
     
     plot_histogram(prob_all, amp=amp, timestamp=model_timestamp, prefix=prefix)
-    mask = (prob_all >= 0.6) #& (prob_all <= 0.6)
+    mask = (prob_all <= 0.2) #& (prob_all <= 0.6)
     indices_mid = np.where(mask)[0]
     visualize = backlobe_traces_2016[indices_mid]
     for i, trace in enumerate(visualize):
-        pT(trace, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces2016_high_{i}.png')
+        pT(trace, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces2016_low_{i}.png')
         
     
 

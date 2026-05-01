@@ -202,12 +202,12 @@ def plot_histogram(prob_all, prob_passing, prob_special, prob_backlobe, prob_201
     range_vals = (0, 1)   
     
     hist_pass, bin_edges = np.histogram(prob_passing, bins=bins, range=range_vals)
-    hist_back, _ = np.histogram(prob_backlobe, bins=bins, range=range_vals)
+    # hist_back, _ = np.histogram(prob_backlobe, bins=bins, range=range_vals)
 
     third_pass = hist_pass[2]
-    third_back = hist_back[2]
+    # third_back = hist_back[2]
 
-    scale_factor = third_pass / third_back if third_back > 0 else 1
+    # scale_factor = third_pass / third_back if third_back > 0 else 1
 
     plt.hist(prob_all, bins=bins, range=range_vals,histtype='step', color='Black', linestyle='solid',
              label=f'{len(prob_all)} All bl-like data (10.17.25 Cut)')
@@ -454,14 +454,15 @@ if __name__ == "__main__":
     ])
     # ---- Find low-activity days (< 20 events) ----
     rows = []
-    for counts_per_day_limit in range(1,20,1):
-        print(f'using limit {counts_per_day_limit} days')
-        low_days = unique_days[counts <= counts_per_day_limit]
-        low_indices = np.where(np.isin(days, low_days))[0]
+    # for counts_per_day_limit in range(1,20,1):
+    counts_per_day_limit = 3 
+    print(f'using limit <= {counts_per_day_limit} days')
+    low_days = unique_days[counts <= counts_per_day_limit]
+    low_indices = np.where(np.isin(days, low_days))[0]
 
-        # print(f"Number of low-activity days (<20 events): {len(low_days)}")
-        # print(f"Number of events in those days: {len(low_indices)}")
-        rows.append((counts_per_day_limit, len(low_days), len(low_indices)))
+    # print(f"Number of low-activity days (<20 events): {len(low_days)}")
+    # print(f"Number of events in those days: {len(low_indices)}")
+    rows.append((counts_per_day_limit, len(low_days), len(low_indices)))
 
     print(f"\n{'threshold':>10} {'low_days':>10} {'events':>10}")
     for counts_per_day_limit, low_day_count, event_count in rows:
@@ -477,59 +478,63 @@ if __name__ == "__main__":
     print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
     plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
 
-    def find_close_indices(unix_times, label):
-        indexed = list(enumerate(unix_times))
-        indexed.sort(key=lambda x: x[1])
+    
+    # indices_less_25 = np.where(snrRCR < 25)[0]
+    backlobe_traces_rcr = backlobe_traces_rcr[low_indices]
+    assert len(backlobe_traces_rcr) == event_count
+    # print(f'SNR > 25 removed rcr has size {len(backlobe_traces_rcr)}')
+    backlobe_traces_2016_expanded = backlobe_traces_2016.transpose(0, 2, 1) # all station events cut on 10.17.25, total of 7587
+    backlobe_traces_rcr_expanded = backlobe_traces_rcr.transpose(0, 2, 1) 
+    prob_all = model.predict(backlobe_traces_rcr_expanded)
+    prob_all = prob_all.flatten()
+    
+    plot_histogram(prob_all, amp=amp, timestamp=model_timestamp, prefix=prefix)
 
-        close_indices = set()
-        pairs = []
+    # def find_close_indices(unix_times, label):
+    #     indexed = list(enumerate(unix_times))
+    #     indexed.sort(key=lambda x: x[1])
 
-        left = 0
-        for right in range(len(indexed)):
-            while indexed[right][1] - indexed[left][1] > DAY:
-                left += 1
+    #     close_indices = set()
+    #     pairs = []
+
+    #     left = 0
+    #     for right in range(len(indexed)):
+    #         while indexed[right][1] - indexed[left][1] > DAY:
+    #             left += 1
             
-            for i in range(left, right):
-                idx1, t1 = indexed[i]
-                idx2, t2 = indexed[right]
+    #         for i in range(left, right):
+    #             idx1, t1 = indexed[i]
+    #             idx2, t2 = indexed[right]
                 
-                # store both index AND timestamp
-                pairs.append((idx1, t1, idx2, t2))
+    #             # store both index AND timestamp
+    #             pairs.append((idx1, t1, idx2, t2))
                 
-                close_indices.add(idx1)
-                close_indices.add(idx2)
+    #             close_indices.add(idx1)
+    #             close_indices.add(idx2)
 
-        print(f"{label}: {len(pairs)} pairs")
-        print(f"{label}: {len(close_indices)} indices involved")
+    #     print(f"{label}: {len(pairs)} pairs")
+    #     print(f"{label}: {len(close_indices)} indices involved")
 
-        return close_indices, pairs
+    #     return close_indices, pairs
 
-    close2016, pairs2016 = find_close_indices(unix2016, "2016") # 2016: 698029 pairs within 24 hours
-    closeRCR, pairsRCR = find_close_indices(unixRCR, "RCR")
-    mask = np.ones(len(unixRCR), dtype=bool)
-    mask[list(closeRCR)] = False
+    # close2016, pairs2016 = find_close_indices(unix2016, "2016") # 2016: 698029 pairs within 24 hours
+    # closeRCR, pairsRCR = find_close_indices(unixRCR, "RCR")
+    # mask = np.ones(len(unixRCR), dtype=bool)
+    # mask[list(closeRCR)] = False
 
-    tracesRCR_not_close = tracesRCR[mask]
+    # tracesRCR_not_close = tracesRCR[mask]
     # for i, trace in enumerate(tracesRCR_not_close):
     #     pT(trace, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/tracesRCR_not_close{i}.png')
     #     if i > 5:
     #         break
 
-    data_backlobe_traces_2016_all = data['data_backlobe_traces2016']
-    data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)
-    print(len(data_backlobe_expanded))
+    # data_backlobe_traces_2016_all = data['data_backlobe_traces2016']
+    # data_backlobe_expanded = data_backlobe_traces_2016_all.transpose(0, 2, 1)
+    # print(len(data_backlobe_expanded))
 
-    prob_backlobe = model.predict(data_backlobe_expanded)
-    prob_backlobe = prob_backlobe.flatten()
+    # prob_backlobe = model.predict(data_backlobe_expanded)
+    # prob_backlobe = prob_backlobe.flatten()
 
-    indices_less_25 = np.where(snrRCR < 25)[0]
-    backlobe_traces_rcr = backlobe_traces_rcr[low_indices]
-    print(f'SNR > 25 removed rcr has size {len(backlobe_traces_rcr)}')
-    backlobe_traces_2016_expanded = backlobe_traces_2016.transpose(0, 2, 1) # all station events cut on 10.17.25, total of 7587
-    prob_all = model.predict(backlobe_traces_2016_expanded)
-    prob_all = prob_all.flatten()
-    
-    plot_histogram(prob_all, prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp=amp, timestamp=model_timestamp, prefix=prefix)
 
     # backlobe_traces_rcr = backlobe_traces_rcr[prob_all > 0.9]
     # for i, trace in enumerate(backlobe_traces_rcr):

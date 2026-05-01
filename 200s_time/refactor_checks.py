@@ -445,7 +445,7 @@ if __name__ == "__main__":
     print(f'number of snr > 20 for 2016 {count}')
 
     DAY = 86400  # seconds
-    days = np.array([int(dt.timestamp() // DAY) for dt in dtRCR])
+    days = np.array([int(dt.timestamp() // DAY) for dt in dt2016])
     unique_days, counts = np.unique(days, return_counts=True)
     print(f'Number of total days where we got data is {len(unique_days)}, with {len(days)} events')
     day_datetimes = np.array([
@@ -480,12 +480,13 @@ if __name__ == "__main__":
 
     
     # indices_less_25 = np.where(snrRCR < 25)[0]
-    backlobe_traces_rcr = backlobe_traces_rcr[low_indices]
-    assert len(backlobe_traces_rcr) == event_count
+    # backlobe_traces_rcr = backlobe_traces_rcr[low_indices]
+    backlobe_traces_2016 = backlobe_traces_2016[low_indices]
+    # assert len(backlobe_traces_rcr) == event_count
     # print(f'SNR > 25 removed rcr has size {len(backlobe_traces_rcr)}')
     backlobe_traces_2016_expanded = backlobe_traces_2016.transpose(0, 2, 1) # all station events cut on 10.17.25, total of 7587
     backlobe_traces_rcr_expanded = backlobe_traces_rcr.transpose(0, 2, 1) 
-    prob_all = model.predict(backlobe_traces_rcr_expanded)
+    prob_all = model.predict(backlobe_traces_2016_expanded)
     prob_all = prob_all.flatten()
     
     plot_histogram(prob_all, amp=amp, timestamp=model_timestamp, prefix=prefix)

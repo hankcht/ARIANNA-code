@@ -452,22 +452,22 @@ if __name__ == "__main__":
     datetime.fromtimestamp(d * 86400, tz=timezone.utc)
     for d in unique_days
     ])
-    import pandas as pd
-
     rows = []
 
     for counts_per_day_limit in range(1, 20):
         low_days = unique_days[counts <= counts_per_day_limit]
-        low_indices = np.where(np.isin(days, low_days))[0]
+        mask = np.isin(days, low_days)
 
         rows.append({
             "threshold": counts_per_day_limit,
             "low_day_count": len(low_days),
-            "event_count": len(low_indices),
+            "event_count": int(mask.sum())
         })
 
-    df = pd.DataFrame(rows)
-    print(df)
+    # Print table
+    print(f"{'threshold':>10} {'low_days':>10} {'events':>10}")
+    for r in rows:
+        print(f"{r['threshold']:>10} {r['low_day_count']:>10} {r['event_count']:>10}")
 
     plt.figure(figsize=(12, 4))
 

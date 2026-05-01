@@ -453,11 +453,13 @@ if __name__ == "__main__":
     for d in unique_days
     ])
     # ---- Find low-activity days (< 20 events) ----
-    low_days = unique_days[counts < 3]
-    low_indices = np.where(np.isin(days, low_days))[0]
+    for counts_per_day_limit in range(2,20,1):
+        print(f'using limit {counts_per_day_limit} days')
+        low_days = unique_days[counts < 3]
+        low_indices = np.where(np.isin(days, low_days))[0]
 
-    print(f"Number of low-activity days (<20 events): {len(low_days)}")
-    print(f"Number of events in those days: {len(low_indices)}")
+        print(f"Number of low-activity days (<20 events): {len(low_days)}")
+        print(f"Number of events in those days: {len(low_indices)}")
 
     plt.figure(figsize=(12, 4))
 
@@ -523,11 +525,11 @@ if __name__ == "__main__":
     
     plot_histogram(prob_all, prob_passing, prob_special, prob_backlobe, prob_2016, prob_coincidence, prob_coincidence_rcr, amp=amp, timestamp=model_timestamp, prefix=prefix)
 
-    backlobe_traces_rcr = backlobe_traces_rcr[prob_all > 0.9]
-    for i, trace in enumerate(backlobe_traces_rcr):
-        pT(trace, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/tracesRCR_event{i}.png')
-        if i > 5:
-            break
+    # backlobe_traces_rcr = backlobe_traces_rcr[prob_all > 0.9]
+    # for i, trace in enumerate(backlobe_traces_rcr):
+    #     pT(trace, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/tracesRCR_event{i}.png')
+    #     if i > 5:
+    #         break
     ############################
 
     # print(prob_backlobe)

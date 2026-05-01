@@ -455,7 +455,7 @@ if __name__ == "__main__":
     # ---- Find low-activity days (< 20 events) ----
     rows = []
     # for counts_per_day_limit in range(1,20,1):
-    counts_per_day_limit = 3 
+    counts_per_day_limit = 1
     print(f'using limit <= {counts_per_day_limit} days')
     low_days = unique_days[counts <= counts_per_day_limit]
     low_indices = np.where(np.isin(days, low_days))[0]

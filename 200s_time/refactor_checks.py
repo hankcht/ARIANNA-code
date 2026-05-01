@@ -480,7 +480,7 @@ if __name__ == "__main__":
 
     # SNR Cut
     snr2016 = snr2016[low_indices]
-    indices_less_25 = np.where(snrRCR < 20)[0]
+    indices_less_25 = np.where(snr2016 < 20)[0]
     # backlobe_traces_rcr = backlobe_traces_rcr[low_indices]
     backlobe_traces_2016 = backlobe_traces_2016[indices_less_25]
     # assert len(backlobe_traces_rcr) == event_count

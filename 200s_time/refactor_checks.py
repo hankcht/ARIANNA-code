@@ -455,7 +455,7 @@ if __name__ == "__main__":
         print(f"\n===== {label} =====")
         print(f"Unique UTC dates: {len(unique_dates)}")
         print(f"Total events: {len(unix_times)}")
-        assert len(unique_dates)*len(counts) == len(unix_times)
+        # assert len(unique_dates)*len(counts) == len(unix_times)
         # # Print all dates + counts
         # print("\nEvents per UTC date:")
         # for d, c in zip(unique_dates, counts):

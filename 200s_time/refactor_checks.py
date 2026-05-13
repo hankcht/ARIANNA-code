@@ -486,7 +486,6 @@ if __name__ == "__main__":
 
             # Only process exactly 2-event days
             if len(idx) == 1:
-                print('only 1 event on this day, skipping')
                 continue
 
             # Original timestamps in original order

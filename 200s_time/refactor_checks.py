@@ -503,8 +503,8 @@ if __name__ == "__main__":
                 print(f"Original indices: {idx[0]}, {idx[1]}")
                 print(f"Timestamps: {t1}, {t2}")
                 print(f"Separation: {abs(t2 - t1):.1f} s")
-                pT(trace[idx[0]], f'First event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces_selected_{idx[0]}.png')
-                pT(trace[idx[1]], f'Second event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces_selected_{idx[1]}.png')
+                pT(trace[idx[0]], f'First event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces_selected_{label}_{idx[0]}.png')
+                pT(trace[idx[1]], f'Second event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces_selected_{label}_{idx[1]}.png')
 
         print(f"\nTotal two-event days within 1 minute: {within_1min_count}")
 

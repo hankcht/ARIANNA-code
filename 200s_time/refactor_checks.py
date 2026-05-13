@@ -455,10 +455,30 @@ if __name__ == "__main__":
     # ---- Find low-activity days (< 20 events) ----
     rows = []
     # for counts_per_day_limit in range(1,20,1):
-    counts_per_day_limit = 1
-    print(f'using limit <= {counts_per_day_limit} days')
+    counts_per_day_limit = 2
+    print(f'using limit <= {counts_per_day_limit} events/day')
     low_days = unique_days[counts <= counts_per_day_limit]
     low_indices = np.where(np.isin(days, low_days))[0]
+
+    within_1min_count = 0
+
+    for day in low_days:
+        day_indices = np.where(days == day)[0]
+        day_times = np.array([dt2016[i].timestamp() for i in day_indices])
+        day_times = np.sort(day_times)
+        diffs = np.diff(day_times)
+
+        # count pairs within 60 seconds
+        count_close = np.sum(diffs <= 300)
+
+        within_1min_count += count_close
+
+        if count_close > 0:
+            print(f"day {day} has events within 1 minute")
+            print("times:", day_times)
+            print("diffs:", diffs)
+
+    print(f"\nTotal event pairs within 1 minute: {within_1min_count}")
 
     # print(f"Number of low-activity days (<20 events): {len(low_days)}")
     # print(f"Number of events in those days: {len(low_indices)}")
@@ -491,11 +511,11 @@ if __name__ == "__main__":
     prob_all = prob_all.flatten()
     
     plot_histogram(prob_all, amp=amp, timestamp=model_timestamp, prefix=prefix)
-    mask = (prob_all <= 0.2) #& (prob_all <= 0.6)
-    indices_mid = np.where(mask)[0]
-    visualize = backlobe_traces_2016[indices_mid]
-    for i, trace in enumerate(visualize):
-        pT(trace, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces2016_low_{i}.png')
+    # mask = (prob_all <= 0.2) #& (prob_all <= 0.6)
+    # indices_mid = np.where(mask)[0]
+    # visualize = backlobe_traces_2016[indices_mid]
+    # for i, trace in enumerate(visualize):
+    #     pT(trace, f'Individual Event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces2016_low_{i}.png')
         
     
 

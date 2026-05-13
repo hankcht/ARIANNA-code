@@ -439,13 +439,28 @@ if __name__ == "__main__":
     # print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
     # plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
 
-    count = np.sum(snrRCR > 20)
-    print(f'number of snr > 20 for RCR {count}')
-    count = np.sum(snr2016 > 20)
-    print(f'number of snr > 20 for 2016 {count}')
+    # count = np.sum(snrRCR > 20)
+    # print(f'number of snr > 20 for RCR {count}')
+    # count = np.sum(snr2016 > 20)
+    # print(f'number of snr > 20 for 2016 {count}')
+
+    stations = [13, 14, 15, 17, 18, 19, 30]
+
+    counts_2016 = [124, 77, 1499, 3712, 1861, 127, 187]
+    counts_rcr  = [113, 110, 1022, 1953, 1472, 264, 227]
+    def build_station_map(counts, stations):
+        station_for_index = []
+
+        for c, s in zip(counts, stations):
+            station_for_index.extend([s] * c)
+
+        return np.array(station_for_index)
+    station_map_2016 = build_station_map(counts_2016, stations)
+    station_map_rcr  = build_station_map(counts_rcr, stations)
 
     def analyze_event_dates(unix_times, label, max_events_per_day=2):
 
+        station_map = build_station_map(counts, stations)
         # Convert unix times -> UTC calendar dates
         utc_dates = np.array([datetime.fromtimestamp(t, tz=timezone.utc).date() for t in unix_times])
 
@@ -484,7 +499,7 @@ if __name__ == "__main__":
             # ORIGINAL unsorted indices in unix_times
             idx = np.where(utc_dates == d)[0]
 
-            # Only process exactly 2-event days
+            # skip 1-event days
             if len(idx) == 1:
                 continue
 
@@ -494,9 +509,12 @@ if __name__ == "__main__":
 
             if abs(t2 - t1) <= 60:
                 within_1min_count += 1
+                st1 = station_map_2016[idx[0]]   # or station_map_rcr depending on dataset
+                st2 = station_map_2016[idx[1]]
 
                 print(f"\nDate: {d}")
                 print(f"Original indices: {idx[0]}, {idx[1]}")
+                print(f"Stations: {st1}, {st2}")
                 print(f"Timestamps: {t1}, {t2}")
                 print(f"Separation: {abs(t2 - t1):.1f} s")
 

@@ -412,105 +412,131 @@ if __name__ == "__main__":
     print(f'unix times, 2016: {len(unix2016)}, rcr: {len(unixRCR)}')
     from datetime import timezone
 
-    dt2016 = np.array([datetime.fromtimestamp(t, tz=timezone.utc) for t in unix2016])
-    dtRCR  = np.array([datetime.fromtimestamp(t, tz=timezone.utc) for t in unixRCR])
+    # dt2016 = np.array([datetime.fromtimestamp(t, tz=timezone.utc) for t in unix2016])
+    # dtRCR  = np.array([datetime.fromtimestamp(t, tz=timezone.utc) for t in unixRCR])
 
-    y2016 = np.random.normal(0, 0.1, len(dt2016))
-    yRCR  = np.random.normal(1, 0.1, len(dtRCR))
+    # y2016 = np.random.normal(0, 0.1, len(dt2016))
+    # yRCR  = np.random.normal(1, 0.1, len(dtRCR))
 
-    plt.figure(figsize=(10, 4))
+    # plt.figure(figsize=(10, 4))
 
-    plt.scatter(dt2016, y2016, s=10, alpha=0.6)
-    plt.scatter(dtRCR,  yRCR,  s=10, alpha=0.6)
+    # plt.scatter(dt2016, y2016, s=10, alpha=0.6)
+    # plt.scatter(dtRCR,  yRCR,  s=10, alpha=0.6)
 
-    import matplotlib.dates as mdates
+    # import matplotlib.dates as mdates
 
-    ax = plt.gca()
-    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+    # ax = plt.gca()
+    # ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+    # ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
 
-    plt.xticks(rotation=45)
-    plt.yticks([0, 1], ['2016', 'RCR'])
-    plt.xlabel('Time')
-    plt.title('Strip Chart of Unix Times')
+    # plt.xticks(rotation=45)
+    # plt.yticks([0, 1], ['2016', 'RCR'])
+    # plt.xlabel('Time')
+    # plt.title('Strip Chart of Unix Times')
 
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
-    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
+    # plt.xticks(rotation=45)
+    # plt.tight_layout()
+    # print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
+    # plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/timestrip.png')
 
     count = np.sum(snrRCR > 20)
     print(f'number of snr > 20 for RCR {count}')
     count = np.sum(snr2016 > 20)
     print(f'number of snr > 20 for 2016 {count}')
 
-    DAY = 86400  # seconds
-    days = np.array([int(dt.timestamp() // DAY) for dt in dt2016])
-    unique_days, counts = np.unique(days, return_counts=True)
-    print(f'Number of total days where we got data is {len(unique_days)}, with {len(days)} events')
-    day_datetimes = np.array([
-    datetime.fromtimestamp(d * 86400, tz=timezone.utc)
-    for d in unique_days
-    ])
-    # ---- Find low-activity days (< 20 events) ----
-    rows = []
-    # for counts_per_day_limit in range(1,20,1):
-    counts_per_day_limit = 2
-    print(f'using limit <= {counts_per_day_limit} events/day')
-    low_days = unique_days[counts <= counts_per_day_limit]
-    low_indices = np.where(np.isin(days, low_days))[0]
+    def analyze_event_dates(unix_times, label, max_events_per_day=2):
 
-    within_1min_count = 0
+        # Convert unix times -> UTC calendar dates
+        utc_dates = np.array([datetime.fromtimestamp(t, tz=timezone.utc).date() for t in unix_times])
 
-    for day in low_days:
-        day_indices = np.where(days == day)[0]
-        day_times = np.array([dt2016[i].timestamp() for i in day_indices])
-        day_times = np.sort(day_times)
-        diffs = np.diff(day_times)
+        # Count events per UTC date
+        unique_dates, counts = np.unique(utc_dates, return_counts=True)
 
-        # count pairs within 60 seconds
-        count_close = np.sum(diffs <= 300)
+        print(f"\n===== {label} =====")
+        print(f"Unique UTC dates: {len(unique_dates)}")
+        print(f"Total events: {len(unix_times)}")
+        assert len(unique_dates)*len(counts) == len(unix_times)
+        # # Print all dates + counts
+        # print("\nEvents per UTC date:")
+        # for d, c in zip(unique_dates, counts):
+        #     print(f"{d}: {c}")
 
-        within_1min_count += count_close
+        # Select low-activity dates
+        selected_dates = unique_dates[counts <= max_events_per_day]
 
-        if count_close > 0:
-            print(f"day {day} has events within 1 minute")
-            print("times:", day_times)
-            print("diffs:", diffs)
+        print(f"\nDates with <= {max_events_per_day} events:")
+        for d in selected_dates:
+            print(d)
 
-    print(f"\nTotal event pairs within 1 minute: {within_1min_count}")
+        # Group event times by date
+        from collections import defaultdict
+        grouped = defaultdict(list)
+
+        for t, d in zip(unix_times, utc_dates):
+            grouped[d].append(t)
+
+        within_1min_count = 0
+
+        print("\nPair separations:")
+
+        for d in selected_dates:
+
+            # ORIGINAL unsorted indices in unix_times
+            idx = np.where(utc_dates == d)[0]
+
+            # Only process exactly 2-event days
+            if len(idx) == 1:
+                print('only 1 event on this day, skipping')
+                continue
+
+            # Original timestamps in original order
+            t1 = unix_times[idx[0]]
+            t2 = unix_times[idx[1]]
+
+            if abs(t2 - t1) <= 60:
+                within_1min_count += 1
+                print("-> WITHIN 1 MINUTE")
+
+            print(f"\nDate: {d}")
+            print(f"Original indices: {idx[0]}, {idx[1]}")
+            print(f"Timestamps: {t1}, {t2}")
+            print(f"Separation: {abs(t2 - t1):.1f} s")
+
+        print(f"\nTotal two-event days within 1 minute: {within_1min_count}")
+
+
 
     # print(f"Number of low-activity days (<20 events): {len(low_days)}")
     # print(f"Number of events in those days: {len(low_indices)}")
-    rows.append((counts_per_day_limit, len(low_days), len(low_indices)))
+    # rows.append((counts_per_day_limit, len(low_days), len(low_indices)))
 
-    print(f"\n{'threshold':>10} {'low_days':>10} {'events':>10}")
-    for counts_per_day_limit, low_day_count, event_count in rows:
-        print(f"{counts_per_day_limit:>10} {low_day_count:>10} {event_count:>10}")
+    # print(f"\n{'threshold':>10} {'low_days':>10} {'events':>10}")
+    # for counts_per_day_limit, low_day_count, event_count in rows:
+    #     print(f"{counts_per_day_limit:>10} {low_day_count:>10} {event_count:>10}")
 
-    plt.figure(figsize=(12, 4))
+    # plt.figure(figsize=(12, 4))
 
-    plt.bar(day_datetimes, counts, width=0.8, alpha=0.7)
+    # plt.bar(day_datetimes, counts, width=0.8, alpha=0.7)
 
-    plt.xlabel("Date")
-    plt.ylabel("Events per day")
-    plt.tight_layout()
-    print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
-    plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
+    # plt.xlabel("Date")
+    # plt.ylabel("Events per day")
+    # plt.tight_layout()
+    # print(f'saving as /pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
+    # plt.savefig(f'/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/time_hist.png')
 
-    # SNR Cut
-    snr2016 = snr2016[low_indices]
-    indices_less_25 = np.where(snr2016 < 20)[0]
-    # backlobe_traces_rcr = backlobe_traces_rcr[low_indices]
-    backlobe_traces_2016 = backlobe_traces_2016[indices_less_25]
-    # assert len(backlobe_traces_rcr) == event_count
-    # print(f'SNR > 25 removed rcr has size {len(backlobe_traces_rcr)}')
-    backlobe_traces_2016_expanded = backlobe_traces_2016.transpose(0, 2, 1) # all station events cut on 10.17.25, total of 7587
-    backlobe_traces_rcr_expanded = backlobe_traces_rcr.transpose(0, 2, 1) 
-    prob_all = model.predict(backlobe_traces_2016_expanded)
-    prob_all = prob_all.flatten()
+    # # SNR Cut
+    # snr2016 = snr2016[low_indices]
+    # indices_less_25 = np.where(snr2016 < 20)[0]
+    # # backlobe_traces_rcr = backlobe_traces_rcr[low_indices]
+    # backlobe_traces_2016 = backlobe_traces_2016[indices_less_25]
+    # # assert len(backlobe_traces_rcr) == event_count
+    # # print(f'SNR > 25 removed rcr has size {len(backlobe_traces_rcr)}')
+    # backlobe_traces_2016_expanded = backlobe_traces_2016.transpose(0, 2, 1) # all station events cut on 10.17.25, total of 7587
+    # backlobe_traces_rcr_expanded = backlobe_traces_rcr.transpose(0, 2, 1) 
+    # prob_all = model.predict(backlobe_traces_2016_expanded)
+    # prob_all = prob_all.flatten()
     
-    plot_histogram(prob_all, amp=amp, timestamp=model_timestamp, prefix=prefix)
+    # plot_histogram(prob_all, amp=amp, timestamp=model_timestamp, prefix=prefix)
     # mask = (prob_all <= 0.2) #& (prob_all <= 0.6)
     # indices_mid = np.where(mask)[0]
     # visualize = backlobe_traces_2016[indices_mid]

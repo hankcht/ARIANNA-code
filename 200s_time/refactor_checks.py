@@ -449,7 +449,7 @@ if __name__ == "__main__":
     counts_2016 = [124, 77, 1499, 3712, 1861, 127, 187]
     counts_rcr  = [113, 110, 1022, 1953, 1472, 264, 227]
 
-    def analyze_event_dates(unix_times, label, max_events_per_day=2):
+    def analyze_event_dates(unix_times, label, trace, max_events_per_day=2):
         # Convert unix times -> UTC calendar dates
         utc_dates = np.array([datetime.fromtimestamp(t, tz=timezone.utc).date() for t in unix_times])
 
@@ -503,11 +503,13 @@ if __name__ == "__main__":
                 print(f"Original indices: {idx[0]}, {idx[1]}")
                 print(f"Timestamps: {t1}, {t2}")
                 print(f"Separation: {abs(t2 - t1):.1f} s")
+                pT(trace[idx[0]], f'First event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces_selected_{idx[0]}.png')
+                pT(trace[idx[1]], f'Second event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces_selected_{idx[1]}.png')
 
         print(f"\nTotal two-event days within 1 minute: {within_1min_count}")
 
-    analyze_event_dates(unix2016, label="2016")
-    analyze_event_dates(unixRCR, label="RCR")
+    analyze_event_dates(unix2016, label="2016", trace=traces2016)
+    analyze_event_dates(unixRCR, label="RCR", trace=tracesRCR)
 
     # print(f"Number of low-activity days (<20 events): {len(low_days)}")
     # print(f"Number of events in those days: {len(low_indices)}")

@@ -429,7 +429,7 @@ def siminfo_forplotting(type, amp, simulation_date, templates_2016, templates_RC
 
 def pT(traces, title, saveLoc, sampling_rate=2, show=False, average_fft_per_channel=[]):
     # Sampling rate should be in GHz
-    print(f'printing')
+    # print(f'printing')
     # Important Clarification: In our actual experiment, we receive one data point per 0.5ns, so our duration of 128ns gives 256 data points
     # it is different from here where I organize one data point to one ns and make the total time 256ns (these two are mathematically identical)
     # x = np.linspace(1, int(256 / sampling_rate), num=256)

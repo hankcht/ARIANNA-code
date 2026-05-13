@@ -465,8 +465,8 @@ if __name__ == "__main__":
         selected_dates = unique_dates[counts <= max_events_per_day]
 
         print(f"\nDates with <= {max_events_per_day} events:")
-        for d in selected_dates:
-            print(d)
+        # for d in selected_dates:
+        #     print(d)
 
         # Group event times by date
         from collections import defaultdict
@@ -494,12 +494,11 @@ if __name__ == "__main__":
 
             if abs(t2 - t1) <= 60:
                 within_1min_count += 1
-                print("-> WITHIN 1 MINUTE")
 
-            print(f"\nDate: {d}")
-            print(f"Original indices: {idx[0]}, {idx[1]}")
-            print(f"Timestamps: {t1}, {t2}")
-            print(f"Separation: {abs(t2 - t1):.1f} s")
+                print(f"\nDate: {d}")
+                print(f"Original indices: {idx[0]}, {idx[1]}")
+                print(f"Timestamps: {t1}, {t2}")
+                print(f"Separation: {abs(t2 - t1):.1f} s")
 
         print(f"\nTotal two-event days within 1 minute: {within_1min_count}")
 

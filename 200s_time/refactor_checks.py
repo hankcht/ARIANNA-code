@@ -504,7 +504,8 @@ if __name__ == "__main__":
 
         print(f"\nTotal two-event days within 1 minute: {within_1min_count}")
 
-
+    analyze_event_dates(unix2016, label="2016")
+    analyze_event_dates(unixRCR, label="RCR")
 
     # print(f"Number of low-activity days (<20 events): {len(low_days)}")
     # print(f"Number of events in those days: {len(low_indices)}")

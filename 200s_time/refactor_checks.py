@@ -516,6 +516,7 @@ if __name__ == "__main__":
     analyze_event_dates(unix2016, label="2016", trace=traces2016)
     analyze_event_dates(unixRCR, label="RCR", trace=tracesRCR)
 
+    selected_events = np.array(selected_events)
     selected_events_expanded = selected_events.transpose(0, 2, 1) 
     prob_all = model.predict(selected_events_expanded)
     prob_all = prob_all.flatten()

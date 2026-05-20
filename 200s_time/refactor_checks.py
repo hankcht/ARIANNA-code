@@ -521,7 +521,7 @@ if __name__ == "__main__":
     prob_all = model.predict(selected_events_expanded)
     prob_all = prob_all.flatten()
     
-    plot_histogram(prob_all, amp=amp, timestamp=model_timestamp)
+    plot_histogram(prob_all, amp=amp, timestamp=model_timestamp, prefix="within1min")
 
     # print(f"Number of low-activity days (<20 events): {len(low_days)}")
     # print(f"Number of events in those days: {len(low_indices)}")

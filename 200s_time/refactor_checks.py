@@ -449,6 +449,8 @@ if __name__ == "__main__":
     counts_2016 = [124, 77, 1499, 3712, 1861, 127, 187]
     counts_rcr  = [113, 110, 1022, 1953, 1472, 264, 227]
 
+    selected_events = []
+
     def analyze_event_dates(unix_times, label, trace, max_events_per_day=2):
         # Convert unix times -> UTC calendar dates
         utc_dates = np.array([datetime.fromtimestamp(t, tz=timezone.utc).date() for t in unix_times])
@@ -503,13 +505,21 @@ if __name__ == "__main__":
                 print(f"Original indices: {idx[0]}, {idx[1]}")
                 print(f"Timestamps: {t1}, {t2}")
                 print(f"Separation: {abs(t2 - t1):.1f} s")
+                selected_events.append(trace[idx[0]])
+                selected_events.append(trace[idx[0]])
                 pT(trace[idx[0]], f'First event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces_selected_{label}_{idx[0]}.png')
                 pT(trace[idx[1]], f'Second event', f'/dfs6b/pub/tangch3/ARIANNA/DeepLearning/plots/miscellaneous/traces_selected_{label}_{idx[1]}.png')
 
         print(f"\nTotal two-event days within 1 minute: {within_1min_count}")
+        print(f"Number of saved selected events for CNN evaluation {len(selected_events)}")
 
     analyze_event_dates(unix2016, label="2016", trace=traces2016)
     analyze_event_dates(unixRCR, label="RCR", trace=tracesRCR)
+
+    prob_all = model.predict(selected_events)
+    prob_all = prob_all.flatten()
+    
+    plot_histogram(prob_all, amp=amp, timestamp=model_timestamp)
 
     # print(f"Number of low-activity days (<20 events): {len(low_days)}")
     # print(f"Number of events in those days: {len(low_indices)}")

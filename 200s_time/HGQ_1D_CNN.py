@@ -79,11 +79,11 @@ def build_hgq_model(input_shape, ramp_epochs, beta0=1e-5, beta_final=1e-4):
     # Define Config Scopes 
     # scope0 = QuantizerConfigScope(place='all', b0=3, i0=0, default_q_type='kbi', overflow_mode='SAT_SYM') #  k0=1,
     # scope1 = QuantizerConfigScope(place='datalane', f0=3, i0=3, default_q_type='kif', overflow_mode='WRAP') # 
-    scope0 = QuantizerConfigScope(place='all', heterogeneous_axis=None, default_q_type='kbi', overflow_mode='SAT_SYM') #  k0=1,
-    scope1 = QuantizerConfigScope(place='datalane', heterogeneous_axis=None, default_q_type='kif', overflow_mode='WRAP') # 
+    scope0 = QuantizerConfigScope(place='all', heterogeneous_axis=(), default_q_type='kbi', overflow_mode='SAT_SYM') #  k0=1,
+    scope1 = QuantizerConfigScope(place='datalane', heterogeneous_axis=(), default_q_type='kif', overflow_mode='WRAP') # 
     with scope0, scope1: 
-        iq_conf = QuantizerConfig(place='datalane') # input quantizer
-        oq_conf = QuantizerConfig(place='datalane', fr=MonoL1(1e-3)) # output quantizer   
+        iq_conf = QuantizerConfig(place='datalane',  heterogeneous_axis=()) # input quantizer
+        oq_conf = QuantizerConfig(place='datalane',  heterogeneous_axis=(), fr=MonoL1(1e-3)) # output quantizer   
         model = keras.Sequential([
                     keras.layers.Input(shape=input_shape),
                     QConv1D(20, kernel_size=10, beta0=beta0, iq_conf=iq_conf, activation='relu', name='conv1d_0'), # do first layer as well

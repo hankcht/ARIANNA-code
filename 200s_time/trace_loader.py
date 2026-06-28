@@ -16,8 +16,22 @@ export = L.load_export(
 # 1. get pass BL events
 records = L.category_records(export, "pass_bl")
 
+r = records[0]
+
+t = L.load_trace(
+    export,
+    r,
+    nurfiles_folder="/pub/rricesmi/Arianna/ReflectiveAnalysis/HRAStationDataAnalysis/StationData/nurFiles/9.1.25"
+)
+
+print(t.shape)
+
 # 2. load all traces
-traces = L.load_traces(export, records)
+traces = L.load_traces(
+    export,
+    records,
+    nurfiles_folder="/pub/rricesmi/Arianna/ReflectiveAnalysis/HRAStationDataAnalysis/StationData/nurFiles/9.1.25"
+)
 
 # 3. convert to array
 traces = np.array(traces, dtype=object)

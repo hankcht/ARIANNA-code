@@ -18,14 +18,6 @@ records = L.category_records(export, "pass_bl")
 
 r = records[0]
 
-t = L.load_trace(
-    export,
-    r,
-    nurfiles_folder="/pub/rricesmi/Arianna/ReflectiveAnalysis/HRAStationDataAnalysis/StationData/nurFiles/9.1.25"
-)
-
-print(t.shape)
-
 # 2. load all traces
 traces = L.load_traces(
     export,
@@ -59,3 +51,10 @@ with custom_object_scope(custom_objects):
     model = keras.models.load_model(f'{model_path}{timestamp}_HGQ2_model.keras', compile=False)
 
 prefix = 'hgq'
+
+traces = traces.squeeze(-1).transpose(0, 2, 1)
+prob = model.predict(traces).flatten()
+
+from refactor_checks import plot_histogram
+amp='both'
+plot_histogram(prob, amp=amp, timestamp=timestamp, prefix="passing_BL")

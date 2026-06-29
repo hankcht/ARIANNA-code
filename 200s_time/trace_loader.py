@@ -83,3 +83,36 @@ sc = ax.scatter(
 
 plt.colorbar(sc, ax=ax, label="HGQ network output")
 plt.savefig("/dfs8/sbarwick_lab/ariannaproject/tangch3/plots2/passBL_network_overlay.png", dpi=300, bbox_inches="tight")
+
+threshold = 0.1  # adjust as desired
+
+low_records = [
+    r for r, p in zip(records, prob)
+    if p < threshold
+]
+
+from HRAStationDataAnalysis.ChiChiHandoff.chi_chi_plot import make_chi_chi_plot
+
+ax = make_chi_chi_plot(export)
+
+if low_records:
+    x = [r["chi_bl"] for r in low_records]
+    y = [r["chi_rcr"] for r in low_records]
+
+    ax.scatter(
+        x,
+        y,
+        marker="o",
+        s=80,
+        facecolors="none",
+        edgecolors="red",
+        linewidths=2,
+        label=f"Pass BL (network < {threshold})",
+    )
+
+ax.legend()
+ax.figure.savefig(
+    f"/dfs8/sbarwick_lab/ariannaproject/tangch3/plots2/pass_bl_network_lt_{threshold:.2f}.png",
+    dpi=200,
+    bbox_inches="tight",
+)

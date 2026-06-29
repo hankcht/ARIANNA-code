@@ -58,3 +58,28 @@ prob = model.predict(traces).flatten()
 from refactor_checks import plot_histogram
 amp='both'
 plot_histogram(prob, amp=amp, timestamp=timestamp, prefix="passing_BL")
+
+import matplotlib.pyplot as plt
+from HRAStationDataAnalysis.ChiChiHandoff.chi_chi_plot import make_chi_chi_plot
+
+# Make the original chi-chi plot
+ax = make_chi_chi_plot(export)
+
+# Chi coordinates for the Pass BL events
+chi_bl = np.array([r["chi_bl"] for r in records])
+chi_rcr = np.array([r["chi_rcr"] for r in records])
+
+# Overlay colored by network output
+sc = ax.scatter(
+    chi_bl,
+    chi_rcr,
+    c=prob,
+    cmap="viridis",
+    s=35,
+    edgecolors="k",
+    linewidths=0.3,
+    zorder=20,
+)
+
+plt.colorbar(sc, ax=ax, label="HGQ network output")
+plt.savefig("/dfs8/sbarwick_lab/ariannaproject/tangch3/plots2/passBL_network_overlay.png", dpi=300, bbox_inches="tight")

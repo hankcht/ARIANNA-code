@@ -84,35 +84,35 @@ sc = ax.scatter(
 plt.colorbar(sc, ax=ax, label="HGQ network output")
 plt.savefig("/dfs8/sbarwick_lab/ariannaproject/tangch3/plots2/passBL_network_overlay.png", dpi=300, bbox_inches="tight")
 
-threshold = 0.1  # adjust as desired
-
-low_records = [
-    r for r, p in zip(records, prob)
-    if p < threshold
-]
-
 from HRAStationDataAnalysis.ChiChiHandoff.chi_chi_plot import make_chi_chi_plot
+
+threshold = 0.10
+
+# Select low network output events
+low_records = [r for r, p in zip(records, prob) if p < threshold]
 
 ax = make_chi_chi_plot(export)
 
 if low_records:
-    x = [r["chi_bl"] for r in low_records]
-    y = [r["chi_rcr"] for r in low_records]
+    chi_bl = np.array([r["chi_bl"] for r in low_records])
+    chi_rcr = np.array([r["chi_rcr"] for r in low_records])
 
     ax.scatter(
-        x,
-        y,
-        marker="o",
-        s=80,
-        facecolors="none",
-        edgecolors="red",
-        linewidths=2,
-        label=f"Pass BL (network < {threshold})",
+        chi_bl,
+        chi_rcr,
+        c="cyan",          # choose any color you like
+        marker="o",        # same as Identified BL
+        s=60,              # same size
+        alpha=0.9,
+        edgecolors="black",
+        linewidths=0.4,
+        zorder=4,
+        label=f"Pass BL (network < {threshold}) (N={len(low_records)})",
     )
 
-ax.legend()
+ax.legend(loc="lower right", fontsize=8)
 ax.figure.savefig(
-    f"/dfs8/sbarwick_lab/ariannaproject/tangch3/plots2/pass_bl_network_lt_{threshold:.2f}.png",
-    dpi=200,
+    f"/dfs8/sbarwick_lab/ariannaproject/tangch3/plots2/passing_bl_network_lt_{threshold:.2f}.png",
+    dpi=150,
     bbox_inches="tight",
 )

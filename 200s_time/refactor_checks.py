@@ -201,10 +201,10 @@ def plot_histogram(prob_all, amp, timestamp, prefix):
     bins = 20
     range_vals = (0, 1)   
     
-    hist_pass, bin_edges = np.histogram(prob_passing, bins=bins, range=range_vals)
+    # hist_pass, bin_edges = np.histogram(prob_passing, bins=bins, range=range_vals)
     # hist_back, _ = np.histogram(prob_backlobe, bins=bins, range=range_vals)
 
-    third_pass = hist_pass[2]
+    # third_pass = hist_pass[2]
     # third_back = hist_back[2]
 
     # scale_factor = third_pass / third_back if third_back > 0 else 1

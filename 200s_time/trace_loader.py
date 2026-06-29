@@ -29,7 +29,7 @@ traces = L.load_traces(
 traces = np.array(traces, dtype=object)
 
 print(len(traces))
-print(traces[0].shape)
+print(traces.shape)
 
 # overwrite for specific run
 timestamp =  '12.16.25_14-53' # 11.26.25_13-52
@@ -52,7 +52,7 @@ with custom_object_scope(custom_objects):
 
 prefix = 'hgq'
 
-traces = traces.squeeze(-1).transpose(0, 2, 1)
+traces = traces.transpose(0, 2, 1)
 prob = model.predict(traces).flatten()
 
 from refactor_checks import plot_histogram

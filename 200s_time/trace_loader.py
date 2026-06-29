@@ -26,7 +26,7 @@ traces = L.load_traces(
 )
 
 # 3. convert to array
-traces = np.array(traces, dtype=object)
+traces = np.array(traces)
 
 print(len(traces))
 print(traces.shape)
